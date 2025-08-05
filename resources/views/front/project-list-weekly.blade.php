@@ -202,6 +202,7 @@
             top: 0;
             bottom: 0;
             width: 2px;
+            height: 55px;
             background-color: #D9534F; /* Red color for the today line */
             z-index: 100; /* Ensure it appears above other elements */
         }
@@ -257,33 +258,39 @@
             </div>
             <div class="flex items-center " style="float: right;">
                         <button class="text-gray-600 hover:text-black" id="home" style="margin-right: 8px;">
-                            <img src="{{ asset('house.png') }}" style="border: 1px solid #000;padding: 0.6rem 0.8rem;border-radius: 4px;border-color: #eee;">
+                            <img src="{{ asset('house.png') }}" style="border: 1px solid #000;padding: 10px 12px;border-radius: 4px;border-color: #eee; ">
                         </button>
-                        <div style="border: 1px solid #eee; border-radius: 8px; padding: 5px 3px; margin-right: 8px;">
+                        <div style="border: 1px solid #eee; border-radius: 4px;  margin-right: 8px; height: 34px;width: 170px; display:flex;justify-content: center;">
                             <a href="/projects" class="toggle-btn">Daily</a>
                             <a href="/projects/weekly" class="toggle-btn active">Weekly</a>
                         </div>
                         <style>
+
+
                             .toggle-btn {
                                 background: #000;
                                 color: #fff;
-                                border: 2px solid #fff;
-                                border-radius: 8px;
-                                padding: 4px 18px;
-                                font-size: 15px;
+                                border: 1px solid #000;
+                                border-radius: 2px;
+                                padding: 7px 19px;
+                                font-size: 13px;
                                 font-weight: 500;
                                 margin-right: 0;
                                 transition: background 0.2s, color 0.2s;
+                                align-items: center;
+                                text-align: center;
+                                height: 33px;
+                                width: 170px;
                             }
                             .toggle-btn:not(.active) {
                                 background: transparent;
                                 color: #000;
                             }
                             .toggle-btn.active {
-                                background: #000;
-                                color: #fff;
-                                border: 2px solid #fff;
-                            }
+                                    background: #000;
+                                    color: #fff;
+                                    border: 1px solid #000;
+                                }
                             .toggle-btn:focus {
                                 outline: none;
                             }

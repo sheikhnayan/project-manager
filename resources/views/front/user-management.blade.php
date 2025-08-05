@@ -36,6 +36,7 @@
         document.getElementById('edit-user-email').value = email;
         document.getElementById('edit-user-role').value = role;
         document.getElementById('edit-user-hourly-rate').value = hourlyRate;
+        document.getElementById('edit-profilr-picture').value = profilePicture;
         document.getElementById('editUserForm').action = `/users/${id}`;
         document.getElementById('edit-user-profile-picture-url').value = profilePicture ? profilePicture : '';
     }
@@ -113,6 +114,13 @@
         '{{ $item->profile_picture ? asset('storage/' . $item->profile_picture) : '' }}'
     )">
     <i data-lucide="pencil" class="w-4 h-4"></i>
+
+</button>
+{{-- archive button --}}
+<button class="p-1 hover:bg-gray-100 rounded archive-btn"
+        data-user-id="{{ $item->id }}"
+        data-archived="{{ $item->is_archived }}">
+    <i data-lucide="archive" class="w-4 h-4 {{ $item->is_archived ? 'text-red-500' : 'text-green-500' }}"></i>
 </button>
                                                 </div>
                                             </td>
@@ -228,7 +236,7 @@
             <h2 class="text-2xl font-bold mb-4">Edit User</h2>
             <form id="editUserForm" method="POST" enctype="multipart/form-data">
                 @csrf
-                @method('PUT')
+
                 <input type="hidden" id="edit-user-id" name="id">
                 <div class="mb-4">
                     <label for="edit-user-name" class="block text-sm font-medium text-gray-700">Name</label>
@@ -251,6 +259,7 @@
                     <label for="edit-user-hourly-rate" class="block text-sm font-medium text-gray-700">Hourly Rate</label>
                     <input type="number" id="edit-user-hourly-rate" name="hourly_rate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black" required>
                 </div>
+
                 <div x-data="{
         imageUrl: document.getElementById('edit-user-profile-picture-url').value,
         cropper: null,
@@ -378,5 +387,46 @@
             });
         }
     </script>
+
+    {{-- archive user functionality --}}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+$(document).on('click', '.archive-btn', function() {
+    var btn = $(this);
+    var userId = btn.data('user-id');
+    var isArchived = btn.data('archived');
+
+    var confirmMsg = isArchived ? 'Retrieve this user?' : 'Archive this user?';
+    if(!confirm('Are you sure you want to ' + confirmMsg)) return;
+
+    $.ajax({
+        url: '/users/' + userId + '/archive',
+        type: 'POST',
+        data: {
+            _token: '{{ csrf_token() }}'
+        },
+        success: function(response) {
+    if(response.success) {
+        if(response.is_archived) {
+            btn.closest('tr').addClass('bg-gray-200 text-gray-400');
+            btn.data('archived', 1).attr('data-archived', 1);
+            btn.find('i').removeClass('text-green-500').addClass('text-red-500');
+        } else {
+            btn.closest('tr').removeClass('bg-gray-200 text-gray-400');
+            btn.data('archived', 0).attr('data-archived', 0);
+            btn.find('i').removeClass('text-red-500').addClass('text-green-500');
+        }
+        // Re-render Lucide icons
+        lucide.createIcons();
+        // Update SVG color class
+        setTimeout(function() {
+            btn.find('svg').removeClass('text-green-500 text-red-500')
+                .addClass(response.is_archived ? 'text-red-500' : 'text-green-500');
+        }, 10);
+    }
+}
+    });
+});
+</script>
 </body>
 </html>

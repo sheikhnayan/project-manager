@@ -97,10 +97,10 @@
             <div class="p-4 flex items-center justify-between">
                 <h2 class="text-xl font-semibold">Track</h2>
                 <div class="flex items-center space-x-2">
-                    <button id="prev-week" class="text-gray-600 hover:text-black"><i class="fas fa-chevron-left" style="border: 1px solid #000; padding:0.6rem 0.8rem; border-radius:4px; border-color:#eee; font-size: 0.8rem;"></i></button>
+                    <button id="prev-week" class="text-gray-600 hover:text-black"><i class="fas fa-chevron-left" style="border: 1px solid #000; padding:0.6rem 0.8rem; border-radius:4px; border-color:#eee; font-size: 0.8rem; color: #000;"></i></button>
                     <span id="date-range" class="text-gray-600" style="width: 185px; font-size: 0.875rem; line-height: 1.25rem; color: #000;">Mon, 24 Mar - Sun, 30 Mar</span>
-                    <button id="next-week" class="text-gray-600 hover:text-black"><i class="fas fa-chevron-right" style="border: 1px solid #000; padding:0.6rem 0.8rem; border-radius:4px; border-color:#eee; font-size: 0.8rem;"></i></button>
-                    <button class="text-gray-600 hover:text-black"><i class="fas fa-home" style="border: 1px solid #000; padding:0.6rem 0.8rem; border-radius:4px; border-color:#eee; font-size: 0.8rem;"></i></button>
+                    <button id="next-week" class="text-gray-600 hover:text-black"><i class="fas fa-chevron-right" style="border: 1px solid #000; padding:0.6rem 0.8rem; border-radius:4px; border-color:#eee; font-size: 0.8rem; color: #000;"></i></button>
+                    <button class="text-gray-600 hover:text-black"><i class="fas fa-home" style="border: 1px solid #000; padding:0.6rem 0.8rem; border-radius:4px; border-color:#eee; font-size: 0.8rem; color: #000;"></i></button>
                     <div class="relative">
                         <select id="user-select"
                             style="width: 200px; border: 1px solid #000; padding:0.5rem 0.8rem; border-radius:4px; border-color:#eee; font-size: 0.8rem; appearance: none;"
@@ -116,9 +116,9 @@
                         </div>
                     </div>
                     <div style="border: 1px solid #eee; border-radius: 4px;">
-                        <button id="copy-entries" class="text-gray-600 hover:text-black"><i class="fa fa-clone" aria-hidden="true" style="padding:0.6rem 0.8rem; font-size: 0.8rem;"></i></button>
+                        <button id="copy-entries" class="text-gray-600 hover:text-black"><i class="fa fa-clone" aria-hidden="true" style="padding:0.6rem 0.8rem; font-size: 0.8rem; color: #000;"></i></button>
                         <span style='content: ""; height: 24px; width: 1px; background: #eee; display: inline-block; padding-top: 0px; margin-top: 5px; margin-bottom: -5px;'></span>
-                        <button id="paste-entries" class="text-gray-600 hover:text-black"><i class="fas fa-paste" style="padding:0.6rem 0.8rem; font-size: 0.8rem;"></i></button>
+                        <button id="paste-entries" class="text-gray-600 hover:text-black"><i class="fas fa-paste" style="padding:0.6rem 0.8rem; font-size: 0.8rem; color: #000;"></i></button>
                     </div>
                     <div class="flex items-center space-x-4">
                         <button id="add-entry" class="bg-black text-white px-4 py-2 rounded" style="font-size: 13px; padding:0.5rem 1rem;">+  Add Entry</button>
@@ -132,17 +132,17 @@
                 <table id="time-table" class="min-w-full bg-white border border-gray-400">
                     <thead>
                         <tr class="w-full bg-gray-100 text-left text-gray-600 uppercase text-sm leading-normal">
-                            <th class="py-3" style="padding-left: 1rem">Project</th>
-                            <th class="py-3">Task</th>
-                            <th class="py-3" style="width: 70px; text-align: center;">Mon</th>
-                            <th class="py-3" style="width: 70px; text-align: center;">Tue</th>
-                            <th class="py-3" style="width: 70px; text-align: center;">Wed</th>
-                            <th class="py-3" style="width: 70px; text-align: center;">Thu</th>
-                            <th class="py-3" style="width: 70px; text-align: center;">Fri</th>
-                            <th class="py-3 holiday" style="width: 70px; text-align: center;">Sat</th>
-                            <th class="py-3 holiday" style="width: 70px; text-align: center;">Sun</th>
-                            <th class="py-3" style="width: 80px">Total</th>
-                            <th class="py-3" style="width: 100px">Actions</th>
+                            <th class="py-1" style="padding-left: 1rem">Project</th>
+                            <th class="py-1">Task</th>
+                            <th class="py-1" style="width: 70px; text-align: center;">Mon</th>
+                            <th class="py-1" style="width: 70px; text-align: center;">Tue</th>
+                            <th class="py-1" style="width: 70px; text-align: center;">Wed</th>
+                            <th class="py-1" style="width: 70px; text-align: center;">Thu</th>
+                            <th class="py-1" style="width: 70px; text-align: center;">Fri</th>
+                            <th class="py-1 holiday" style="width: 70px; text-align: center;">Sat</th>
+                            <th class="py-1 holiday" style="width: 70px; text-align: center;">Sun</th>
+                            <th class="py-1" style="width: 80px">Total</th>
+                            <th class="py-1" style="width: 100px">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="text-gray-600 text-sm font-light">
@@ -385,11 +385,35 @@
 
                 // Add event listeners to input fields for updating totals
                 newRow.querySelectorAll('.input-field').forEach(input => {
-                    input.addEventListener('input', function () {
-                        updateTotal(newRow); // Update the row total
-                        updateDailyTotals(); // Update daily totals
-                        saveData(); // Save data after input
-                    });
+                    // input.addEventListener('input', function () {
+                    //     updateTotal(newRow); // Update the row total
+                    //     updateDailyTotals(); // Update daily totals
+                    //     saveData(); // Save data after input
+                    // });
+
+     input.addEventListener('input', function () {
+    let val = this.value.trim().replace(',', '.');
+    // Allow empty or HH:MM format
+    if (val === '' || val.includes(':')) {
+        this.dataset.lastValid = val;
+        updateTotal(newRow);
+        updateDailyTotals();
+        saveData();
+        return;
+    }
+    // Allow whole numbers, .5, numbers ending in .5, and a trailing dot
+    if (/^(\d+(\.5)?|\.5|\d+\.)$/.test(val)) {
+        this.dataset.lastValid = val;
+    } else {
+        // If invalid, revert to previous valid value
+        this.value = this.dataset.lastValid || '';
+        return;
+    }
+    updateTotal(newRow);
+    updateDailyTotals();
+    saveData();
+});
+
 
                     // Auto-select all text on focus
                     input.addEventListener('focus', function () {
@@ -477,6 +501,8 @@
 
                 return `${hours}:${minutes.toString().padStart(2, '0')}`;
             }
+
+
 
             // Convert "HH:MM" format to decimal hours
             function parseTime(timeString) {

@@ -105,7 +105,8 @@ Route::get('/time-tracking', [TimeSheetController::class,'show'])->name('time-tr
 
 Route::get('/user-management',[UserController::class,'index'])->name('user-management');
 Route::post('/users', [UserController::class, 'store'])->name('users.store');
-Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
+Route::post('/users/{id}', [UserController::class, 'update'])->name('users.update');
+Route::post('/users/{id}/archive', [UserController::class, 'archive'])->name('users.archive');
 
 Route::get('/user/{user}/projects', [UserController::class, 'getProjects']);
 

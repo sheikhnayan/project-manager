@@ -418,7 +418,7 @@
             </div>
             <div class="flex items-center " style="float: right;">
                         <button class="text-gray-600 hover:text-black" id="home" style="margin-right: 8px;">
-                            <img src="{{ asset('house.png') }}" style="border: 1px solid #000;padding: 0.6rem 0.8rem;border-radius: 4px;border-color: #eee;">
+                            <img src="{{ asset('house.png') }}" style="border: 1px solid #000; color: #000; padding: 0.6rem 0.8rem;border-radius: 4px;border-color: #eee;">
                         </button>
                         {{-- <div style="border: 1px solid #eee; border-radius: 8px; padding: 5px 3px; margin-right: 8px;">
                             <a href="/projects" class="toggle-btn active">Daily</a>
@@ -464,12 +464,18 @@
         <div class="content" style="margin-top: 10px !important; border: 1px solid #D1D5DB; border-radius: 4px;">
                 <div class="task-list" style="border-right: 0px; padding-right: 0px; padding-top: 0px">
                     <div class="task-header" style="margin-bottom: 0px; padding: 10px; padding-right: 0px;">
-                        <span style="width: 50%; font-size: 12px; cursor: pointer; display: inherit; padding-left: 10px; border-right: 1px solid #eee; padding-top: 17px; padding-bottom: 17px;" id="sortProject">
+                        <span id="sortProject" style="width: 50%; font-size: 12px; cursor: pointer; display: inherit; padding-left: 10px; border-right: 1px solid #eee; padding-top: 17px; padding-bottom: 17px;" id="sortProject">
                             Team Member
                             <img style="margin-left: 5px;" src="{{ asset('sort.svg') }}" id="sortProjectIcon" alt="">
                         </span>
-                        <span style="width: 25%; font-size: 12px; border-right: 1px solid #eee; padding-top: 17px; padding-bottom: 17px; text-align: center;">Cost</span>
-                        <span style="width: 25%; font-size: 12px; border-right: 1px solid #eee; padding-top: 17px; padding-bottom: 17px; text-align: center;">Hours</span>
+                        <span id="sortCost" style="width: 25%; font-size: 12px; cursor: pointer; display: inherit; padding-left: 10px; border-right: 1px solid #eee; padding-top: 17px; padding-bottom: 17px; text-align: center;">
+                            Cost
+                            <img style="margin-left: 5px;" src="{{ asset('sort.svg') }}" id="sortCostIcon" alt="">
+                        </span>
+                        <span id="sortHours" style="width: 25%; font-size: 12px; cursor: pointer; display: inherit; padding-left: 10px; border-right: 1px solid #eee; padding-top: 17px; padding-bottom: 17px; text-align: center;">
+                            Hours
+                            <img style="margin-left: 5px;" src="{{ asset('sort.svg') }}" id="sortHoursIcon" alt="">
+                        </span>
                         {{-- <span style="font-size: 12px; width: 10%; padding-top: 17px; padding-bottom: 17px; text-align: center; border-right: 1px solid #eee;"> <i class="fas fa-eye show-user" data-type="show"></i> </span> --}}
                         {{-- <span class="text-center font-size: 12px; add-task" style="width: 10%;" id="addMemberButton"><i class="fas fa-plus"></i></span> --}}
                     </div>
@@ -509,6 +515,7 @@
                                 <span style="width: 25%; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;" class="user-hour-{{ $item->id }}">
                                     {{ $es }}
                                 </span>
+
                                 {{-- @if ($item->archieve == 0)
                                 <span {{ $item->archieve }} style="display: block; width:10%; padding-top: 6px; padding-bottom: 6px; text-align: center;"> <i class="fas fa-eye-slash hide-user" data-id="{{ $item->id }}" style="color: #4B5563; font-size: 13px;"></i> </span>
                                 @else
@@ -1217,26 +1224,73 @@ $(document).ready(function () {
 
 
 <script>
+// $(document).ready(function() {
+//     let asc = true;
+//     $('#sortProject').on('click', function() {
+//         let items = $('.task-list .task-item').get();
+//         items.sort(function(a, b) {
+//             let keyA = $(a).find('span').first().text().trim().toLowerCase();
+//             let keyB = $(b).find('span').first().text().trim().toLowerCase();
+//             if (asc) {
+//                 return keyA.localeCompare(keyB);
+//             } else {
+//                 return keyB.localeCompare(keyA);
+//             }
+//         });
+//         $.each(items, function(i, item) {
+//             $('.task-list').append(item);
+//         });
+//         asc = !asc;
+//         $('#sortProjectIcon').toggleClass('fa-sort-alpha-down fa-sort-alpha-up');
+//     });
+// });
+
 $(document).ready(function() {
-    let asc = true;
+    // Track sort direction for each column
+    let sortDirections = {
+        project: true,
+        cost: true,
+        hours: true
+    };
+
+    function sortTaskItems(getKey, col, isNumeric = false) {
+        $('.not-archived').each(function() {
+            let $container = $(this);
+            let items = $container.children('.task-item').get();
+            items.sort(function(a, b) {
+                let keyA = getKey($(a));
+                let keyB = getKey($(b));
+                if (isNumeric) {
+                    keyA = parseFloat((keyA + '').replace(/,/g, '')) || 0;
+                    keyB = parseFloat((keyB + '').replace(/,/g, '')) || 0;
+                }
+                if (keyA < keyB) return sortDirections[col] ? -1 : 1;
+                if (keyA > keyB) return sortDirections[col] ? 1 : -1;
+                return 0;
+            });
+            // Remove all .task-item elements
+            $container.children('.task-item').remove();
+            // Append sorted items
+            $.each(items, function(i, item) {
+                $container.append(item);
+            });
+        });
+        sortDirections[col] = !sortDirections[col];
+    }
+
     $('#sortProject').on('click', function() {
-        let items = $('.task-list .task-item').get();
-        items.sort(function(a, b) {
-            let keyA = $(a).find('span').first().text().trim().toLowerCase();
-            let keyB = $(b).find('span').first().text().trim().toLowerCase();
-            if (asc) {
-                return keyA.localeCompare(keyB);
-            } else {
-                return keyB.localeCompare(keyA);
-            }
-        });
-        $.each(items, function(i, item) {
-            $('.task-list').append(item);
-        });
-        asc = !asc;
-        $('#sortProjectIcon').toggleClass('fa-sort-alpha-down fa-sort-alpha-up');
+        sortTaskItems(item => item.find('span').eq(0).text().trim().toLowerCase(), 'project', false);
+    });
+
+    $('#sortCost').on('click', function() {
+        sortTaskItems(item => item.find('span').eq(1).text().replace(/,/g, '').trim(), 'cost', true);
+    });
+
+    $('#sortHours').on('click', function() {
+        sortTaskItems(item => item.find('span').eq(2).text().replace(/,/g, '').trim(), 'hours', true);
     });
 });
+
 </script>
 
 

@@ -130,6 +130,8 @@ class UserController extends Controller
             $data['profile_picture'] = $request->file('profile_picture')->store('profile_pictures', 'public');
         }
 
+
+
         $new = User::find($id);
         $new->name = $request->name;
         $new->email = $request->email;
@@ -165,4 +167,18 @@ class UserController extends Controller
             return 'Mail sending failed: ' . $e->getMessage();
         }
     }
+//  for archive functionality
+public function archive($id)
+{
+    $user = User::findOrFail($id);
+    $user->is_archived = $user->is_archived ? 0 : 1; // Toggle
+    $user->save();
+
+    return response()->json([
+        'success' => true,
+        'is_archived' => $user->is_archived
+    ]);
+}
+
+
 }

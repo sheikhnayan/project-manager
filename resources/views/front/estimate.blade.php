@@ -405,7 +405,7 @@
                             </div>
                             <div class="modal-footer">
                                 <button id="cancelButtonMember" type="button" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancel</button>
-                                <button id="saveTaskButton" type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Save</button>
+                                <button id="saveTaskButton" type="submit" class="bg-black text-white px-4 py-2 rounded hover:bg-blue-600">Save</button>
                             </div>
                         </form>
                     </div>

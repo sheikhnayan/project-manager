@@ -155,8 +155,12 @@
                     <div class='space-y-4'>
                         <div class='grid grid-cols-2 gap-4'>
                             <div class='space-y-2'>
-                                <h3 class='font-medium'>Predefined Tasks</h3>
-                                <div class='space-y-1 border rounded-lg p-4 ' style="margin-top: 1rem !important;">
+                                <h3 class='font-medium flex items-center gap-2'>
+                                    Predefined Tasks
+                                    <button id="prev-tasks" type="button" class="text-black px-2 py-1 rounded" style="font-size:12px;"><i data-lucide="chevron-left"></i></button>
+                                    <button id="next-tasks" type="button" class="text-black px-2 py-1 rounded" style="font-size:12px;"><i data-lucide="chevron-right"></i></button>
+                                </h3>
+                                <div id="predefined-tasks-list" class='space-y-1 border rounded-lg p-4 ' style="margin-top: 1rem !important;">
                                     <label class='flex items-center gap-2'>
                                         <input type='checkbox' class='rounded border-gray-300 text-black focus:ring-black task' value='01_BD & Contracts'>
                                         01_BD & Contracts
@@ -201,7 +205,7 @@
                                     <div class='flex gap-2'>
                                         <input
                                             type='text'
-                                            placeholder='Add custom task...'
+                                            placeholder='Add custom task...press return'
                                             class='flex-1 rounded-md border-gray-300 focus:border-black focus:ring-black'
                                             id='custom-task-input'
                                         />
@@ -346,5 +350,44 @@
             }
         });
     </script>
+
+    {{-- function for pagination --}}
+    <script>
+$(document).ready(function() {
+    const pageSize = 5; // Number of tasks per page
+    let currentPage = 0;
+
+    // Cache all task checkboxes
+    const $allTasks = $('#predefined-tasks-list label');
+    const totalPages = Math.ceil($allTasks.length / pageSize);
+
+    function showPage(page) {
+        $allTasks.hide();
+        $allTasks.slice(page * pageSize, (page + 1) * pageSize).show();
+        // Disable arrows at ends
+        $('#prev-tasks').prop('disabled', page === 0);
+        $('#next-tasks').prop('disabled', page >= totalPages - 1);
+    }
+
+    $('#prev-tasks').on('click', function() {
+        if (currentPage > 0) {
+            currentPage--;
+            showPage(currentPage);
+        }
+    });
+
+    $('#next-tasks').on('click', function() {
+        if (currentPage < totalPages - 1) {
+            currentPage++;
+            showPage(currentPage);
+        }
+    });
+
+    // Initial display
+    showPage(currentPage);
+});
+</script>
+
+
 </body>
 </html>

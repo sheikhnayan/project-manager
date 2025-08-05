@@ -43,7 +43,7 @@
   height: 200px;
   border-radius: 50%;
   position: relative;
-  background: conic-gradient(gray 100%); /* default */
+  background: conic-gradient(rgb(30, 60, 50) 100%); /* default */
 }
 
 .donut-center {
@@ -232,10 +232,15 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // function generateColor(index, total) {
+    //     const hue = Math.floor((360 / total) * index); // evenly spaced hues
+    //     return `hsl(${hue}, 70%, 60%)`;
+    // }
+
     function generateColor(index, total) {
-        const hue = Math.floor((360 / total) * index); // evenly spaced hues
-        return `hsl(${hue}, 70%, 60%)`;
-    }
+    const colors = [ '#1E3C32',  '#Dcb797', '#7891A0', '#6F867C', '#CDDAE1', '#F5E0D0',];
+    return colors[index % colors.length];
+}
 
     function initProgressRings() {
         // Initialize progress rings here if needed
