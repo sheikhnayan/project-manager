@@ -40,9 +40,22 @@
                     <div>
                         @php
                             $total_hours = DB::table('time_entries')->sum('hours');
+                            $last_month_hours = DB::table('time_entries')
+                                ->whereMonth('created_at', now()->subMonth()->month)
+                                ->whereYear('created_at', now()->subMonth()->year)
+                                ->sum('hours');
+                            
+                            $hours_change = 0;
+                            if ($last_month_hours > 0) {
+                                $hours_change = (($total_hours - $last_month_hours) / $last_month_hours) * 100;
+                            } elseif ($total_hours > 0) {
+                                $hours_change = 100;
+                            }
                         @endphp
                         <div class="text-2xl font-bold" id="total-hours">{{ round($total_hours) }}h</div>
-                        <p class="text-xs text-gray-500" id="hours-change">+0% from last month</p>
+                        <p class="text-xs text-gray-500" id="hours-change">
+                            {{ $hours_change >= 0 ? '+' : '' }}{{ round($hours_change) }}% from last month
+                        </p>
                     </div>
                 </div>
 
@@ -54,9 +67,14 @@
                     <div>
                         @php
                             $project = DB::table('projects')->where('is_archived',0)->count();
+                            $completed_projects_this_month = DB::table('projects')
+                                ->where('is_archived', 1)
+                                ->whereMonth('updated_at', now()->month)
+                                ->whereYear('updated_at', now()->year)
+                                ->count();
                         @endphp
                         <div class="text-2xl font-bold" id="active-projects">{{ $project }}</div>
-                        <p class="text-xs text-gray-500" id="completed-projects">0 completed this month</p>
+                        <p class="text-xs text-gray-500" id="completed-projects">{{ $completed_projects_this_month }} completed this month</p>
                     </div>
                 </div>
 
@@ -68,9 +86,16 @@
                     <div>
                         @php
                             $users = DB::table('users')->where('role','!=','admin')->count();
+                            $new_members_this_month = DB::table('users')
+                                ->where('role', '!=', 'admin')
+                                ->whereMonth('created_at', now()->month)
+                                ->whereYear('created_at', now()->year)
+                                ->count();
                         @endphp
                         <div class="text-2xl font-bold" id="team-members">{{ $users }}</div>
-                        <p class="text-xs text-gray-500" id="new-members">No new this month</p>
+                        <p class="text-xs text-gray-500" id="new-members">
+                            {{ $new_members_this_month > 0 ? $new_members_this_month . ' new this month' : 'No new this month' }}
+                        </p>
                     </div>
                 </div>
 
@@ -85,12 +110,14 @@
                             $aes = DB::table('time_entries')->sum('hours');
 
                             $a = ($aes/($es > 0 ? $es : 1))*100;
-
                             $a = round($a);
 
+                            // Calculate completed projects
+                            $total_projects = DB::table('projects')->count();
+                            $completed_projects = DB::table('projects')->where('is_archived', 1)->count();
                         @endphp
                         <div class="text-2xl font-bold" id="completion-rate">{{ $a }}%</div>
-                        <p class="text-xs text-gray-500" id="completion-stats">0 of {{ $project }} projects completed</p>
+                        <p class="text-xs text-gray-500" id="completion-stats">{{ $completed_projects }} of {{ $total_projects }} projects completed</p>
                     </div>
                 </div>
             </div>

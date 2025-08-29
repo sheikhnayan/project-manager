@@ -117,13 +117,14 @@ table tr:last-child td:last-child {
                 <div class="flex items-center gap-3 mb-4 mt-2" style="display: inline-flex; margin-left: 3rem;">
                     <select id="range-select" class="block appearance-none bg-white border border-gray-300 hover:border-gray-500 px-4 pr-4 rounded shadow leading-tight focus:outline-none focus:shadow-outline" style="padding-top: 0.4rem; padding-bottom: 0.4rem;;">
                         <option value="week">This Week</option>
-                        <option value="month">This Month</option>
+                        <option value="month" selected>This Month</option>
+                        <option value="last-month">Last Month</option>
                         <option value="custom">Custom Range</option>
                     </select>
                     <button id="prev-week" class="text-gray-600 hover:text-black">
                         <i class="fas fa-chevron-left" style="border: 1px solid #000; padding:0.6rem 0.8rem; border-radius:4px; border-color:#eee; font-size: 0.8rem;"></i>
                     </button>
-                    <span id="date-range" class="text-gray-600 font-semibold" style="width: 185px; font-size: 0.875rem; color: #000; text-align: center;">This Week</span>
+                    <span id="date-range" class="text-gray-600 font-semibold" style="width: 185px; font-size: 0.875rem; color: #000; text-align: center;">This Month</span>
                     <button id="next-week" class="text-gray-600 hover:text-black">
                         <i class="fas fa-chevron-right" style="border: 1px solid #000; padding:0.6rem 0.8rem; border-radius:4px; border-color:#eee; font-size: 0.8rem;"></i>
                     </button>
@@ -144,9 +145,61 @@ lucide.createIcons();
 </script>
 
 <script>
+// Sort direction tracking (global scope)
+let sortDirection = [0, 0, 0]; // 0 = none, 1 = asc, -1 = desc
 
+// Global sorting function
+function sortTable(columnIndex) {
+    const table = document.querySelector('table tbody');
+    if (!table) return;
 
+    const rows = Array.from(table.querySelectorAll('tr'));
+    
+    // Toggle sort direction
+    sortDirection[columnIndex] = sortDirection[columnIndex] === 1 ? -1 : 1;
+    
+    // Reset other column directions
+    for (let i = 0; i < sortDirection.length; i++) {
+        if (i !== columnIndex) {
+            sortDirection[i] = 0;
+        }
+    }
 
+    rows.sort((a, b) => {
+        const aValue = a.children[columnIndex].textContent.trim();
+        const bValue = b.children[columnIndex].textContent.trim();
+
+        // For numeric columns (Hours and Cost)
+        if (columnIndex === 1 || columnIndex === 2) {
+            const aNum = parseFloat(aValue.replace(/[^\d.-]/g, '')) || 0;
+            const bNum = parseFloat(bValue.replace(/[^\d.-]/g, '')) || 0;
+            return (aNum - bNum) * sortDirection[columnIndex];
+        }
+        
+        // For text columns
+        return aValue.localeCompare(bValue) * sortDirection[columnIndex];
+    });
+
+    // Re-append sorted rows
+    rows.forEach(row => table.appendChild(row));
+    
+    // Update sort indicators
+    updateSortIndicators(columnIndex);
+}
+
+// Global function to update sort indicators
+function updateSortIndicators(activeColumn) {
+    document.querySelectorAll('.sort-indicator').forEach((indicator, index) => {
+        if (index === activeColumn) {
+            indicator.textContent = sortDirection[activeColumn] === 1 ? '▲' : '▼';
+        } else {
+            indicator.textContent = '▲▼';
+        }
+    });
+}
+</script>
+
+<script>
 
 document.addEventListener('DOMContentLoaded', function () {
     const dateRangeElement = document.getElementById('date-range');
@@ -155,8 +208,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const rangeSelect = document.getElementById('range-select');
     const customRangeBtn = document.getElementById('custom-range-btn');
     const customRangeLabel = document.getElementById('custom-range-label');
+    const sortSelect = document.getElementById('sort-select');
+    const sortOrderBtn = document.getElementById('sort-order-btn');
     let currentDate = new Date();
-    let currentMode = 'week'; // week, month, custom
+    let currentMode = 'month'; // Default to month instead of week
     let customRange = [null, null];
 
     function getStartOfWeek(date) {
@@ -196,6 +251,11 @@ document.addEventListener('DOMContentLoaded', function () {
             const startDate = getStartOfMonth(date);
             const endDate = getEndOfMonth(date);
             return `${formatShortDate(startDate)} - ${formatShortDate(endDate)}`;
+        } else if (currentMode === 'last-month') {
+            const lastMonth = new Date(date.getFullYear(), date.getMonth() - 1, 1);
+            const startDate = getStartOfMonth(lastMonth);
+            const endDate = getEndOfMonth(lastMonth);
+            return `${formatShortDate(startDate)} - ${formatShortDate(endDate)}`;
         } else if (currentMode === 'custom' && customRange[0] && customRange[1]) {
             return `${formatShortDate(customRange[0])} - ${formatShortDate(customRange[1])}`;
         } else {
@@ -213,6 +273,10 @@ document.addEventListener('DOMContentLoaded', function () {
         } else if (currentMode === 'month') {
             startDate = formatDate(getStartOfMonth(currentDate));
             endDate = formatDate(getEndOfMonth(currentDate));
+        } else if (currentMode === 'last-month') {
+            const lastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+            startDate = formatDate(getStartOfMonth(lastMonth));
+            endDate = formatDate(getEndOfMonth(lastMonth));
         } else if (currentMode === 'custom' && customRange[0] && customRange[1]) {
             startDate = formatDate(customRange[0]);
             endDate = formatDate(customRange[1]);
@@ -220,11 +284,17 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        // Get current sorting parameters
+        const sortBy = sortSelect.value;
+        const sortOrder = sortOrderBtn.dataset.order;
+
         // Reload the same route with parameters
         const url = new URL(window.location.href.split('?')[0]);
         url.searchParams.set('start_date', startDate);
         url.searchParams.set('end_date', endDate);
-        // window.location.href = url.toString();
+        url.searchParams.set('sort_by', sortBy);
+        url.searchParams.set('sort_order', sortOrder);
+        
         $('#fetch').load(url.toString(), function() {
             setTimeout(() => {
                 initProgressRings();
@@ -271,6 +341,8 @@ document.addEventListener('DOMContentLoaded', function () {
         } else if (currentMode === 'month') {
             currentDate = getStartOfMonth(currentDate);
             currentDate.setMonth(currentDate.getMonth() - 1);
+        } else if (currentMode === 'last-month') {
+            currentDate.setMonth(currentDate.getMonth() - 1);
         }
         updateDateRange();
     });
@@ -281,6 +353,8 @@ document.addEventListener('DOMContentLoaded', function () {
             currentDate.setDate(currentDate.getDate() + 7);
         } else if (currentMode === 'month') {
             currentDate = getStartOfMonth(currentDate);
+            currentDate.setMonth(currentDate.getMonth() + 1);
+        } else if (currentMode === 'last-month') {
             currentDate.setMonth(currentDate.getMonth() + 1);
         }
         updateDateRange();

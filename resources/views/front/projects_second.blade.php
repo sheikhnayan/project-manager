@@ -223,7 +223,7 @@
 
                 monthContainer.append(`<div class="calendar-day ${dayClass}">${dateString}</div>`);
 
-                inn = `<input type="text" class="calendar-day">`
+                inn = `<input type="text" class="calendar-day px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black">`
 
                 inp += inn;
             }

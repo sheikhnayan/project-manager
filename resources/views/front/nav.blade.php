@@ -8,13 +8,17 @@
         font-style: normal;
     }
 </style>
+@php
+    $setting = \App\Models\Setting::first();
+@endphp
 <nav class='bg-white border-b border-gray-200'>
     <div class='px-4' style="width: 100%">
         <div class='flex justify-between h-16'>
             <div class='flex items-center space-x-8'>
                 <div class='flex items-center'>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chart-no-axes-gantt h-6 w-6"><path d="M8 6h10"></path><path d="M6 12h9"></path><path d="M11 18h7"></path></svg>
-                    <a href='/' class='text-md font-bold text-gray-900 ml-2'>ProjectHub</a>
+                    <a href='/' class='text-md font-bold text-gray-900 ml-2'>
+                    <img src="{{ asset('storage/'.$setting->logo) }}" style="width: 35.5px; height: 35.5px;">
+                    </a>
                 </div>
                 <div class='flex items-center space-x-4 navv'>
                     <a href='/' class='nav-link {{ Route::currentRouteName() == 'index' ? 'active':''}}'>
@@ -43,15 +47,34 @@
                     </a>
                 </div>
             </div>
-            <div class='flex items-center relative'>
-                <button class='p-2 rounded-full hover:bg-gray-100' onclick='toggleSettings(event)'>
-                    <i data-lucide='settings' class='w-5 h-5'></i>
-                </button>
-                <div class='settings-dropdown' id='settingsDropdown'>
-                    <a href='/user-management'>User Management</a>
-                    <a href='/client-management'>Client Management</a>
-                    <a href='/project-management'>Project Management</a>
-                    <a href='/settings'>Settings</a>
+            <div class='flex items-center space-x-4'>
+                @auth
+                    <div class="text-sm text-gray-600">
+                        <span class="font-medium">{{ Auth::user()->name }}</span>
+                        @if(Auth::user()->role_id && Auth::user()->userRole)
+                            <span class="text-gray-400">•</span>
+                            <span>{{ Auth::user()->userRole->display_name ?? Str::title(str_replace('_', ' ', Auth::user()->role)) }}</span>
+                        @endif
+                    </div>
+                @endauth
+                <div class='relative'>
+                    <button class='p-2 rounded-full hover:bg-gray-100' onclick='toggleSettings(event)'>
+                        <i data-lucide='settings' class='w-5 h-5'></i>
+                    </button>
+                    <div class='settings-dropdown' id='settingsDropdown'>
+                        <a href='/user-management'>User Management</a>
+                        <a href='/client-management'>Client Management</a>
+                        <a href='/project-management'>Project Management</a>
+                        <a href='/settings'>Settings</a>
+                        <hr class="my-1">
+                        <form method="POST" action="{{ route('logout') }}" class="m-0">
+                            @csrf
+                            <button type="submit" class="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                                {{-- <i data-lucide='log-out' class='w-4 h-4 mr-2 inline'></i> --}}
+                                Logout
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>

@@ -10,6 +10,8 @@ use App\Models\Task;
 use App\Models\User;
 use App\Models\Client;
 use App\Models\ProjectTeamMember;
+use App\Models\Country;
+use App\Models\TaskList;
 use DB;
 use Carbon\Carbon;
 
@@ -213,6 +215,7 @@ class ProjectController extends Controller
 
     public function update(Request $request, $id)
     {
+        // dd($request->all());
 
         $new = Project::find($id);
         $new->project_number = $request->project_number;
@@ -221,11 +224,18 @@ class ProjectController extends Controller
         $new->expected_profit = $request->expected_profit;
         $new->update();
 
+        // Handle team members - remove old ones and add new ones
         $members = explode(',',$request->team_members);
+        $members = array_filter($members, function($member) {
+            return !empty(trim($member));
+        });
 
+        // Remove all existing team members for this project
+        DB::table('project_team_members')->where('project_id', $new->id)->delete();
+
+        // Add the new team members
         foreach($members as $member){
             if ($member != '') {
-                # code...
                 DB::table('project_team_members')->insert([
                     'project_id' => $new->id,
                     'user_id' => $member,
@@ -233,20 +243,20 @@ class ProjectController extends Controller
             }
         }
 
-        $tasks = explode(',',$request->tasks);
+        // $tasks = explode(',',$request->tasks);
 
-        foreach($tasks as $key => $task){
-            if ($task != '') {
-                # code...
-                $ta = new Task;
-                $ta->project_id = $new->id;
-                $ta->name = $task;
-                $ta->budget_total = 0;
-                $ta->start_date = Carbon::now()->addDays($key)->format('Y-m-d');
-                $ta->end_date = Carbon::now()->addDays(1+$key)->format('Y-m-d');
-                $ta->save();
-            }
-        }
+        // foreach($tasks as $key => $task){
+        //     if ($task != '') {
+        //         # code...
+        //         $ta = new Task;
+        //         $ta->project_id = $new->id;
+        //         $ta->name = $task;
+        //         $ta->budget_total = 0;
+        //         $ta->start_date = Carbon::now()->addDays($key)->format('Y-m-d');
+        //         $ta->end_date = Carbon::now()->addDays(1+$key)->format('Y-m-d');
+        //         $ta->save();
+        //     }
+        // }
 
 
         return redirect(route('project-management'));
@@ -268,9 +278,33 @@ class ProjectController extends Controller
 
         $dates = explode(' - ',$request->date);
 
-        $start_date = Carbon::parse($dates[0])->format('Y-m-d');
-
-        $end_date = Carbon::parse($dates[1])->format('Y-m-d');
+        // Ensure we have two dates after exploding
+        if (count($dates) !== 2) {
+            return back()->withErrors(['date' => 'Invalid date format. Expected format: dd/mm/yyyy - dd/mm/yyyy']);
+        }
+        
+        try {
+            // Clean the date strings and validate format
+            $startDateString = trim($dates[0]);
+            $endDateString = trim($dates[1]);
+            $startDateString = Carbon::parse($startDateString)->format('Y-m-d');
+            $endDateString = Carbon::parse($endDateString)->format('Y-m-d');
+            
+            // Check if date is in Y-m-d format (2025-08-17) or d/m/Y format (17/08/2025)
+            if (preg_match('/^\d{4}-\d{1,2}-\d{1,2}$/', $startDateString) && preg_match('/^\d{4}-\d{1,2}-\d{1,2}$/', $endDateString)) {
+                // Date is already in Y-m-d format
+                $start_date = Carbon::createFromFormat('Y-m-d', $startDateString)->format('Y-m-d');
+                $end_date = Carbon::createFromFormat('Y-m-d', $endDateString)->format('Y-m-d');
+            } elseif (preg_match('/^\d{1,2}\/\d{1,2}\/\d{4}$/', $startDateString) && preg_match('/^\d{1,2}\/\d{1,2}\/\d{4}$/', $endDateString)) {
+                // Date is in d/m/Y format
+                $start_date = Carbon::createFromFormat('d/m/Y', $startDateString)->format('Y-m-d');
+                $end_date = Carbon::createFromFormat('d/m/Y', $endDateString)->format('Y-m-d');
+            } else {
+                return back()->withErrors(['date' => 'Invalid date format. Please use dd/mm/yyyy or yyyy-mm-dd format.']);
+            }
+        } catch (\Exception $e) {
+            return back()->withErrors(['date' => 'Error parsing dates: ' . $e->getMessage() . '. Input received: "' . $request->date . '"']);
+        }
 
         $task->start_date = $start_date;
         $task->end_date = $end_date;
@@ -289,13 +323,40 @@ class ProjectController extends Controller
     public function update_task(Request $request, $id)
     {
         $task = Task::find($request->task_id);
-
+        
         $dates = explode(' - ',$request->date);
-
-        $start_date = Carbon::createFromFormat('d/m/Y', $dates[0])->format('Y-m-d');
-
-        $end_date = Carbon::createFromFormat('d/m/Y', $dates[1])->format('Y-m-d');
-
+        
+        
+        // Ensure we have two dates after exploding
+        if (count($dates) !== 2) {
+            
+            return back()->withErrors(['date' => 'Invalid date format. Expected format: dd/mm/yyyy - dd/mm/yyyy']);
+        }
+        
+        try {
+            // Clean the date strings and validate format
+            $startDateString = trim($dates[0]);
+            $endDateString = trim($dates[1]);
+            $startDateString = Carbon::parse($startDateString)->format('Y-m-d');
+            $endDateString = Carbon::parse($endDateString)->format('Y-m-d');
+            
+            
+            // Check if date is in Y-m-d format (2025-08-17) or d/m/Y format (17/08/2025)
+            if (preg_match('/^\d{4}-\d{1,2}-\d{1,2}$/', $startDateString) && preg_match('/^\d{4}-\d{1,2}-\d{1,2}$/', $endDateString)) {
+                // Date is already in Y-m-d format
+                $start_date = Carbon::createFromFormat('Y-m-d', $startDateString)->format('Y-m-d');
+                $end_date = Carbon::createFromFormat('Y-m-d', $endDateString)->format('Y-m-d');
+            } elseif (preg_match('/^\d{1,2}\/\d{1,2}\/\d{4}$/', $startDateString) && preg_match('/^\d{1,2}\/\d{1,2}\/\d{4}$/', $endDateString)) {
+                // Date is in d/m/Y format
+                $start_date = Carbon::createFromFormat('d/m/Y', $startDateString)->format('Y-m-d');
+                $end_date = Carbon::createFromFormat('d/m/Y', $endDateString)->format('Y-m-d');
+            } else {
+                
+                return back()->withErrors(['date' => 'Invalid date format. Please use dd/mm/yyyy or yyyy-mm-dd format.']);
+            }
+        } catch (\Exception $e) {
+            return back()->withErrors(['date' => 'Error parsing dates: ' . $e->getMessage() . '. Input received: "' . $request->date . '"']);
+        }
         $task->start_date = $start_date;
         $task->end_date = $end_date;
         $task->budget_total = $request->budget_total;
@@ -368,5 +429,73 @@ class ProjectController extends Controller
 
         $project->update();
         return redirect()->route('project-management', ['status' => 'active'])->with('success', 'Project archived.');
+    }
+
+    public function getCountryTaskLists()
+    {
+        try {
+            // Fetch countries with their task lists
+            $countries = Country::with('taskLists')->get();
+            
+            // Transform the data to the expected format
+            $countryTaskLists = $countries->map(function($country) {
+                // Always start with the base tasks
+                $tasks = [
+                    '01_BD & Contracts',
+                    '02_Competition / Pitch'
+                ];
+                
+                // Add the country-specific tasks sorted by position
+                $countryTasks = $country->taskLists()
+                    ->orderBy('position')
+                    ->get()
+                    ->pluck('name')
+                    ->toArray();
+                
+                // Merge with proper numbering
+                $allTasks = array_merge($tasks, $countryTasks);
+                
+                // Ensure proper numbering if tasks don't have numbers
+                $numberedTasks = [];
+                foreach ($allTasks as $index => $task) {
+                    if (!preg_match('/^\d{2}_/', $task)) {
+                        $numberedTasks[] = sprintf('%02d_%s', $index + 1, $task);
+                    } else {
+                        $numberedTasks[] = $task;
+                    }
+                }
+                
+                // Sort the tasks numerically by their prefix
+                usort($numberedTasks, function($a, $b) {
+                    // Extract the numeric prefix (e.g., "01" from "01_Task Name")
+                    $getNumber = function($str) {
+                        $match = preg_match('/^(\d+)_/', $str, $matches);
+                        return $match ? (int)$matches[1] : 9999;
+                    };
+                    
+                    $numA = $getNumber($a);
+                    $numB = $getNumber($b);
+                    
+                    return $numA - $numB;
+                });
+                
+                return [
+                    'name' => $country->name,
+                    'tasks' => $numberedTasks
+                ];
+            });
+            
+            return response()->json([
+                'success' => true,
+                'data' => $countryTaskLists
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching country task lists: ' . $e->getMessage(),
+                'data' => []
+            ], 500);
+        }
     }
 }

@@ -60,7 +60,12 @@
                             </div>
                         </div> --}}
 
-                        <div class="overflow-x-auto">
+                        <div class="mb-4 flex gap-2">
+                            <button id="activeTabBtn" class="px-4 py-2 rounded bg-black text-white" onclick="showTab('active')">Active Clients</button>
+                            <button id="archivedTabBtn" class="px-4 py-2 rounded bg-gray-200 text-black" onclick="showTab('archived')">Archived Clients</button>
+                        </div>
+
+                        <div class="overflow-x-auto" id="activeTab">
                             <table class="min-w-full">
                                 <thead>
                                     <tr class="border-b">
@@ -72,19 +77,14 @@
                                 </thead>
                                 <tbody>
                                     @foreach ($data as $item)
+                                        @if ($item->is_archived == 0)
                                         <tr class="border-b">
                                             <td class="py-3 px-4">{{ $item->name }}</td>
                                             <td class="py-3 px-4">{{ $item->projects->count() }} Active</td>
                                             <td class="py-3 px-4">
-                                                @if ($item->is_archived == 0)
-                                                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                                                        Active
-                                                    </span>
-                                                @else
-                                                    <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-sm">
-                                                        Inactive
-                                                    </span>
-                                                @endif
+                                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                                                    Active
+                                                </span>
                                             </td>
                                             <td class="py-3 px-4">
                                                 <div class="flex items-center gap-2">
@@ -94,12 +94,48 @@
                                                     <button class="p-1 hover:bg-gray-100 rounded" onclick="archiveClient({{ $item->id }})">
                                                         <i data-lucide="archive" class="w-4 h-4"></i>
                                                     </button>
-                                                    {{-- <button class="p-1 hover:bg-gray-100 rounded text-red-500">
-                                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                                    </button> --}}
                                                 </div>
                                             </td>
                                         </tr>
+                                        @endif
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="overflow-x-auto hidden" id="archivedTab">
+                            <table class="min-w-full">
+                                <thead>
+                                    <tr class="border-b">
+                                        <th class="py-3 px-4 text-left">Name</th>
+                                        <th class="py-3 px-4 text-left">Projects</th>
+                                        <th class="py-3 px-4 text-left">Status</th>
+                                        <th class="py-3 px-4 text-left">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($data as $item)
+                                        @if ($item->is_archived == 1)
+                                        <tr class="border-b">
+                                            <td class="py-3 px-4">{{ $item->name }}</td>
+                                            <td class="py-3 px-4">{{ $item->projects->count() }} Projects</td>
+                                            <td class="py-3 px-4">
+                                                <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-sm">
+                                                    Archived
+                                                </span>
+                                            </td>
+                                            <td class="py-3 px-4">
+                                                <div class="flex items-center gap-2">
+                                                    <button class="p-1 hover:bg-gray-100 rounded" @click="openEditModal({{ $item->id }}, '{{ $item->name }}')">
+                                                        <i data-lucide="pencil" class="w-4 h-4"></i>
+                                                    </button>
+                                                    <button class="p-1 hover:bg-gray-100 rounded" onclick="archiveClient({{ $item->id }})">
+                                                        <i data-lucide="archive-restore" class="w-4 h-4"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        @endif
                                     @endforeach
                                 </tbody>
                             </table>
@@ -118,7 +154,7 @@
                 @csrf
                 <div class="mb-4">
                     <label for="client-name" class="block text-sm font-medium text-gray-700">Client Name</label>
-                    <input type="text" id="client-name" name="name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black">
+                    <input type="text" id="client-name" name="name" class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black">
                 </div>
                 <div class="flex justify-end">
                     <button type="button" @click="showModal = false" class="bg-gray-300 text-black px-4 py-2 rounded-md mr-2">Cancel</button>
@@ -138,7 +174,7 @@
                 <input type="hidden" id="edit-client-id" name="id">
                 <div class="mb-4">
                     <label for="edit-client-name" class="block text-sm font-medium text-gray-700">Client Name</label>
-                    <input type="text" id="edit-client-name" name="name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black">
+                    <input type="text" id="edit-client-name" name="name" class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black">
                 </div>
                 <div class="flex justify-end">
                     <button type="button" @click="editModal = false" class="bg-gray-300 text-black px-4 py-2 rounded-md mr-2">Cancel</button>
@@ -168,7 +204,7 @@
         });
 
         function archiveClient(clientId) {
-            if (confirm('Are you sure you want to toggle the archive status of this client?')) {
+            if (confirm('Are you sure you want to archive this client ?')) {
                 fetch(`/client-management/${clientId}/archive`, {
                     method: 'POST',
                     headers: {
@@ -189,6 +225,34 @@
                 });
             }
         }
+
+        function showTab(tab) {
+            const activeTab = document.getElementById('activeTab');
+            const archivedTab = document.getElementById('archivedTab');
+            const activeBtn = document.getElementById('activeTabBtn');
+            const archivedBtn = document.getElementById('archivedTabBtn');
+
+            if(tab === 'active') {
+                activeTab.classList.remove('hidden');
+                archivedTab.classList.add('hidden');
+                activeBtn.classList.add('bg-black', 'text-white');
+                activeBtn.classList.remove('bg-gray-200', 'text-black');
+                archivedBtn.classList.remove('bg-black', 'text-white');
+                archivedBtn.classList.add('bg-gray-200', 'text-black');
+            } else {
+                activeTab.classList.add('hidden');
+                archivedTab.classList.remove('hidden');
+                archivedBtn.classList.add('bg-black', 'text-white');
+                archivedBtn.classList.remove('bg-gray-200', 'text-black');
+                activeBtn.classList.remove('bg-black', 'text-white');
+                activeBtn.classList.add('bg-gray-200', 'text-black');
+            }
+        }
+
+        // Set default tab on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            showTab('active');
+        });
     </script>
 </body>
 </html>

@@ -117,13 +117,14 @@ table tr:last-child td:last-child {
                 <div class="flex items-center gap-3 mb-4 mt-2" style="display: inline-flex; margin-left: 3rem;">
                     <select id="range-select" class="block appearance-none bg-white border border-gray-300 hover:border-gray-500 px-4 pr-4 rounded shadow leading-tight focus:outline-none focus:shadow-outline" style="padding-top: 0.4rem; padding-bottom: 0.4rem;;">
                         <option value="week">This Week</option>
-                        <option value="month">This Month</option>
+                        <option value="month" selected>This Month</option>
+                        <option value="last-month">Last Month</option>
                         <option value="custom">Custom Range</option>
                     </select>
                     <button id="prev-week" class="text-gray-600 hover:text-black">
                         <i class="fas fa-chevron-left" style="border: 1px solid #000; padding:0.6rem 0.8rem; border-radius:4px; border-color:#eee; font-size: 0.8rem;"></i>
                     </button>
-                    <span id="date-range" class="text-gray-600 font-semibold" style="width: 185px; font-size: 0.875rem; color: #000; text-align: center;">This Week</span>
+                    <span id="date-range" class="text-gray-600 font-semibold" style="width: 185px; font-size: 0.875rem; color: #000; text-align: center;">This Month</span>
                     <button id="next-week" class="text-gray-600 hover:text-black">
                         <i class="fas fa-chevron-right" style="border: 1px solid #000; padding:0.6rem 0.8rem; border-radius:4px; border-color:#eee; font-size: 0.8rem;"></i>
                     </button>
@@ -156,8 +157,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const customRangeBtn = document.getElementById('custom-range-btn');
     const customRangeLabel = document.getElementById('custom-range-label');
     let currentDate = new Date();
-    let currentMode = 'week'; // week, month, custom
+    let currentMode = 'month'; // Default to month instead of week
     let customRange = [null, null];
+    let sortDirection = []; // Array to track sort directions for each column
 
     function getStartOfWeek(date) {
         // Clone the date to avoid mutating the original
@@ -196,6 +198,11 @@ document.addEventListener('DOMContentLoaded', function () {
             const startDate = getStartOfMonth(date);
             const endDate = getEndOfMonth(date);
             return `${formatShortDate(startDate)} - ${formatShortDate(endDate)}`;
+        } else if (currentMode === 'last-month') {
+            const lastMonth = new Date(date.getFullYear(), date.getMonth() - 1, 1);
+            const startDate = getStartOfMonth(lastMonth);
+            const endDate = getEndOfMonth(lastMonth);
+            return `${formatShortDate(startDate)} - ${formatShortDate(endDate)}`;
         } else if (currentMode === 'custom' && customRange[0] && customRange[1]) {
             return `${formatShortDate(customRange[0])} - ${formatShortDate(customRange[1])}`;
         } else {
@@ -213,6 +220,10 @@ document.addEventListener('DOMContentLoaded', function () {
         } else if (currentMode === 'month') {
             startDate = formatDate(getStartOfMonth(currentDate));
             endDate = formatDate(getEndOfMonth(currentDate));
+        } else if (currentMode === 'last-month') {
+            const lastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+            startDate = formatDate(getStartOfMonth(lastMonth));
+            endDate = formatDate(getEndOfMonth(lastMonth));
         } else if (currentMode === 'custom' && customRange[0] && customRange[1]) {
             startDate = formatDate(customRange[0]);
             endDate = formatDate(customRange[1]);
@@ -224,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const url = new URL(window.location.href.split('?')[0]);
         url.searchParams.set('start_date', startDate);
         url.searchParams.set('end_date', endDate);
-        // window.location.href = url.toString();
+        
         $('#fetch').load(url.toString(), function() {
             setTimeout(() => {
                 initProgressRings();
@@ -276,6 +287,8 @@ document.addEventListener('DOMContentLoaded', function () {
         } else if (currentMode === 'month') {
             currentDate = getStartOfMonth(currentDate);
             currentDate.setMonth(currentDate.getMonth() - 1);
+        } else if (currentMode === 'last-month') {
+            currentDate.setMonth(currentDate.getMonth() - 1);
         }
         updateDateRange();
     });
@@ -286,6 +299,8 @@ document.addEventListener('DOMContentLoaded', function () {
             currentDate.setDate(currentDate.getDate() + 7);
         } else if (currentMode === 'month') {
             currentDate = getStartOfMonth(currentDate);
+            currentDate.setMonth(currentDate.getMonth() + 1);
+        } else if (currentMode === 'last-month') {
             currentDate.setMonth(currentDate.getMonth() + 1);
         }
         updateDateRange();
@@ -300,6 +315,54 @@ document.addEventListener('DOMContentLoaded', function () {
             updateDateRange();
         }
     });
+
+    // Table sorting functions
+    function sortTable(columnIndex) {
+        const tableBody = document.querySelector('#fetch tbody'); // Get the table body
+        const rows = Array.from(tableBody.querySelectorAll('tr')); // Get all rows as an array
+
+        // Determine the sort direction (toggle between ascending and descending)
+        sortDirection[columnIndex] = !sortDirection[columnIndex];
+
+        // Sort rows based on the selected column
+        rows.sort((a, b) => {
+            const cellA = a.querySelector(`td:nth-child(${columnIndex + 1})`).textContent.trim().toLowerCase();
+            const cellB = b.querySelector(`td:nth-child(${columnIndex + 1})`).textContent.trim().toLowerCase();
+
+            // For numeric columns (Hours and Cost), parse as numbers
+            if (columnIndex === 1 || columnIndex === 2) {
+                const numA = parseFloat(cellA.replace(/[^\d.-]/g, '')) || 0;
+                const numB = parseFloat(cellB.replace(/[^\d.-]/g, '')) || 0;
+                return sortDirection[columnIndex] ? numA - numB : numB - numA;
+            }
+
+            // For text columns (Project name)
+            if (cellA < cellB) return sortDirection[columnIndex] ? -1 : 1;
+            if (cellA > cellB) return sortDirection[columnIndex] ? 1 : -1;
+            return 0;
+        });
+
+        // Append sorted rows back to the table body
+        rows.forEach(row => tableBody.appendChild(row));
+
+        // Update the sort indicator
+        updateSortIndicator(columnIndex);
+    }
+
+    function updateSortIndicator(columnIndex) {
+        const indicators = document.querySelectorAll('#fetch .sort-indicator');
+        indicators.forEach(indicator => {
+            const col = indicator.getAttribute('data-column');
+            if (col == columnIndex) {
+                indicator.textContent = sortDirection[columnIndex] ? '▲' : '▼'; // Update arrow direction
+            } else {
+                indicator.textContent = '▲▼'; // Reset other columns
+            }
+        });
+    }
+
+    // Make sortTable function global so it can be called from onclick
+    window.sortTable = sortTable;
 
     // Show picker on button click
     customRangeBtn.addEventListener('click', function() {

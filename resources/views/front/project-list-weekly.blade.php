@@ -339,7 +339,7 @@
                             }
 
                         @endphp
-                        {{ round($spent) }}
+                        {{ formatCurrency($spent) }}
                         </span>
                         <span style="width: 15%; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;">
                             @php
@@ -356,7 +356,7 @@
                             }
 
                         @endphp
-                        {{ round($spent) }}
+                        {{ formatCurrency($spent) }}
                         </span>
                         <span style="width: 15%; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;">
                             @php
@@ -424,6 +424,38 @@
     <input type="hidden" id="st_date" value=2025-05-01>
     <input type="hidden" id="en_date" value={{ \Carbon\Carbon::parse('2025-05-01')->addDays(1000)->format('Y-m-d') }}>
     <input type="hidden" id="task_count" value={{ count($data) }}>
+    <input type="hidden" id="date_format" value="{{ globalSettings('date_format') }}">
+
+    <script>
+        // Function to format date according to user settings
+        function formatDateForDisplay(dateString) {
+            const dateFormat = document.getElementById('date_format').value;
+            const date = new Date(dateString);
+            
+            switch(dateFormat) {
+                case 'Y-m-d':
+                    return date.toISOString().split('T')[0];
+                case 'm/d/Y':
+                    return (date.getMonth() + 1).toString().padStart(2, '0') + '/' + 
+                           date.getDate().toString().padStart(2, '0') + '/' + 
+                           date.getFullYear();
+                case 'd/m/Y':
+                    return date.getDate().toString().padStart(2, '0') + '/' + 
+                           (date.getMonth() + 1).toString().padStart(2, '0') + '/' + 
+                           date.getFullYear();
+                case 'd-m-Y':
+                    return date.getDate().toString().padStart(2, '0') + '-' + 
+                           (date.getMonth() + 1).toString().padStart(2, '0') + '-' + 
+                           date.getFullYear();
+                case 'M j, Y':
+                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    return months[date.getMonth()] + ' ' + date.getDate() + ', ' + date.getFullYear();
+                default:
+                    return date.toISOString().split('T')[0];
+            }
+        }
+    </script>
 
     <script>
         $(function () {
@@ -681,7 +713,7 @@
                                     _token: '{{ csrf_token() }}'
                                 },
                                 success: function (response) {
-                                    $('.start-'+taskId).html(stoppedStartDateFormatted);
+                                    $('.start-'+taskId).html(formatDateForDisplay(stoppedStartDateFormatted));
                                 }
                             });
                         }

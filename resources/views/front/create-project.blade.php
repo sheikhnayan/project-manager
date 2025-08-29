@@ -63,6 +63,26 @@
         h2{
             font-size: 16px !important;
         }
+
+        /* Team member row styles */
+        .team-member-row {
+            transition: all 0.2s ease;
+            border: 1px solid #e5e7eb;
+        }
+
+        .team-member-row:hover {
+            background-color: #f9fafb !important;
+            border-color: #d1d5db;
+        }
+
+        .remove-member-btn {
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .team-member-row:hover .remove-member-btn {
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -94,6 +114,7 @@
                                     name="project_number"
                                     placeholder="Enter project number"
                                     class="w-full rounded-md border-gray-300 focus:border-black focus:ring-black"
+                                    required
                                 />
                             </div>
                             <div class="space-y-2">
@@ -103,6 +124,7 @@
                                     type="text"
                                     placeholder="Enter project name"
                                     class="w-full rounded-md border-gray-300 focus:border-black focus:ring-black"
+                                    required
                                 />
                             </div>
                         </div>
@@ -123,6 +145,7 @@
                                     type="text"
                                     placeholder="Enter expected profit"
                                     class="w-full rounded-md border-gray-300 focus:border-black focus:ring-black"
+                                    required
                                 />
                             </div>
                         </div>
@@ -133,14 +156,17 @@
                 <div class="p-6">
                     <h2 class="text-lg font-semibold mb-4">Team Members</h2>
                     <div class="space-y-4">
-                        <select class="w-full rounded-md border-gray-300 focus:border-black focus:ring-black team" required>
+                        <select class="w-full rounded-md border-gray-300 focus:border-black focus:ring-black team">
                             <option value="" selected disabled>Add team member</option>
-                            @foreach ($team as $item)
+                            @php
+                                $sortedTeam = $team->where('is_archived', '!=', 1)->sortBy('name');
+                            @endphp
+                            @foreach ($sortedTeam as $item)
                                 <option value="{{ $item->id }}">{{ $item->name }}</option>
                             @endforeach
                         </select>
 
-                        <div class="flex flex-wrap gap-2 mt-4" id="team-members">
+                        <div class="space-y-2 mt-4" id="team-members">
                             <!-- Team members will be added here -->
                         </div>
 
@@ -149,63 +175,35 @@
                 </div>
             </div>
 
-            <div class='bg-white rounded-lg shadow border col-span-3' style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15);">
+            <div class='bg-white rounded-lg shadow border col-span-5' style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15);">
                 <div class='p-6'>
                     <h2 class='text-lg font-semibold mb-4'>Tasks</h2>
                     <div class='space-y-4'>
                         <div class='grid grid-cols-2 gap-4'>
                             <div class='space-y-2'>
-                                <h3 class='font-medium flex items-center gap-2'>
-                                    Predefined Tasks
-                                    <button id="prev-tasks" type="button" class="text-black px-2 py-1 rounded" style="font-size:12px;"><i data-lucide="chevron-left"></i></button>
-                                    <button id="next-tasks" type="button" class="text-black px-2 py-1 rounded" style="font-size:12px;"><i data-lucide="chevron-right"></i></button>
-                                </h3>
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class='font-medium flex items-center gap-2' style="color: #000;">
+                                        Predefined Tasks
+                                        <button id="prev-country" type="button" class="text-black px-2 py-1 rounded" style="font-size:12px;" title="Previous Country">
+                                            <i data-lucide="chevron-left"></i>
+                                        </button>
+                                        <span id="current-country-name" class="text-sm font-medium text-gray-600">Loading...</span>
+                                        <button id="next-country" type="button" class="text-black px-2 py-1 rounded" style="font-size:12px;" title="Next Country">
+                                            <i data-lucide="chevron-right"></i>
+                                        </button>
+                                    </h3>
+                                </div>
                                 <div id="predefined-tasks-list" class='space-y-1 border rounded-lg p-4 ' style="margin-top: 1rem !important;">
-                                    <label class='flex items-center gap-2'>
-                                        <input type='checkbox' class='rounded border-gray-300 text-black focus:ring-black task' value='01_BD & Contracts'>
-                                        01_BD & Contracts
-                                    </label>
-                                    <label class='flex items-center gap-2'>
-                                        <input type='checkbox' class='rounded border-gray-300 text-black focus:ring-black task' value='02_Competition / Pitch design'>
-                                        02_Competition / Pitch design
-                                    </label>
-                                    <label class='flex items-center gap-2'>
-                                        <input type='checkbox' class='rounded border-gray-300 text-black focus:ring-black task' value='03_Concept Design'>
-                                        03_Concept Design
-                                    </label>
-                                    <label class='flex items-center gap-2'>
-                                        <input type='checkbox' class='rounded border-gray-300 text-black focus:ring-black task' value='04_Preliminary Design'>
-                                        04_Preliminary Design
-                                    </label>
-                                    <label class='flex items-center gap-2'>
-                                        <input type='checkbox' class='rounded border-gray-300 text-black focus:ring-black task' value='05_Planning Submission Stage'>
-                                        05_Planning Submission Stage
-                                    </label>
-                                    <label class='flex items-center gap-2'>
-                                        <input type='checkbox' class='rounded border-gray-300 text-black focus:ring-black task' value='06_Detail Design Stage'>
-                                        06_Detail Design Stage
-                                    </label>
-                                    <label class='flex items-center gap-2'>
-                                        <input type='checkbox' class='rounded border-gray-300 text-black focus:ring-black task' value='07_Tender process'>
-                                        07_Tender process
-                                    </label>
-                                    <label class='flex items-center gap-2'>
-                                        <input type='checkbox' class='rounded border-gray-300 text-black focus:ring-black task' value='08_Author supervision'>
-                                        08_Author supervision
-                                    </label>
-                                    <label class='flex items-center gap-2'>
-                                        <input type='checkbox' class='rounded border-gray-300 text-black focus:ring-black task' value='10_Extra Work'>
-                                        10_Extra Work
-                                    </label>
+                                    <!-- Tasks will be populated by JavaScript -->
                                 </div>
                             </div>
                             <div class='space-y-2'>
-                                <h3 class='font-medium'>Selected Tasks</h3>
-                                <div class="border rounded-lg p-4 " style="margin-top: 1rem !important;">
+                                <h3 class='font-medium' style="color: #000; margin-top: 0.4rem;">Selected Tasks</h3>
+                                <div class="border rounded-lg p-4 " style="margin-top: 1.3rem !important;">
                                     <div class='flex gap-2'>
                                         <input
                                             type='text'
-                                            placeholder='Add custom task...press return'
+                                            placeholder='Add custom task…press return'
                                             class='flex-1 rounded-md border-gray-300 focus:border-black focus:ring-black'
                                             id='custom-task-input'
                                         />
@@ -234,6 +232,65 @@
         // Initialize Lucide icons
         lucide.createIcons();
 
+        // Global functions that need to be accessible from multiple script blocks
+        function addTaskSorted(taskName) {
+            const newTaskHtml = `
+                <div class='flex items-center justify-between py-2 px-3 rounded-md' style="background: #f9f9fa; margin-top: 0.5rem;">
+                    <span>${taskName}</span>
+                    <button class='p-1 rounded-full hover:bg-gray-200' onclick='removeTask(this)'>
+                        <i data-lucide='x' class='w-4 h-4'></i>x
+                    </button>
+                </div>
+            `;
+            
+            // Get all existing tasks
+            const existingTasks = [];
+            $('#selected-tasks div').not('.text-muted-foreground').each(function() {
+                const text = $(this).find('span').text();
+                existingTasks.push({
+                    element: $(this),
+                    text: text
+                });
+            });
+            
+            // Add new task to the array
+            existingTasks.push({
+                element: $(newTaskHtml),
+                text: taskName
+            });
+            
+            // Sort using simple numeric sorting for task numbers
+            existingTasks.sort((a, b) => {
+                // Simple function to extract number from start of string
+                const getNumber = (str) => {
+                    const match = str.match(/^(\d+)/);
+                    return match ? parseInt(match[1]) : 9999;
+                };
+                
+                const numA = getNumber(a.text);
+                const numB = getNumber(b.text);
+                
+                // Just compare the numbers directly
+                return numA - numB;
+            });
+            
+            // Clear the container (except for the "No tasks selected" message)
+            $('#selected-tasks div').not('.text-muted-foreground').remove();
+            
+            // Re-add all tasks in sorted order
+            existingTasks.forEach(task => {
+                $('#selected-tasks').append(task.element);
+            });
+        }
+
+        function updateTasksHiddenInput() {
+            const tasks = [];
+            $('#selected-tasks div span').each(function () {
+                tasks.push($(this).text());
+            });
+            $('#tasks').val(tasks.join(','));
+        }
+
         // Settings dropdown functionality
         function toggleSettings(event) {
             event.stopPropagation();
@@ -255,84 +312,95 @@
             const teamMember = $(this).val();
             const teamMemberName = $(this).find('option:selected').text();
 
+            if (!teamMember) return;
+
             $(".team option:selected").attr('disabled','disabled');
 
+            // Fetch user data including profile picture
+            $.ajax({
+                url: `/api/users/${teamMember}`,
+                method: 'GET',
+                success: function(user) {
+                    addTeamMemberRow(teamMember, user);
+                },
+                error: function() {
+                    // Fallback if AJAX fails
+                    const fallbackUser = {
+                        name: teamMemberName,
+                        profile_image_url: null,
+                        role: 'Team Member'
+                    };
+                    addTeamMemberRow(teamMember, fallbackUser);
+                }
+            });
+            
+            // Reset the select dropdown
+            $(this).val('');
+        });
+
+        function addTeamMemberRow(teamMemberId, user) {
+            const roleDisplay = user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Team Member';
+
             $('#team-members').append(`
-                <div class='rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80 flex items-center gap-1' style="background: #f9f9fa;">
-                    <span>${teamMemberName}</span>
-                    <button class='p-1 rounded-full hover:bg-gray-200' onclick='$(this).parent().remove(); $(".team option[value=${teamMember}]").removeAttr("disabled")'>
-                        <i data-lucide='x' class='w-4 h-4'></i>x
+                <div class='team-member-row flex items-center justify-between py-2 px-4 rounded-lg bg-white' style="margin-bottom: 8px;">
+                    <div class='flex items-center gap-3'>
+                        <div class='w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0'>
+                            ${user.profile_image_url || user.profile_image_path ? 
+                                `<img src='${user.profile_image_url ? (user.profile_image_url.startsWith('http') ? user.profile_image_url : '/storage/' + user.profile_image_url) : user.profile_image_path}' alt='${user.name}' class='w-full h-full object-cover'>` :
+                                `<div class='w-full h-full bg-black rounded-full'></div>`
+                            }
+                        </div>
+                        <div class='flex flex-col min-w-0 flex-1'>
+                            <span class='text-sm font-medium text-gray-900 truncate'>${user.name}</span>
+                            <span class='text-xs text-gray-500 truncate'>${roleDisplay}</span>
+                        </div>
+                    </div>
+                    <button type='button' class='remove-member-btn p-2 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors flex-shrink-0' onclick='removeTeamMember(this, ${teamMemberId})' title='Remove team member'>
+                        <i data-lucide='x' class='w-4 h-4'></i>
                     </button>
                 </div>
             `);
 
-            $('#teamMembers').val($('#teamMembers').val() + teamMember + ',');
-        })
+            // Reinitialize Lucide icons for the new elements
+            lucide.createIcons();
+
+            // Update hidden input
+            let currentMembers = $('#teamMembers').val();
+            $('#teamMembers').val(currentMembers + (currentMembers ? ',' : '') + teamMemberId);
+        }
+
+        // Function to remove team member
+        function removeTeamMember(button, teamMemberId) {
+            // Re-enable the option in select dropdown
+            $(`.team option[value='${teamMemberId}']`).removeAttr('disabled');
+            
+            // Remove the team member row
+            $(button).closest('div').remove();
+            
+            // Update hidden input by removing the team member ID
+            let currentMembers = $('#teamMembers').val();
+            let membersArray = currentMembers.split(',').filter(id => id !== '' && id != teamMemberId);
+            $('#teamMembers').val(membersArray.join(','));
+        }
     </script>
 
     <script>
-        $('.task').on('change', function(){
-            const task = $(this).val();
-            const taskName = $(this).attr('value');
-
-            if ($(this).is(':checked')) {
-                $('#selected-tasks').append(`
-                    <div class='flex items-center justify-between py-2 px-3 rounded-md' style="background: #f9f9fa; margin-top: 0.5rem;">
-                        <span>${taskName}</span>
-                        <button class='p-1 rounded-full hover:bg-gray-200' onclick='removeTask(this)'>
-                            <i data-lucide='x' class='w-4 h-4'></i>x
-                        </button>
-                    </div>
-                `);
-
-                $('#tasks').val($('#tasks').val() + task + ',');
-            } else {
-                // Use a more robust selector
-                $("#selected-tasks div:contains('" + taskName + "')").remove();
-                removeTask(this); // Ensure the hidden input is updated
-            }
-        })
-
-        function removeTask(el) {
-            const task = $(el).parent().find('span').text();
-            $(`#selected-tasks .task:contains(${task})`).prev().prop('checked', false);
-            $(el).parent().remove();
-
-            // Use a more robust selector
-            $(".task").filter(function() {
-                return $(this).val() === task;
-            }).prop("checked", false);
-
-            // Update the hidden input field #tasks
-            const tasks = [];
-            $('#selected-tasks div span').each(function () {
-                tasks.push($(this).text());
-            });
-            $('#tasks').val(tasks.join(',')); // Join the tasks with a comma
-
-        }
-
-
+        // This script is now handled by the pagination script above
+        // Task change handlers are initialized in the renderTaskList function
     </script>
 
     <script>
         $('#custom-task-input').on('keypress', function(e){
             if (e.key === 'Enter') {
+                const task = $(this).val().trim();
+                if (!task) return;
 
-                $('.text-muted-foreground ').hide();
+                $('.text-muted-foreground').hide();
 
-                const task = $(this).val();
-
-                $('#selected-tasks').append(`
-                    <div class='flex items-center justify-between py-2 px-3 rounded-md' style="background: #f9f9fa; margin-top: 0.5rem;">
-                        <span>${task}</span>
-                        <button class='p-1 rounded-full hover:bg-gray-200' onclick='removeTask(this)'>
-                            <i data-lucide='x' class='w-4 h-4'></i>x
-                        </button>
-                    </div>
-                `);
-
-                $('#tasks').val($('#tasks').val() + task + ',');
+                // Add task using the sorted function
+                addTaskSorted(task);
+                updateTasksHiddenInput();
+                
                 $(this).val('');
             }
         })
@@ -349,43 +417,255 @@
                 }
             }
         });
+
+        // Form validation before submission
+        $('form').on('submit', function(e) {
+            const teamMembers = $('#teamMembers').val();
+            if (!teamMembers || teamMembers.trim() === '') {
+                e.preventDefault();
+                alert('Please add at least one team member before creating the project.');
+                return false;
+            }
+        });
     </script>
 
-    {{-- function for pagination --}}
+    {{-- function for country task list management --}}
     <script>
 $(document).ready(function() {
-    const pageSize = 5; // Number of tasks per page
-    let currentPage = 0;
+    // Country task lists will be loaded from backend
+    let countryTaskLists = [];
+    let currentCountryIndex = 0;
 
-    // Cache all task checkboxes
-    const $allTasks = $('#predefined-tasks-list label');
-    const totalPages = Math.ceil($allTasks.length / pageSize);
-
-    function showPage(page) {
-        $allTasks.hide();
-        $allTasks.slice(page * pageSize, (page + 1) * pageSize).show();
-        // Disable arrows at ends
-        $('#prev-tasks').prop('disabled', page === 0);
-        $('#next-tasks').prop('disabled', page >= totalPages - 1);
+    // Load country task lists from backend
+    function loadCountryTaskLists() {
+        $.ajax({
+            url: '/api/countries/task-lists',
+            method: 'GET',
+            success: function(response) {
+                countryTaskLists = response.data || [];
+                if (countryTaskLists.length > 0) {
+                    renderTaskList(0);
+                } else {
+                    // Fallback to default task lists if no countries found
+                    initializeDefaultTaskLists();
+                }
+            },
+            error: function() {
+                // Fallback to default task lists on error
+                console.warn('Could not load country task lists, using defaults');
+                initializeDefaultTaskLists();
+            }
+        });
     }
 
-    $('#prev-tasks').on('click', function() {
-        if (currentPage > 0) {
-            currentPage--;
-            showPage(currentPage);
+    // Fallback default task lists
+    function initializeDefaultTaskLists() {
+        countryTaskLists = [
+            {
+                name: 'Denmark',
+                tasks: [
+                    '01_BD & Contracts',
+                    '02_Competition / Pitch design',
+                    '03_Concept Design',
+                    '04_Preliminary Design',
+                    '05_Planning Submission Stage',
+                    '06_Detail Design Stage',
+                    '07_Technical Design',
+                    '08_Design Review',
+                    '09_Design Approval',
+                    '10_Extra Work'
+                ]
+            },
+            {
+                name: 'Germany',
+                tasks: [
+                    '01_BD & Contracts',
+                    '02_Competition / Pitch development',
+                    '03_Requirements Analysis',
+                    '04_System Architecture',
+                    '05_Frontend Development',
+                    '06_Backend Development',
+                    '07_Database Design',
+                    '08_Testing Phase',
+                    '09_Quality Assurance',
+                    '10_Extra Work'
+                ]
+            },
+            {
+                name: 'Sweden',
+                tasks: [
+                    '01_BD & Contracts',
+                    '02_Competition / Pitch construction',
+                    '03_Site Survey',
+                    '04_Foundation Work',
+                    '05_Structural Work',
+                    '06_Electrical Installation',
+                    '07_Plumbing Installation',
+                    '08_Finishing Work',
+                    '09_Final Inspection',
+                    '10_Extra Work'
+                ]
+            },
+            {
+                name: 'Norway',
+                tasks: [
+                    '01_BD & Contracts',
+                    '02_Competition / Pitch management',
+                    '03_Project Planning',
+                    '04_Resource Allocation',
+                    '05_Timeline Management',
+                    '06_Budget Control',
+                    '07_Risk Management',
+                    '08_Team Coordination',
+                    '09_Progress Monitoring',
+                    '10_Extra Work'
+                ]
+            }
+        ];
+        renderTaskList(0);
+    }
+
+    function renderTaskList(countryIndex) {
+        if (!countryTaskLists[countryIndex]) return;
+        
+        const country = countryTaskLists[countryIndex];
+        const tasks = country.tasks || [];
+        const $container = $('#predefined-tasks-list');
+        
+        // Update country name display
+        $('#current-country-name').text(country.name);
+        
+        // Clear selected tasks when switching countries
+        clearSelectedTasks();
+        
+        $container.empty();
+        
+        // Show all tasks at once - no pagination
+        tasks.forEach(task => {
+            $container.append(`
+                <label class='flex items-center gap-2'>
+                    <input type='checkbox' class='rounded border-gray-300 text-black focus:ring-black task' value='${task}'>
+                    ${task}
+                </label>
+            `);
+        });
+        
+        // Reinitialize task change handlers
+        initializeTaskHandlers();
+        
+        // Update country navigation button states
+        updateCountryNavigation();
+    }
+
+    function updateCountryNavigation() {
+        const totalCountries = countryTaskLists.length;
+        
+        // Update button states
+        $('#prev-country').prop('disabled', currentCountryIndex === 0);
+        $('#next-country').prop('disabled', currentCountryIndex >= totalCountries - 1);
+        
+        // Update button opacity
+        if (currentCountryIndex === 0) {
+            $('#prev-country').css('opacity', '0.5');
+        } else {
+            $('#prev-country').css('opacity', '1');
+        }
+        
+        if (currentCountryIndex >= totalCountries - 1) {
+            $('#next-country').css('opacity', '0.5');
+        } else {
+            $('#next-country').css('opacity', '1');
+        }
+    }
+
+    function clearSelectedTasks() {
+        // Clear all selected task elements except the "No tasks selected" message
+        $('#selected-tasks div').not('.text-muted-foreground').remove();
+        
+        // Show "No tasks selected" message
+        if ($('#selected-tasks .text-muted-foreground').length === 0) {
+            $('#selected-tasks').append('<div class="text-sm text-muted-foreground text-center py-4">No tasks selected</div>');
+        } else {
+            $('.text-muted-foreground').show();
+        }
+        
+        // Clear the hidden input
+        $('#tasks').val('');
+    }
+
+    function initializeTaskHandlers() {
+        $('.task').off('change').on('change', function(){
+            const task = $(this).val();
+            const taskName = $(this).attr('value');
+
+            if ($(this).is(':checked')) {
+                // Hide "No tasks selected" message
+                $('.text-muted-foreground').hide();
+                
+                // Add task and then sort
+                addTaskSorted(taskName);
+                updateTasksHiddenInput();
+            } else {
+                // Remove from selected tasks
+                $("#selected-tasks div:contains('" + taskName + "')").remove();
+                // Update hidden input
+                updateTasksHiddenInput();
+                
+                // Show "No tasks selected" message if no tasks remain
+                if ($('#selected-tasks div').not('.text-muted-foreground').length === 0) {
+                    if ($('#selected-tasks .text-muted-foreground').length === 0) {
+                        $('#selected-tasks').append('<div class="text-sm text-muted-foreground text-center py-4">No tasks selected</div>');
+                    } else {
+                        $('.text-muted-foreground').show();
+                    }
+                }
+            }
+        });
+    }
+
+    // Country navigation handlers
+    $('#prev-country').on('click', function() {
+        if (currentCountryIndex > 0) {
+            currentCountryIndex--;
+            renderTaskList(currentCountryIndex);
         }
     });
 
-    $('#next-tasks').on('click', function() {
-        if (currentPage < totalPages - 1) {
-            currentPage++;
-            showPage(currentPage);
+    $('#next-country').on('click', function() {
+        if (currentCountryIndex < countryTaskLists.length - 1) {
+            currentCountryIndex++;
+            renderTaskList(currentCountryIndex);
         }
     });
 
-    // Initial display
-    showPage(currentPage);
+    // Initialize by loading country task lists
+    loadCountryTaskLists();
 });
+
+// Global function for removing tasks (called from onclick)
+function removeTask(el) {
+    const task = $(el).parent().find('span').text();
+    
+    // Uncheck the corresponding checkbox
+    $(".task").filter(function() {
+        return $(this).val() === task;
+    }).prop("checked", false);
+    
+    // Remove the task element
+    $(el).parent().remove();
+
+    // Update the hidden input field
+    updateTasksHiddenInput();
+    
+    // Show "No tasks selected" message if no tasks remain
+    if ($('#selected-tasks div').not('.text-muted-foreground').length === 0) {
+        if ($('#selected-tasks .text-muted-foreground').length === 0) {
+            $('#selected-tasks').append('<div class="text-sm text-muted-foreground text-center py-4">No tasks selected</div>');
+        } else {
+            $('.text-muted-foreground').show();
+        }
+    }
+}
 </script>
 
 

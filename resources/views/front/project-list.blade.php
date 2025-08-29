@@ -204,23 +204,11 @@
 
         .today-line {
             position: absolute;
-            top: 0;
+            top: -20px;
             bottom: 0;
             width: 2px;
-            height: 55px;
             background-color: #D9534F; /* Red color for the today line */
             z-index: 100; /* Ensure it appears above other elements */
-        }
-
-        .today-line::before {
-            content: '';
-            position: absolute;
-            top: -4px;
-            left: -2px;
-            width: 6px;
-            height: 6px;
-            background-color: #D9534F;
-            border-radius: 10px;
         }
 
         /* Highlight holidays in the Gantt chart */
@@ -342,7 +330,7 @@
                             }
 
                         @endphp
-                        {{ number_format($spent) }}
+                        {{ formatCurrency($spent) }}
                         </span>
                         <span style="width: 15%; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;">
                             @php
@@ -359,12 +347,21 @@
                             }
 
                         @endphp
-                        {{ number_format($spent) }}
+                        {{ formatCurrency($spent) }}
                         </span>
                         <span style="width: 15%; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;">
                             @php
                             // $time = DB::table('time_entries')->where('project_id',$data->id)->get();
-                            $budget = $item->budget_total < 1 ? 1 : $item->budget_total;
+                            $budget = 0;
+
+                            foreach ($item->estimatedtimeEntries as  $value) {
+                                # code...
+                                $rate = $value->user->hourly_rate;
+
+
+                                $budget += $rate*$value->hours;
+                            }
+
                             $spent = 0;
 
                             foreach ($item->timeEntries as  $value) {
@@ -376,6 +373,8 @@
                             }
 
                             $spent = $spent < 1 ? 1 : $spent;
+
+                            $budget = $budget < 1 ? 1 : $budget;
 
                             $pre = ($spent/$budget)*100;
 
@@ -542,9 +541,35 @@
 
             // Prevent scroll-container from scrolling when dragging bars
 
+            // Function to scroll to today minus 7 days
+            function scrollToCurrentPosition() {
+                const today = new Date();
+                const targetDate = new Date(today);
+                targetDate.setDate(today.getDate() - 7); // 7 days before today
+                
+                const currentYear = targetDate.getFullYear();
+                const currentMonth = targetDate.getMonth() + 1; // getMonth() returns 0-11, so add 1
+                const currentDay = targetDate.getDate();
+                
+                // Create the date string for the target date
+                const targetDateStr = `${currentYear}-${currentMonth.toString().padStart(2, '0')}-${currentDay.toString().padStart(2, '0')}`;
+                
+                // Find the calendar day element for the target date
+                const $targetElement = $(`.calendar-day[data-date="${targetDateStr}"]`);
+                
+                if ($targetElement.length > 0) {
+                    const scrollContainer = $('.scroll-container');
+                    const elementLeft = $targetElement.position().left;
+                    
+                    // Scroll to position the target date at the left edge of the viewport
+                    scrollContainer.scrollLeft(Math.max(0, elementLeft));
+                }
+            }
+
             // Initial render
             renderCalendar();
             alignGanttBars();
+            scrollToCurrentPosition(); // Add scroll positioning after rendering
             // $(window).resize(alignGanttBars);
         });
     </script>
@@ -593,7 +618,7 @@
                 todayLine.css({
                     left: todayPosition + 'px',
                     // height: coun * 30 + 5 + 'px'
-                    height: coun * 25 + 0 + 'px'
+                    height: coun * 30 + 22 + 'px'
                 });
 
                 $('.gantt-bar-container').append(todayLine);

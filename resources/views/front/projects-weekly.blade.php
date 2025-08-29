@@ -203,6 +203,15 @@
             border-radius: 50%;
             margin-right: 10px;
         }
+
+        .task-circle {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background-color: #000;
+            margin-right: 10px;
+            display: inline-block;
+        }
         .holiday{
             background: #eee;
         }
@@ -488,18 +497,18 @@
                                 <div class="task-item" data-task="task{{ $key + 1 }}" style="margin-bottom: 0px; border-bottom: 1px solid #eee; margin-left: 0px; background: #fff;">
                                     {{-- <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="User 1"> --}}
                                     <span style="width: 50%; font-size: 12px; display: inline-flex; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px;">
-                                        <img src="http://127.0.0.1:8000/dots.svg" style="margin-right: 5px;">
+                                        <div class="task-circle"></div>
                                         {{ $item->name }}
                                     </span>
-                                    <span class="start-{{ $item->id }}" style="width: 25%; font-size: 12px; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;">{{ \Carbon\Carbon::parse($item->start_date)->format('y-m-d') }} </span>
+                                    <span class="start-{{ $item->id }}" style="width: 25%; font-size: 12px; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;">{{ formatDate($item->start_date) }} </span>
                                     <span style="width: 15%; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;">
-                                        <input type="text" name="budget_total" data-task-id="{{ $item->id }}" value="{{ number_format(round($item->budget_total)) }}" class="budget_total" style="width: 100%; font-size: 12px; text-align: center;">
+                                        <input type="text" name="budget_total" data-task-id="{{ $item->id }}" value="{{ formatCurrency(round($item->budget_total)) }}" class="budget_total px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black" style="width: 100%; font-size: 12px; text-align: center;">
                                     </span>
                                     <span style="display: block; width:10%; padding-top: 6px; padding-bottom: 6px; text-align: center;">
                                         <button class="open-edit-task-modal bg-blue-500 text-white px-2 py-1 rounded"
                                             data-task-id="{{ $item->id }}"
                                             data-task-name="{{ $item->name }}"
-                                            data-task-date="{{ \Carbon\Carbon::parse($item->start_date)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($item->end_date)->format('d/m/Y') }}"
+                                            data-task-date="{{ formatDate($item->start_date) }} - {{ formatDate($item->end_date) }}"
                                             data-task-budget="{{ $item->budget_total }}">
                                         <i class="fas fa-edit"></i>
                                     </button>
@@ -543,7 +552,7 @@
                     <div class="not-archived">
                         @foreach ($data->members as $item)
                             @if ($item->archieve == 0)
-                                <div class="task-item data-id-{{ $item->id }}" data-task="task{{ $item->task_id }}" style="position: unset">
+                                <div class="task-item data-id-{{ $item->id }}" data-task="task{{ $item->task_id }}" data-member-id="{{ $item->id }}" style="position: unset">
                                     <span style="width: 50%; font-size: 12px; display: inline-flex; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px;">
                                         <img src="{{ $item->user->profile_image_url ? asset('storage/'.$item->user->profile_image_url) : 'https://randomuser.me/api/portraits/men/4.jpg' }}">
                                         {{ $item->user->name }}
@@ -592,13 +601,13 @@
                         <div class="not-archived" style="margin-top: -4px">
                             @foreach ($data->members as $item)
                             @if ($item->archieve == 0)
-                                <div class="second-input data-id-{{ $item->id }}" data-task-id="{{ $item->task_id }}" data-user-id="{{ $item->user_id }}"></div>
+                                <div class="second-input data-id-{{ $item->id }}" data-task-id="{{ $item->task_id }}" data-user-id="{{ $item->user_id }}" data-member-id="{{ $item->id }}"></div>
                             @endif
                             @endforeach
                         </div>
                         <div class="archied" style="margin-top: -4px">
                             @foreach ($data->members as $item)
-                                <div class="second-input data-id-{{ $item->id }}" data-task-id="{{ $item->task_id }}" data-user-id="{{ $item->user_id }}"></div>
+                                <div class="second-input data-id-{{ $item->id }}" data-task-id="{{ $item->task_id }}" data-user-id="{{ $item->user_id }}" data-member-id="{{ $item->id }}"></div>
                             @endforeach
                         </div>
                     </div>
@@ -614,8 +623,38 @@
     <input type="hidden" id="en_date" value={{ $data->end_date }}>
     <input type="hidden" id="task_count" value={{ count($data->tasks) }}>
     <input type="hidden" id="project_id" value={{$data->id }}>
+    <input type="hidden" id="date_format" value="{{ globalSettings('date_format') }}">
 
     <script>
+        // Function to format date according to user settings
+        function formatDateForDisplay(dateString) {
+            const dateFormat = document.getElementById('date_format').value;
+            const date = new Date(dateString);
+            
+            switch(dateFormat) {
+                case 'Y-m-d':
+                    return date.toISOString().split('T')[0];
+                case 'm/d/Y':
+                    return (date.getMonth() + 1).toString().padStart(2, '0') + '/' + 
+                           date.getDate().toString().padStart(2, '0') + '/' + 
+                           date.getFullYear();
+                case 'd/m/Y':
+                    return date.getDate().toString().padStart(2, '0') + '/' + 
+                           (date.getMonth() + 1).toString().padStart(2, '0') + '/' + 
+                           date.getFullYear();
+                case 'd-m-Y':
+                    return date.getDate().toString().padStart(2, '0') + '-' + 
+                           (date.getMonth() + 1).toString().padStart(2, '0') + '-' + 
+                           date.getFullYear();
+                case 'M j, Y':
+                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    return months[date.getMonth()] + ' ' + date.getDate() + ', ' + date.getFullYear();
+                default:
+                    return date.toISOString().split('T')[0];
+            }
+        }
+        
         $(function () {
             const calendarContainer = $('.calendar-container');
             const ganttBarContainer = $('.gantt-bar-container');
@@ -900,9 +939,7 @@
                                 success: function (response) {
                                     $task = $('.gantt-bar-container [data-task-id="'+response.data.id+'"]')
                                     $task.removeClass('alert-danger')
-                                    const d = stoppedStartDateFormatted;
-                                    const formatted = d.slice(2, 4) + '-' + d.slice(5, 7) + '-' + d.slice(8, 10);
-                                    $('.start-'+taskId).html(formatted);
+                                    $('.start-'+taskId).html(formatDateForDisplay(stoppedStartDateFormatted));
                                 }
                             });
                         }
@@ -1394,10 +1431,14 @@
 
 <script>
     $(function() {
-      $('input[name="date"]').daterangepicker({
-        opens: 'left'
+      // Initialize daterangepicker for both add and edit task date inputs
+      $('input[name="date"], #startDate, #startDateedit').daterangepicker({
+        opens: 'left',
+        locale: {
+          format: 'DD/MM/YYYY'
+        }
       }, function(start, end, label) {
-        console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
+        console.log("A new date selection was made: " + start.format('DD/MM/YYYY') + ' to ' + end.format('DD/MM/YYYY'));
       });
     });
     </script>
@@ -1414,6 +1455,90 @@
             }
         });
     }
+</script>
+
+<script>
+$(document).ready(function() {
+    let asc = true;
+    $('#sortProject').on('click', function() {
+        let items = $('.not-archived .task-item').get();
+        items.sort(function(a, b) {
+            let keyA = $(a).find('span').first().text().trim().toLowerCase();
+            let keyB = $(b).find('span').first().text().trim().toLowerCase();
+            if (asc) {
+                return keyA.localeCompare(keyB);
+            } else {
+                return keyB.localeCompare(keyA);
+            }
+        });
+        
+        // Get corresponding Gantt bars and sort them based on task order
+        let ganttBars = $('.gantt-bar-container .draggable').get();
+        let taskOrder = items.map(function(item) {
+            return $(item).data('task');
+        });
+        
+        ganttBars.sort(function(a, b) {
+            let taskA = $(a).data('task');
+            let taskB = $(b).data('task');
+            let indexA = taskOrder.indexOf(taskA);
+            let indexB = taskOrder.indexOf(taskB);
+            
+            if (indexA === -1) indexA = 999;
+            if (indexB === -1) indexB = 999;
+            
+            return indexA - indexB;
+        });
+        
+        // Sort calendar inputs to match task order  
+        let calendarInputs = $('.not-archived .second-input').get();
+        let memberIdOrder = items.map(function(item) {
+            return $(item).data('member-id');
+        });
+        
+        calendarInputs.sort(function(a, b) {
+            let memberIdA = $(a).data('member-id');
+            let memberIdB = $(b).data('member-id');
+            let indexA = memberIdOrder.indexOf(memberIdA);
+            let indexB = memberIdOrder.indexOf(memberIdB);
+            
+            if (indexA === -1) indexA = 999;
+            if (indexB === -1) indexB = 999;
+            
+            return indexA - indexB;
+        });
+        
+        // Reorder task items
+        $.each(items, function(i, item) {
+            $('.not-archived').first().append(item);
+        });
+        
+        // Clear and reorder Gantt bars with new positions
+        $('.gantt-bar-container').empty();
+        $.each(ganttBars, function(index, bar) {
+            const $bar = $(bar);
+            const weekWidth = $(".week-block").outerWidth() || 50; // Fallback width for weekly view
+            const taskTop = 30 * index;
+            $bar.css({
+                top: taskTop + 'px'
+            });
+            $('.gantt-bar-container').append($bar);
+        });
+        
+        // Reorder calendar inputs
+        $.each(calendarInputs, function(i, input) {
+            $('.scroll-container .not-archived').append(input);
+        });
+        
+        // Re-initialize draggable and resizable functionality
+        if (typeof makeDraggableAndResizable === 'function') {
+            makeDraggableAndResizable();
+        }
+        
+        asc = !asc;
+        $('#sortProjectIcon').toggleClass('fa-sort-alpha-down fa-sort-alpha-up');
+    });
+});
 </script>
 
 

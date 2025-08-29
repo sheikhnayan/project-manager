@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             ProjectSeeder::class,
             TaskSeeder::class,
             TimeEntrySeeder::class, // Add the TimeEntrySeeder
+            CountryTaskListSeeder::class, // Add the CountryTaskListSeeder
         ]);
     }
 }

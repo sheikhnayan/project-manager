@@ -98,7 +98,7 @@
                                             <td class="py-3 px-4">{{ $item->project_number }}</td>
                                             <td class="py-3 px-4">{{ $item->name }}</td>
                                             <td class="py-3 px-4">{{ $item->client->name }}</td>
-                                            <td class="py-3 px-4">{{ \Carbon\Carbon::parse($item->start_date)->format('m-d-Y') }} - {{ \Carbon\Carbon::parse($item->end_date)->format('m-d-Y') }}</td>
+                                            <td class="py-3 px-4">{{ formatDate($item->start_date) }} - {{ formatDate($item->end_date) }}</td>
                                             {{-- <td class="py-3 px-4">
                                                 @php
                                                     $estimated_hours = $item->estimatedtimeEntries->sum('hours') < 1 ? 1 : $item->estimatedtimeEntries->sum('hours');
@@ -199,7 +199,7 @@
                                             <td class="py-3 px-4">{{ $item->project_number }}</td>
                                             <td class="py-3 px-4">{{ $item->name }}</td>
                                             <td class="py-3 px-4">{{ $item->client->name }}</td>
-                                            <td class="py-3 px-4">{{ \Carbon\Carbon::parse($item->start_date)->format('m-d-Y') }} - {{ \Carbon\Carbon::parse($item->end_date)->format('m-d-Y') }}</td>
+                                            <td class="py-3 px-4">{{ formatDate($item->start_date) }} - {{ formatDate($item->end_date) }}</td>
                                             {{-- <td class="py-3 px-4">
                                                 @php
                                                     $estimated_hours = $item->estimatedtimeEntries->sum('hours') < 1 ? 1 : $item->estimatedtimeEntries->sum('hours');

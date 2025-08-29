@@ -18,13 +18,17 @@ class TimeSheetController extends Controller
      */
     public function index($user, $daterange)
     {
+        $currentUser = auth()->user();
+        
+        // Check if user can view the requested user's timesheet
+        if (!$currentUser->hasPermission('view_all_timesheets') && $currentUser->id != $user) {
+            abort(403, 'You can only view your own timesheet.');
+        }
+        
         // Parse the date range
         $dates = explode(' - ', $daterange);
         $startDate = date('Y-m-d', strtotime($dates[0]));
         $endDate = date('Y-m-d', strtotime($dates[1]));
-
-        // dd($startDate, $dates[0]);
-
 
         // Fetch time entries for the user and date range
         $timeEntries = TimeEntry::with(['project', 'task'])
@@ -88,12 +92,13 @@ class TimeSheetController extends Controller
     public function index_estimate_all()
     {
         // Fetch all estimated time entries
-        $timeEntries = EstimatedTimeEntry::get();
+        $timeEntries = TimeEntry::get();
 
         // Transform the data into the required format
         $response = $timeEntries->map(function ($entry) {
             return [
                 'task_id' => $entry->task_id,
+                'project_id' => $entry->project_id,
                 'user_id' => $entry->user_id,
                 'date' => $entry->entry_date,
                 'time' => $this->convertDecimalToTime($entry->hours), // Convert decimal hours to time format
@@ -152,8 +157,13 @@ class TimeSheetController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request['dateRange']);
-
+        $currentUser = auth()->user();
+        
+        // Check if user can edit the requested user's timesheet
+        if (!$currentUser->hasPermission('edit_all_timesheets') && $currentUser->id != $request['user']) {
+            return response()->json(['error' => 'You can only edit your own timesheet.'], 403);
+        }
+        
         // Parse the date range
         $dates = explode(' - ', $request['dateRange']);
         $startDate = date('Y-m-d', strtotime($dates[0]));
@@ -209,15 +219,30 @@ class TimeSheetController extends Controller
 
     public function store_estimated(Request $request)
     {
+        $currentUser = auth()->user();
+        
+        // Check if user can edit the requested user's timesheet
+        if (!$currentUser->hasPermission('edit_all_timesheets') && $currentUser->id != $request->user_id) {
+            return response()->json(['error' => 'You can only edit your own timesheet.'], 403);
+        }
+        
         // Parse the date from the request
         $date = Carbon::parse($request->date);
 
-        // Search for tasks where the date falls between start_date and end_date
-        $task = Task::where('project_id',$request->project_id)->whereDate('start_date', '<=', $date)
-            ->whereDate('end_date', '>=', $date)
-            ->first();
+        // If task_id is provided, use that specific task, otherwise find task by project and date range
+        if ($request->has('task_id') && $request->task_id) {
+            $task = Task::find($request->task_id);
+        } else {
+            // Search for tasks where the date falls between start_date and end_date
+            $task = Task::where('project_id', $request->project_id)->whereDate('start_date', '<=', $date)
+                ->whereDate('end_date', '>=', $date)
+                ->first();
+        }
 
-        // dd($task);
+        // If no task found, return error
+        if (!$task) {
+            return response()->json(['error' => 'No task found for the given criteria'], 400);
+        }
 
         $check = EstimatedTimeEntry::where('user_id', $request->user_id)
             ->where('task_id', $task->id)
@@ -263,8 +288,12 @@ class TimeSheetController extends Controller
 
     public function store_estimated_weekly(Request $request)
     {
-
-        // $task = Task::find($request->taskId);
+        $currentUser = auth()->user();
+        
+        // Check if user can edit the requested user's timesheet
+        if (!$currentUser->hasPermission('edit_all_timesheets') && $currentUser->id != $request->user_id) {
+            return response()->json(['error' => 'You can only edit your own timesheet.'], 403);
+        }
 
         // Parse the date from the request
         $date = Carbon::parse($request->date);
@@ -325,7 +354,15 @@ class TimeSheetController extends Controller
      */
     public function show()
     {
-        $users = User::all();
+        $user = auth()->user();
+        
+        // If user can view all timesheets, show all users
+        if ($user->hasPermission('view_all_timesheets')) {
+            $users = User::all();
+        } else {
+            // If user can only view own timesheet, show only themselves
+            $users = User::where('id', $user->id)->get();
+        }
 
         $projects = Project::all();
 
@@ -335,17 +372,48 @@ class TimeSheetController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function approve(Request $request)
     {
-        //
+        $userId = $request->query('user_id');
+        $dates = $request->query('dates');
+
+        // Validate the input
+        if (!$userId || !$dates) {
+            return response()->json(['success' => false, 'message' => 'Invalid input'], 400);
+        }
+
+        $dateArray = explode(',', $dates);
+
+        // Update the approved status for the specified dates
+        TimeEntry::where('user_id', $userId)
+            ->whereIn('entry_date', $dateArray)
+            ->update(['approved' => 1]);
+
+        return response()->json(['success' => true, 'message' => 'Entries approved successfully']);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function getApprovalStatus(Request $request)
     {
-        //
+        $id = $request->query('user_id');
+
+        $dates = $request->query('dates');
+
+        // Validate the input
+        if (!$id || !$dates) {
+            return response()->json(['success' => false, 'message' => 'Invalid input'], 400);
+        }
+
+        $dateArray = explode(',', $dates);
+
+        $status = TimeEntry::where('user_id', $id)
+            ->whereIn('entry_date', $dateArray)
+            ->where('approved', 1)
+            ->exists();
+
+        return response()->json(['is_approved' => $status]);
     }
 
     /**

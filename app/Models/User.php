@@ -21,7 +21,12 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'hourly_rate',
         'is_archived',
+        'profile_image_url',
+        'profile_image_path',
+        'role_id',
     ];
 
     /**
@@ -60,5 +65,61 @@ class User extends Authenticatable
     public function projects()
     {
         return $this->hasMany(ProjectTeamMember::class);
+    }
+
+    /**
+     * Get the role that the user belongs to.
+     */
+    public function userRole()
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
+
+    /**
+     * Check if user has a specific permission
+     */
+    public function hasPermission($permission)
+    {
+        if (!$this->userRole) {
+            return false;
+        }
+
+        return $this->userRole->hasPermission($permission);
+    }
+
+    /**
+     * Check if user has any of the given permissions
+     */
+    public function hasAnyPermission($permissions)
+    {
+        if (!$this->userRole) {
+            return false;
+        }
+
+        foreach ($permissions as $permission) {
+            if ($this->hasPermission($permission)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if user has all of the given permissions
+     */
+    public function hasAllPermissions($permissions)
+    {
+        if (!$this->userRole) {
+            return false;
+        }
+
+        foreach ($permissions as $permission) {
+            if (!$this->hasPermission($permission)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

@@ -42,7 +42,7 @@
             width: 400px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             margin:auto;
-            margin-top: 10rem;
+            margin-top: 25rem;
         }
 
         .modal-header {
@@ -80,12 +80,20 @@
             width: 24px !important;
             height: 20px !important;
             text-align: center;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
         }
 
         .second-input .calendar-day{
             height: 30px !important;
             font-size: 10px;
             padding: 0px !important;
+            width: 24px !important;
+            border-right: 1px solid #eee;
+            border-top: 1px solid #eee;
+            border-bottom: unset;
+            border-left: unset;
+            box-sizing: border-box;
         }
 
         .draggable[data-task="task1"] {
@@ -130,6 +138,9 @@
             box-sizing: border-box;
             margin: 0; /* Remove any margin that could cause a gap */
             border-top: unset;
+            width: 24px !important;
+            height: 20px !important;
+            text-align: center;
         }
         .gantt-bar-container {
             position: relative;
@@ -202,8 +213,44 @@
             border-radius: 50%;
             margin-right: 10px;
         }
+
+                        .task-circle {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background-color: #000;
+            margin-right: 10px;
+            display: inline-block;
+        }
+
+        .team-member-row {
+            cursor: move;
+        }
+
+        .team-member-row.ui-sortable-helper {
+            background-color: #f3f4f6;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .team-member-row.ui-sortable-placeholder {
+            background-color: #e5e7eb;
+            visibility: visible !important;
+            height: 40px;
+        }
+
+        .drag-handle {
+            color: #9ca3af;
+            margin-right: 8px;
+            cursor: move;
+            font-size: 12px;
+        }
+
+        .drag-handle:hover {
+            color: #4b5563;
+        }
         .holiday{
-            background: #eee;
+            color: #d32f2f;
+            background-color: #f7f7f7 !important;
         }
 
         /* Add styles for resizable handles */
@@ -276,23 +323,11 @@
 
         .today-line {
             position: absolute;
-            top: 0;
+            top: -25px;
             bottom: 0;
             width: 2px;
-            height: 55px;
             background-color: #D9534F; /* Red color for the today line */
             z-index: 100; /* Ensure it appears above other elements */
-        }
-
-        .today-line::before {
-            content: '';
-            position: absolute;
-            top: -4px;
-            left: -2px;
-            width: 6px;
-            height: 6px;
-            background-color: #37352f;
-            border-radius: 10px;
         }
 
         /* Highlight holidays in the Gantt chart */
@@ -392,6 +427,72 @@
             background: #fff !important;
             color: #4b5563 !important;
         }
+
+        /* Collapsible member time entries styles */
+        .expand-arrow {
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 8px;
+            transition: transform 0.3s ease;
+            user-select: none;
+            padding: 4px;
+            display: inline-block;
+            min-width: 16px;
+            text-align: center;
+            z-index: 10;
+            position: relative;
+        }
+
+        .expand-arrow:hover {
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 3px;
+        }
+
+        .expand-arrow.expanded {
+            transform: rotate(90deg);
+        }
+
+        .member-time-entries {
+            background-color: #f9fafb;
+            border-left: 3px solid #d1d5db;
+        }
+
+        .member-time-entries.expanded {
+            display: block;
+        }
+
+        .time-entry-row {
+            border-left: 3px solid #e5e7eb;
+            background-color: #f8fafc;
+        }
+
+        .member-time-calendar-row {
+            background-color: #f9fafb;
+        }
+
+        /* Hide number input arrows/spinners */
+        .inputss::-webkit-outer-spin-button,
+        .inputss::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .inputss[type=number] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
+        /* Hide number input arrows/spinners */
+        .inputsss::-webkit-outer-spin-button,
+        .inputsss::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .inputsss[type=number] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
     </style>
 
     <!-- Fonts -->
@@ -486,18 +587,18 @@
                             <div class="task-item" data-task="task{{ $key + 1 }}" style="margin-bottom: 0px; border-bottom: 1px solid #eee; margin-left: 0px; background: #fff;">
                                 {{-- <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="User 1"> --}}
                                 <span style="width: 50%; font-size: 12px; display: inline-flex; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px;">
-                                    <img src="http://127.0.0.1:8000/dots.svg" style="margin-right: 5px;">
+                                    <div class="task-circle"></div>
                                     {{ $item->name }}
                                 </span>
-                                <span class="start-{{ $item->id }}" style="width: 25%; font-size: 12px; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;">{{ \Carbon\Carbon::parse($item->start_date)->format('y-m-d') }} </span>
+                                <span class="start-{{ $item->id }}" style="width: 25%; font-size: 12px; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;">{{ formatDate($item->start_date) }} </span>
                                 <span style="width: 15%; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;">
-                                    <input type="text" name="budget_total" data-task-id="{{ $item->id }}" value="{{ number_format(round($item->budget_total)) }}" class="budget_total" style="width: 100%; font-size: 12px; text-align: center;">
+                                    <input type="text" name="budget_total" data-task-id="{{ $item->id }}" value="{{ formatCurrency(round($item->budget_total)) }}" class="budget_total" style="width: 100%; font-size: 12px; text-align: center;">
                                 </span>
                                 <span style="display: block; width:10%; padding-top: 6px; padding-bottom: 6px; text-align: center;">
                                     <button class="open-edit-task-modal bg-blue-500 text-white px-2 py-1 rounded"
                                             data-task-id="{{ $item->id }}"
                                             data-task-name="{{ $item->name }}"
-                                            data-task-date="{{ \Carbon\Carbon::parse($item->start_date)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($item->end_date)->format('d/m/Y') }}"
+                                            data-task-date="{{ formatDate($item->start_date) }} - {{ formatDate($item->end_date) }}"
                                             data-task-budget="{{ $item->budget_total }}">
                                         <i class="fas fa-edit"></i>
                                     </button>
@@ -551,18 +652,20 @@
                         <span style="font-size: 12px; width: 10%; padding-top: 17px; padding-bottom: 17px; text-align: center; border-right: 1px solid #eee;"> <i class="fas fa-eye show-user" data-type="show"></i> </span>
                         {{-- <span class="text-center font-size: 12px; add-task" style="width: 10%;" id="addMemberButton"><i class="fas fa-plus"></i></span> --}}
                     </div>
-                    <div class="not-archived names">
+                    <div class="not-archived names" id="team-members-list">
                         @foreach ($data->members as $item)
                             @if ($item->archieve == 0)
-                                <div class="task-item data-id-{{ $item->id }}" data-task="task{{ $item->task_id }}" style="position: unset">
-                                    <span style="width: 50%; font-size: 12px; display: inline-flex; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px;">
+                                <div class="task-item team-member-row data-id-{{ $item->id }}" data-task="task{{ $item->task_id }}" data-member-id="{{ $item->id }}" data-user-id="{{ $item->user_id }}" style="position: unset">
+                                    <span style="width: 50%; font-size: 12px; display: inline-flex; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; align-items: center;">
+                                        <img class="drag-handle" src="{{ asset('dots.svg') }}" style="margin-right: 5px;">
                                         <img src="{{ $item->user->profile_image_url ? asset('storage/'.$item->user->profile_image_url) : 'https://randomuser.me/api/portraits/men/4.jpg' }}">
                                         {{ $item->user->name }}
+                                        <div class="expand-arrow" data-target="member-time-entries" data-id="{{ $item->user_id }}" data-project-id="{{ $data->id }}">▶</div>
                                     </span>
                                         @php
                                             $es = DB::table('estimated_time_entries')->where('project_id',$data->id)->where('user_id',$item->user_id)->sum('hours');
                                         @endphp
-                                    <span style="width: 25%; font-size: 12px; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;" class="user-cost-{{ $item->user_id }}">{{ number_format($item->user->hourly_rate*$es) }}</span>
+                                    <span style="width: 25%; font-size: 12px; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;" class="user-cost-{{ $item->user_id }}">{{ formatCurrency($item->user->hourly_rate*$es) }}</span>
                                     <span style="width: 15%; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;" class="user-hour-{{ $item->user_id }}">
                                         {{ number_format($es) }}
                                     </span>
@@ -571,6 +674,41 @@
                                     @else
                                     <span style="display: block; width:10%; padding-top: 6px; padding-bottom: 6px; text-align: center;"> <i class="fas fa-eye-slash" data-id="{{ $item->id }}" style="color: #4B5563; font-size: 13px;"></i> </span>
                                     @endif
+                                </div>
+                                
+                                <!-- Expandable Time Entries for this Team Member -->
+                                <div class="member-time-entries" data-user-id="{{ $item->user_id }}" data-project-id="{{ $data->id }}">
+                                    <!-- Summary row showing time entries with actual data -->
+                                    <div class="task-item time-entry-row" data-user-id="{{ $item->user_id }}">
+                                        <span style="padding-left: 20px; width: 50%; font-size: 11px; display: inline-flex; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; align-items: center;">
+                                            <span style="width: 6px; height: 6px; background-color: #6b7280; border-radius: 50%; margin-right: 8px; display: inline-block;"></span>
+                                            <!-- Blank space as requested -->
+                                        </span>
+                                        <span style="width: 25%; font-size: 11px; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; text-align: center;" class="member-time-cost-{{ $item->user_id }}">
+                                            @php
+                                                $currentWeekStart = now()->startOfWeek();
+                                                $currentWeekEnd = now()->endOfWeek();
+                                                $timeEntries = DB::table('time_entries')
+                                                    ->where('user_id', $item->user_id)
+                                                    ->where('project_id', $data->id)
+                                                    // ->whereBetween('entry_date', [$currentWeekStart, $currentWeekEnd])
+                                                    ->get();
+                                                $totalHours = $timeEntries->sum('hours');
+                                                $totalCost = $totalHours * $item->user->hourly_rate;
+                                                // dd($timeEntries);   
+                                            @endphp
+                                            {{ formatCurrency($totalCost) }}
+                                        </span>
+                                        <span style="width: 15%; font-size: 11px; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; text-align: center;" class="member-time-hours-{{ $item->user_id }}">
+                                            {{ number_format($totalHours, 1) }}h
+                                        </span>
+                                        <span style="width: 10%; font-size: 11px; padding-top: 4px; padding-bottom: 4px; text-align: center;"></span>
+                                    </div>
+                                    
+                                    <!-- Calendar input row (will be populated by JavaScript) -->
+                                    <div class="member-time-calendar-row" data-user-id="{{ $item->user_id }}" data-project-id="{{ $data->id }}">
+                                        <!-- Calendar inputs will be populated by JavaScript with time_entries data only -->
+                                    </div>
                                 </div>
                             @endif
                         @endforeach
@@ -582,7 +720,7 @@
                                     @php
                                         $es = DB::table('estimated_time_entries')->where('project_id',$data->id)->where('user_id',$item->user_id)->sum('hours');
                                     @endphp
-                                <span style="width: 25%; font-size: 12px; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;" class="user-cost-{{ $item->user_id }}">{{ number_format($item->user->hourly_rate*$es) }}</span>
+                                <span style="width: 25%; font-size: 12px; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;" class="user-cost-{{ $item->user_id }}">{{ formatCurrency($item->user->hourly_rate*$es) }}</span>
                                 <span style="width: 15%; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;" class="user-hour-{{ $item->user_id }}">
                                     {{ number_format($es) }}
                                 </span>
@@ -600,10 +738,16 @@
                         <div class="calendar-container second-calender">
                             <!-- JavaScript will populate the months and dates here -->
                         </div>
-                        <div class="not-archived" style="margin-top: -4px">
+                        <div class="not-archived" style="margin-top: -4px" id="team-time-inputs">
                             @foreach ($data->members as $item)
                             @if ($item->archieve == 0)
-                                <div class="second-input data-id-{{ $item->id }}" data-task-id="{{ $item->task_id }}" data-user-id="{{ $item->user_id }}"></div>
+                                <div class="second-input time-input-row data-id-{{ $item->id }}" data-task-id="{{ $item->task_id }}" data-user-id="{{ $item->user_id }}" data-member-id="{{ $item->id }}"></div>
+                                
+                                <!-- Member time calendar row (hidden initially, will be populated by JavaScript) -->
+                                <div class="second-input member-time-calendar-row member-time-{{ $item->user_id }}" 
+                                     data-user-id="{{ $item->user_id }}" 
+                                     data-project-id="{{ $data->id }}" 
+                                     style="display: none;"></div>
                             @endif
                             @endforeach
                         </div>
@@ -625,9 +769,76 @@
     <input type="hidden" id="project_id" value={{ $data->id }}>
     <input type="hidden" id="en_date" value={{ $data->end_date }}>
     <input type="hidden" id="task_count" value={{ count($data->tasks) }}>
+    <input type="hidden" id="date_format" value="{{ globalSettings('date_format') }}">
 
     <script>
+        // Function to format date according to user settings
+        function formatDateForDisplay(dateString) {
+            const dateFormat = document.getElementById('date_format').value;
+            const date = new Date(dateString);
+            
+            switch(dateFormat) {
+                case 'Y-m-d':
+                    return date.toISOString().split('T')[0];
+                case 'm/d/Y':
+                    return (date.getMonth() + 1).toString().padStart(2, '0') + '/' + 
+                           date.getDate().toString().padStart(2, '0') + '/' + 
+                           date.getFullYear();
+                case 'd/m/Y':
+                    return date.getDate().toString().padStart(2, '0') + '/' + 
+                           (date.getMonth() + 1).toString().padStart(2, '0') + '/' + 
+                           date.getFullYear();
+                case 'd-m-Y':
+                    return date.getDate().toString().padStart(2, '0') + '-' + 
+                           (date.getMonth() + 1).toString().padStart(2, '0') + '-' + 
+                           date.getFullYear();
+                case 'M j, Y':
+                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    return months[date.getMonth()] + ' ' + date.getDate() + ', ' + date.getFullYear();
+                default:
+                    return date.toISOString().split('T')[0];
+            }
+        }
+
+        // Function to format currency with symbol
+        function formatCurrency(amount) {
+            // You can customize the currency symbol and format here
+            const currencySymbol = '$'; // Change this to your preferred currency symbol
+            const formattedAmount = Number(amount).toLocaleString('en-US', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            });
+            return currencySymbol + formattedAmount;
+        }
+        
         $(function () {
+            // Pass server-side time entry data to JavaScript
+            @php
+                // Collect all time entries for all project members (only actual time entries, not estimates)
+                $allTimeEntries = collect();
+                foreach ($data->members as $member) {
+                    $memberTimeEntries = DB::table('time_entries')
+                        ->where('user_id', $member->user_id)
+                        ->where('project_id', $data->id)
+                        ->select('user_id', 'entry_date', 'hours') // Only select fields we need
+                        ->get();
+                    $allTimeEntries = $allTimeEntries->concat($memberTimeEntries);
+                }
+                
+                // Group by user_id and entry_date, then sum hours for each date
+                $groupedTimeEntries = $allTimeEntries->groupBy('user_id')->map(function($userEntries) {
+                    return $userEntries->groupBy('entry_date')->map(function($dateEntries) {
+                        return $dateEntries->sum('hours');
+                    });
+                });
+            @endphp
+            
+            window.memberTimeEntries = @json($groupedTimeEntries);
+            
+            // Debug: Log the time entry data structure
+            console.log('Member time entries data (time_entries only, no estimates):', window.memberTimeEntries);
+
             const calendarContainer = $('.calendar-container');
             const ganttBarContainer = $('.gantt-bar-container');
             const scrollContainer = $('.scroll-container');
@@ -653,15 +864,17 @@
 
                 let fadeIndex = 0; // Initialize fade index
 
-                for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-                    const day = d.getDate().toString().padStart(2, '0'); // Pad day with leading zero
-                    const month = (d.getMonth() + 1).toString().padStart(2, '0'); // Pad month with leading zero
-                    const year = d.getFullYear();
-                    const dayOfWeek = d.getDay();
+                // Use safer date iteration to prevent date calculation issues
+                const currentDate = new Date(startDate);
+                while (currentDate <= endDate) {
+                    const day = currentDate.getDate().toString().padStart(2, '0'); // Pad day with leading zero
+                    const month = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // Pad month with leading zero
+                    const year = currentDate.getFullYear();
+                    const dayOfWeek = currentDate.getDay();
                     const dateString = `${day}`;
                     const dayClass = (dayOfWeek === 0 || dayOfWeek === 6) ? 'calendar-day holiday' : 'calendar-day';
 
-                    if (d.getMonth() !== currentMonth) {
+                    if (currentDate.getMonth() !== currentMonth) {
                         // Apply fading color to the current month header
                         const fadeColor = `rgb(${Math.min(baseColor[0] + fadeIndex * fadeStep, 255)},
                                             ${Math.min(baseColor[1] + fadeIndex * fadeStep, 255)},
@@ -669,7 +882,7 @@
                         monthContainer.find('.month-header').css('background-color', fadeColor);
 
                         calendarContainer.append(monthContainer);
-                        currentMonth = d.getMonth(); // Update currentMonth to the new month
+                        currentMonth = currentDate.getMonth(); // Update currentMonth to the new month
                         monthContainer = $('<div class="month-container"></div>');
                         monthContainer.append(`<div class="month-header">${monthNames[currentMonth]}</div>`); // Use monthNames[currentMonth]
 
@@ -678,9 +891,11 @@
 
                     monthContainer.append(`<div class="calendar-day ${dayClass}" data-date="${year}-${month}-${day}">${dateString}</div>`);
 
-                    inn = `<input type="text" class="${dayClass} calendar-day inputss" onchange="convertTimeInput(this)" data-date="${year}-${month}-${day}">`;
+                    inn = `<input type="number" min="1" max="8" step="1" class="${dayClass} calendar-day inputss" style="min-width: 24px;" onchange="convertTimeInput(this)" oninput="restrictToInteger(this)" data-date="${year}-${month}-${day}">`;
 
                     inp += inn;
+                    
+                    currentDate.setDate(currentDate.getDate() + 1);
                 }
 
                 // Apply fading color to the last month header
@@ -691,11 +906,81 @@
 
                 calendarContainer.append(monthContainer);
 
-                $('.second-input').append(inp);
+                // Only append to regular second-input elements, not member-time-calendar-row
+                $('.second-input:not(.member-time-calendar-row)').append(inp);
+                
+                // Set data-user-id for the newly added input fields
+                $('.second-input:not(.member-time-calendar-row)').each(function() {
+                    const userId = $(this).data('user-id');
+                    const taskId = $(this).data('task-id');
+                    $(this).find('.inputss').attr('data-user-id', userId);
+                    $(this).find('.inputss').attr('data-task-id', taskId);
+                });
+
+                // Calendar rows are now preloaded with actual data from the server
+                
+                // Populate member time calendar rows with time entry data
+                populateMemberTimeCalendarRows();
             }
 
+            // Function to populate member calendar rows with time entry data
+            function populateMemberTimeCalendarRows() {
+                $('.member-time-calendar-row').each(function() {
+                    const userId = $(this).data('user-id');
+                    const projectId = $(this).data('project-id');
+                    const memberRow = $(this);
+                    
+                    // Clear any existing content
+                    memberRow.empty();
+                    
+                    // Get time entry data for this user from the server-side rendered data
+                    const userTimeEntries = window.memberTimeEntries && window.memberTimeEntries[userId] ? window.memberTimeEntries[userId] : {};
+                    
+                    // Create the same calendar structure but for member time entries
+                    let memberInp = '';
+                    
+                    // Use the same date iteration as the main calendar
+                    const currentDate = new Date(startDate);
+                    while (currentDate <= endDate) {
+                        const day = currentDate.getDate().toString().padStart(2, '0');
+                        const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+                        const year = currentDate.getFullYear();
+                        const dayOfWeek = currentDate.getDay();
+                        const dateString = `${year}-${month}-${day}`;
+                        const dayClass = (dayOfWeek === 0 || dayOfWeek === 6) ? 'calendar-day holiday' : 'calendar-day';
+                        
+                        // Get existing hours for this date (handle undefined gracefully)
+                        const existingHours = userTimeEntries[dateString] || '';
+                        
+                        // Create input field for member time entry
+                        memberInp += `<input type="number" 
+                                             min="1" 
+                                             max="8" 
+                                             step="1" 
+                                             class="${dayClass} inputsss member-time-input" 
+                                             style="min-width: 24px;" 
+                                             data-user-id="${userId}" 
+                                             data-project-id="${projectId}" 
+                                             data-date="${dateString}"
+                                             value="${existingHours}"
+                                             disabled
+                                             >`;
+                        
+                        currentDate.setDate(currentDate.getDate() + 1);
+                    }
+                    
+                    memberRow.append(memberInp);
+                });
+                
+                // Load actual time entry data for these inputs
+                loadMemberTimeEntryData();
+            }
 
-
+            // Function to load actual time entry data from the server
+            function loadMemberTimeEntryData() {
+                // Data is now preloaded server-side, no AJAX needed
+                console.log('Member time entry data loaded from server-side rendering');
+            }
 
             // Align Gantt bars with the calendar
             function alignGanttBars() {
@@ -912,9 +1197,7 @@
                                 },
                                 success: function (response) {
                                     $task = $('.gantt-bar-container [data-task-id="'+response.data.id+'"]')
-                                    const d = stoppedStartDateFormatted;
-                                    const formatted = d.slice(2, 4) + '-' + d.slice(5, 7) + '-' + d.slice(8, 10);
-                                    $('.start-'+taskId).html(formatted);
+                                    $('.start-'+taskId).html(formatDateForDisplay(stoppedStartDateFormatted));
                                 }
                             });
                         } else {
@@ -930,9 +1213,7 @@
                                 success: function (response) {
                                     $task = $('.gantt-bar-container [data-task-id="'+response.data.id+'"]')
                                     $task.removeClass('alert-danger')
-                                    const d = stoppedStartDateFormatted;
-                                    const formatted = d.toISOString().slice(2, 4) + '-' + d.toISOString().slice(5, 7) + '-' + d.toISOString().slice(8, 10);
-                                    $('.start-'+taskId).html(formatted);
+                                    $('.start-'+taskId).html(formatDateForDisplay(stoppedStartDateFormatted));
                                     // window.location.reload();
                                 }
                             });
@@ -977,9 +1258,7 @@
                                 },
                                 success: function (response) {
                                     $task = $('.gantt-bar-container [data-task-id="'+response.data.id+'"]')
-                                    const d = stoppedStartDateFormatted;
-                                    const formatted = d.slice(2, 4) + '-' + d.slice(5, 7) + '-' + d.slice(8, 10);
-                                    $('.start-'+taskId).html(formatted);
+                                    $('.start-'+taskId).html(formatDateForDisplay(stoppedStartDateFormatted));
                                 }
                             });
                         }else{
@@ -995,9 +1274,7 @@
                                 success: function (response) {
                                     $task = $('.gantt-bar-container [data-task-id="'+response.data.id+'"]')
                                     $task.removeClass('alert-danger')
-                                    const d = stoppedstartDate;
-                                    const formatted = d.toISOString().slice(2, 4) + '-' + d.toISOString().slice(5, 7) + '-' + d.toISOString().slice(8, 10);
-                                    $('.start-'+taskId).html(formatted);
+                                    $('.start-'+taskId).html(formatDateForDisplay(stoppedStartDateFormatted));
                                     // window.location.reload();
 
                                 }
@@ -1046,6 +1323,30 @@
             // Initial render
             renderCalendar();
             alignGanttBars();
+            
+            // Hide all member time calendar rows initially
+            $('.member-time-calendar-row').hide();
+            $('.member-time-entries').hide();
+            
+            // Populate time tracking data after calendar is rendered
+            setTimeout(function() {
+                // Debug: Check if input fields have proper attributes
+                console.log('Checking input fields after calendar render...');
+                const inputFields = document.querySelectorAll('.inputss');
+                console.log('Total input fields found:', inputFields.length);
+                
+                if (inputFields.length > 0) {
+                    const firstInput = inputFields[0];
+                    console.log('First input attributes:', {
+                        'data-date': firstInput.getAttribute('data-date'),
+                        'data-user-id': firstInput.getAttribute('data-user-id'),
+                        'data-task-id': firstInput.getAttribute('data-task-id')
+                    });
+                }
+                
+                populateTimeTrackingData();
+            }, 200);
+            
             // $(window).resize(alignGanttBars);
         });
     </script>
@@ -1092,10 +1393,16 @@
 
                 // Add the today line to the Gantt chart
                 const todayLine = $('<div class="today-line"></div>');
+                
+                // Calculate height: (total tasks × individual task height) + date cell height
+                const totalTasks = coun; // Total number of tasks
+                const individualTaskHeight = 30; // Height of each individual task row
+                const dateCellHeight = 20; // Height of the date showing cell
+                const totalHeight = (totalTasks * individualTaskHeight) + dateCellHeight;
+                
                 todayLine.css({
                     left: todayPosition + 'px',
-                    height: coun * 25 + 0 + 'px'
-                    // height: coun * 30 + 5 + 'px'
+                    height: totalHeight + 'px'
                 });
 
                 $('.gantt-bar-container').append(todayLine);
@@ -1119,12 +1426,19 @@
 
             // Calculate all weekend dates (Saturdays and Sundays) within the date range
             const holidays = [];
-            for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-                const dayOfWeek = d.getDay(); // 0 = Sunday, 6 = Saturday
-                if (dayOfWeek === 0 || dayOfWeek === 6) {
-                    holidays.push(new Date(d)); // Add weekend date to the holidays array
+            
+            // Use a safer date iteration approach
+            const currentDate = new Date(startDate);
+            while (currentDate <= endDate) {
+                const dayOfWeek = currentDate.getDay(); // 0 = Sunday, 6 = Saturday
+                if (dayOfWeek === 2 || dayOfWeek === 1) {
+                    holidays.push(new Date(currentDate)); // Add weekend date to the holidays array
                 }
+                currentDate.setDate(currentDate.getDate() + 1);
             }
+
+            // Clear existing holiday highlights
+            $('.gantt-bar-container .holiday-highlight').remove();
 
             // Highlight each holiday in the Gantt chart
             holidays.forEach(holiday => {
@@ -1194,12 +1508,12 @@
         });
 
 
-        $('.calendar-day').each(function () {
+        $('.calendar-day.inputss').each(function () {
             const $this = $(this);
-
-            $this.attr('data-task-id', $(this).parent().data('task-id'));
-
-            $this.attr('data-user-id', $(this).parent().data('user-id'));
+            const $parent = $this.parent();
+            
+            $this.attr('data-task-id', $parent.data('task-id'));
+            $this.attr('data-user-id', $parent.data('user-id'));
         });
     });
 </script>
@@ -1241,29 +1555,34 @@
 </script>
 
 <script>
-    // Function to convert decimal time to hours and minutes
-    function convertToHoursAndMinutes(decimalTime) {
-        const hours = Math.floor(decimalTime); // Get the whole number part as hours
-        const minutes = Math.round((decimalTime - hours) * 60); // Get the fractional part as minutes
-        return `${hours} hours ${minutes} minutes`;
+    // Function to restrict input to integers only
+    function restrictToInteger(inputElement) {
+        inputElement.value = inputElement.value.replace(/[^0-9]/g, '');
+        
+        // Also check the range
+        const value = parseInt(inputElement.value);
+        if (value > 8) {
+            inputElement.value = '8';
+        } else if (value < 1 && inputElement.value !== '') {
+            inputElement.value = '1';
+        }
     }
 
-    // Function to convert decimal time input
+    // Function to handle integer time input
         async function convertTimeInput(inputElement) {
-            const decimalTime = parseFloat(inputElement.value); // Get the input value as a float
+            const integerTime = parseInt(inputElement.value); // Get the input value as an integer
 
             const date = inputElement.getAttribute('data-date'); // Get the date from the data attribute
-            const user_id = inputElement.getAttribute('data-user-id'); // Get the task ID from the data attribute
+            const user_id = inputElement.getAttribute('data-user-id'); // Get the user ID from the data attribute
             const data = inputElement.value; // Get the value from the input element
-            const project_id = $('#project_id').val(); // Get the value from the input element
+            const project_id = $('#project_id').val(); // Get the project ID from the input element
 
-            if (isNaN(decimalTime) || decimalTime == 0) {
+            if (isNaN(integerTime) || integerTime == 0) {
                 inputElement.value = '';
 
                 var project = $('#project_id').val();
 
                 const data = 0;
-
 
                 try {
                     // Send the data to the server
@@ -1283,7 +1602,7 @@
 
                         $('.user-hour-'+user_id).html(responseData.data.total);
 
-                        $('.user-cost-'+user_id).html(responseData.data.cost);
+                        $('.user-cost-'+user_id).html(formatCurrency(responseData.data.cost));
 
                         $('#fetch').load('/projects/reload-data/' + project_id, function() {
                             setTimeout(() => {
@@ -1300,21 +1619,17 @@
                 return;
             }
 
-            if (decimalTime < 1 || decimalTime > 8) {
-                alert('Value is Invalid.');
+            if (integerTime < 1 || integerTime > 8) {
+                alert('Value is Invalid. Please enter a number between 1 and 8.');
                 inputElement.value = ''; // Clear the input field
                 return; // Exit the function
             }
 
-            if (!isNaN(decimalTime)) {
-                const hours = Math.floor(decimalTime); // Get the whole number part as hours
-                const minutes = Math.round((decimalTime - hours) * 60); // Get the fractional part as minutes
-                inputElement.value = `${hours}:${minutes}`; // Display the converted time in the input field
+            if (!isNaN(integerTime)) {
+                inputElement.value = integerTime; // Display the integer value as-is
             } else {
                 inputElement.value = ''; // Clear the display if the input is invalid
             }
-
-
 
             try {
                 // Send the data to the server
@@ -1334,7 +1649,7 @@
 
                     $('.user-hour-'+user_id).html(responseData.data.total);
 
-                    $('.user-cost-'+user_id).html(responseData.data.cost);
+                    $('.user-cost-'+user_id).html(formatCurrency(responseData.data.cost));
 
                     $('#fetch').load('/projects/reload-data/' + project_id, function() {
                             setTimeout(() => {
@@ -1348,15 +1663,13 @@
                 console.error('Error saving data:', error);
             }
         }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        // Any additional DOMContentLoaded logic can go here
-    });
 </script>
 
 <script>
     async function populateTimeTrackingData() {
         project = $('#project_id').val(); // Get the project ID from the hidden input field
+        console.log('Starting to populate time tracking data for project:', project); // Debug log
+        
         try {
             // Fetch the saved data from the server
             const response = await fetch('/estimated-time-tracking/'+project+'/get', {
@@ -1373,43 +1686,53 @@
             }
 
             const data = await response.json(); // Parse the JSON response
-
+            
+            console.log('Fetched time tracking data:', data); // Debug log to see the data structure
+            console.log('Data length:', data.length); // Debug log
 
             // Iterate over the data and populate the input fields
             data.forEach(item => {
                 const { task_id, user_id, date, time } = item;
+                
+                console.log('Processing item:', { task_id, user_id, date, time }); // Debug log
 
-
-                // Find the input field with the matching task_id and date
+                // Find the input field with the matching user_id and date
                 const inputFields = document.querySelectorAll('.inputss');
 
                 inputFields.forEach(inputField => {
                     const inputDate = inputField.getAttribute('data-date');
                     const userId = inputField.getAttribute('data-user-id');
-
-                    // Match the task_id and date
+                    // Match the user_id and date
                     if (inputDate === date && userId == user_id) {
-                        inputField.value = time; // Populate the input field with the saved time
+                        console.log('Found matching input field for:', { inputDate, userId, time }); // Debug log
+                        
+                        // Convert time format to integer (e.g., "5:00" -> 5, "8:00" -> 8)
+                        let integerTime;
+                        if (typeof time === 'string' && time.includes(':')) {
+                            // Parse time format like "5:00" or "08:00"
+                            integerTime = parseInt(time.split(':')[0]);
+                        } else {
+                            // Already in integer format
+                            integerTime = parseInt(time);
+                        }
+                        
+                        console.log('Converted time to integer:', integerTime); // Debug log
+                        
+                        // Only set if it's a valid integer between 1-8
+                        if (!isNaN(integerTime) && integerTime >= 1 && integerTime <= 8) {
+                            inputField.value = integerTime;
+                            console.log('Successfully populated input field with:', integerTime); // Debug log
+                        } else {
+                            console.log('Invalid time value, skipping:', integerTime); // Debug log
+                        }
                     }
                 });
-
-
-                // if (inputField) {
-                //     inputField.value = time; // Populate the input field with the saved time
-                // }
             });
         } catch (error) {
             console.error('Error fetching time tracking data:', error);
         }
     }
-
-    // Call the function after the DOM is ready
-    document.addEventListener('DOMContentLoaded', function () {
-        populateTimeTrackingData();
-    });
 </script>
-
-
 
 <script>
     $('.show-user').on('click', function(){
@@ -1429,6 +1752,67 @@
 
         $(this).data('type', type == 'show' ? 'hide' : 'show');
     })
+</script>
+
+<script>
+    // Team member drag and drop functionality
+    $(document).ready(function() {
+        // Function to refresh input field attributes
+        function refreshInputFieldAttributes() {
+            $('.time-input-row .inputss').each(function() {
+                const $this = $(this);
+                const $parent = $this.parent();
+                
+                $this.attr('data-task-id', $parent.data('task-id'));
+                $this.attr('data-user-id', $parent.data('user-id'));
+                $this.attr('data-member-id', $parent.data('member-id'));
+            });
+        }
+
+        // Make the team member list sortable
+        $('#team-members-list').sortable({
+            handle: '.drag-handle',
+            axis: 'y',
+            cursor: 'move',
+            helper: 'clone',
+            placeholder: 'ui-sortable-placeholder',
+            tolerance: 'pointer',
+            update: function(event, ui) {
+                // Get the new order of team members
+                var memberOrder = [];
+                $('#team-members-list .team-member-row').each(function() {
+                    memberOrder.push($(this).data('member-id'));
+                });
+                
+                // Reorder the time input rows accordingly
+                var $timeInputContainer = $('#team-time-inputs');
+                var $timeInputs = $timeInputContainer.find('.time-input-row').detach();
+                
+                // Reorder time inputs based on the new member order
+                memberOrder.forEach(function(memberId) {
+                    var $matchingInput = $timeInputs.filter('[data-member-id="' + memberId + '"]');
+                    if ($matchingInput.length > 0) {
+                        $timeInputContainer.append($matchingInput);
+                    }
+                });
+                
+                // Refresh input field attributes after reordering
+                refreshInputFieldAttributes();
+                
+                console.log('Team members reordered:', memberOrder);
+            }
+        });
+        
+        // Optional: Add visual feedback when hovering over sortable items
+        $('#team-members-list').on('mouseenter', '.team-member-row', function() {
+            $(this).css('background-color', '#f9fafb');
+        }).on('mouseleave', '.team-member-row', function() {
+            $(this).css('background-color', '#fff');
+        });
+
+        // Initial setup for input field attributes
+        refreshInputFieldAttributes();
+    });
 </script>
 
 <script>
@@ -1561,10 +1945,14 @@
 
 <script>
     $(function() {
-      $('input[name="date"]').daterangepicker({
-        opens: 'left'
+      // Initialize daterangepicker for both add and edit task date inputs
+      $('input[name="date"], #startDate, #startDateedit').daterangepicker({
+        opens: 'left',
+        locale: {
+          format: 'DD/MM/YYYY'
+        }
       }, function(start, end, label) {
-        console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
+        console.log("A new date selection was made: " + start.format('DD/MM/YYYY') + ' to ' + end.format('DD/MM/YYYY'));
       });
     });
     </script>
@@ -1597,9 +1985,50 @@ $(document).ready(function() {
                 return keyB.localeCompare(keyA);
             }
         });
+        
+        // Get corresponding Gantt bars and sort them based on task order
+        let ganttBars = $('.gantt-bar-container .draggable').get();
+        let taskOrder = items.map(function(item) {
+            return $(item).data('task');
+        });
+        
+        ganttBars.sort(function(a, b) {
+            let taskA = $(a).data('task');
+            let taskB = $(b).data('task');
+            let indexA = taskOrder.indexOf(taskA);
+            let indexB = taskOrder.indexOf(taskB);
+            
+            if (indexA === -1) indexA = 999;
+            if (indexB === -1) indexB = 999;
+            
+            return indexA - indexB;
+        });
+        
+        // Reorder task items
         $.each(items, function(i, item) {
             $('.mains .task-list').append(item);
         });
+        
+        // Clear and reorder Gantt bars with new positions
+        $('.gantt-bar-container').empty();
+        $.each(ganttBars, function(index, bar) {
+            const $bar = $(bar);
+            const taskTop = 30 * index;
+            $bar.css({
+                top: taskTop + 'px'
+            });
+            $('.gantt-bar-container').append($bar);
+        });
+        
+        // Re-initialize draggable and resizable functionality
+        makeDraggableAndResizable();
+        
+        // Regenerate today line and holiday highlights with new task count and order
+        $('.today-line').remove();
+        $('.holiday-highlight').remove();
+        highlightToday();
+        highlightHolidays();
+        
         asc = !asc;
         $('#sortProjectIcon').toggleClass('fa-sort-alpha-down fa-sort-alpha-up');
     });
@@ -1620,9 +2049,34 @@ $(document).ready(function() {
                 return keyB.localeCompare(keyA);
             }
         });
+        
+        // Sort calendar inputs to match task order
+        let calendarInputs = $('.not-archived .second-input').get();
+        let memberIdOrder = items.map(function(item) {
+            return $(item).data('member-id');
+        });
+        
+        calendarInputs.sort(function(a, b) {
+            let memberIdA = $(a).data('member-id');
+            let memberIdB = $(b).data('member-id');
+            let indexA = memberIdOrder.indexOf(memberIdA);
+            let indexB = memberIdOrder.indexOf(memberIdB);
+            
+            if (indexA === -1) indexA = 999;
+            if (indexB === -1) indexB = 999;
+            
+            return indexA - indexB;
+        });
+        
+        // Reorder both task items and calendar inputs
         $.each(items, function(i, item) {
             $('.us .names').append(item);
         });
+        
+        $.each(calendarInputs, function(i, input) {
+            $('#team-time-inputs').append(input);
+        });
+        
         asc = !asc;
         $('#sortProjectIcon').toggleClass('fa-sort-alpha-down fa-sort-alpha-up');
     });
@@ -1661,7 +2115,7 @@ const today = new Date();
         const scrollContainer = $('.scroll-container');
         const cellLeft = $todayCell.position().left;
         scrollContainer.animate({
-            scrollLeft: cellLeft - scrollContainer.width()/2 + $todayCell.outerWidth()/2
+            scrollLeft: cellLeft - scrollContainer.width()/14 + $todayCell.outerWidth()/2
         }, 400);
     }
 });
@@ -1833,6 +2287,95 @@ function enableAutoScrollOnDragResize() {
 
 $(function() {
     enableAutoScrollOnDragResize();
+});
+
+// Handle expand/collapse functionality for member time entries
+$(document).on('click', '.expand-arrow', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Arrow clicked!'); // Debug log
+    
+    const arrow = $(this);
+    const targetClass = arrow.data('target');
+    const targetId = arrow.data('id');
+    const projectId = arrow.data('project-id');
+    
+    console.log('Target class:', targetClass); // Debug log
+    console.log('Target ID:', targetId); // Debug log
+    console.log('Project ID:', projectId); // Debug log
+    
+    if (targetClass === 'member-time-entries') {
+        const isExpanded = arrow.hasClass('expanded');
+        
+        console.log('Is expanded:', isExpanded); // Debug log
+        
+        // Toggle arrow state
+        if (isExpanded) {
+            arrow.removeClass('expanded').html('▶');
+        } else {
+            arrow.addClass('expanded').html('▼');
+        }
+        
+        // Toggle time entries visibility - show/hide the preloaded calendar
+        const timeEntriesDiv = $(`.member-time-entries[data-user-id="${targetId}"][data-project-id="${projectId}"]`);
+        const calendarRow = timeEntriesDiv.find('.member-time-calendar-row');
+        
+        console.log('Time entries div found:', timeEntriesDiv.length); // Debug log
+        console.log('Calendar row found:', calendarRow.length); // Debug log
+        console.log('Calendar row HTML:', calendarRow.html() ? 'Has content' : 'Empty'); // Debug log
+        console.log('Calendar row parent:', calendarRow.parent().attr('class')); // Debug log
+        
+        if (isExpanded) {
+            // Collapse - hide the entire time entries container and calendar input row
+            console.log('Collapsing...');
+            timeEntriesDiv.slideUp(300, function() {
+                console.log('Collapse complete');
+            });
+            
+            // Also hide the calendar input row in the bottom section
+            $(`.member-time-${targetId}`).slideUp(300);
+        } else {
+            // Expand - show the entire time entries container and calendar input row
+            console.log('Expanding...');
+            console.log('Time entries div is currently visible:', timeEntriesDiv.is(':visible'));
+            console.log('Time entries div display style:', timeEntriesDiv.css('display'));
+            timeEntriesDiv.slideDown(300, function() {
+                console.log('Expand complete - now visible:', timeEntriesDiv.is(':visible'));
+            });
+            
+            // Also show the calendar input row in the bottom section
+            $(`.member-time-${targetId}`).slideDown(300);
+        }
+    }
+});
+
+// Function to update time entry data when inputs change
+function updateMemberTimeSummary(userId, projectId) {
+    let totalHours = 0;
+    
+    // Calculate total hours from all inputs for this member
+    $(`.member-time-input[data-user-id="${userId}"][data-project-id="${projectId}"]`).each(function() {
+        const hours = parseFloat($(this).val()) || 0;
+        totalHours += hours;
+    });
+    
+    // Get hourly rate from the existing data
+    const hourlyRateElement = $(`.user-cost-${userId}`);
+    const hourlyRateText = hourlyRateElement.text().replace(/[^0-9.-]+/g,"");
+    const hourlyRate = parseFloat(hourlyRateText) || 0;
+    
+    const totalCost = totalHours * hourlyRate;
+    
+    // Update the summary display
+    $(`.member-time-cost-${userId}`).text('$' + totalCost.toFixed(2));
+    $(`.member-time-hours-${userId}`).text(totalHours.toFixed(1) + 'h');
+}
+
+// Add event listener for input changes
+$(document).on('input change', '.member-time-input', function() {
+    const userId = $(this).data('user-id');
+    const projectId = $(this).data('project-id');
+    updateMemberTimeSummary(userId, projectId);
 });
 </script>
 

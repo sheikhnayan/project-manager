@@ -63,12 +63,32 @@
         h2{
             font-size: 16px !important;
         }
+
+        /* Team member row styles */
+        .team-member-row {
+            transition: all 0.2s ease;
+            border: 1px solid #e5e7eb;
+        }
+
+        .team-member-row:hover {
+            background-color: #f9fafb !important;
+            border-color: #d1d5db;
+        }
+
+        .remove-member-btn {
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .team-member-row:hover .remove-member-btn {
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
     @include('front.nav')
 
-    <form action="{{ route('projects.update',[$data->id]) }}" method="post">
+    <form action="/projects/update-project/{{ $data->id }}" method="post">
         @csrf
     <main class="space-y-6 p-6 mx-auto px-4">
         <div class="flex items-center justify-between" style="margin: 16px;">
@@ -77,7 +97,7 @@
                 class="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800"
                 style="font-size: 12px;"
             >
-                Edit Project
+                Save Changes
             </button>
         </div>
 
@@ -132,38 +152,31 @@
                     </div>
                 </div>
             </div>
-            <div class="bg-white rounded-lg shadow border col-span-2" style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15);">
+                        <div class="bg-white rounded-lg shadow border col-span-2" style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15);">
                 <div class="p-6">
                     <h2 class="text-lg font-semibold mb-4">Team Members</h2>
                     <div class="space-y-4">
-                        <select class="w-full rounded-md border-gray-300 focus:border-black focus:ring-black team" required>
+                        <select class="w-full rounded-md border-gray-300 focus:border-black focus:ring-black team">
                             <option value="" selected disabled>Add team member</option>
-                            @foreach ($team as $item)
-                                <option value="{{ $item->id }}"
-                                    @if(isset($data->members) && in_array($item->id, $data->members->pluck('user_id')->toArray())) disabled @endif>
+                            @php
+                                $sortedTeam = $team->where('is_archived', '!=', 1)->sortBy('name');
+                                $existingMemberIds = isset($data->members) ? $data->members->pluck('user_id')->toArray() : [];
+                            @endphp
+                            @foreach ($sortedTeam as $item)
+                                <option value="{{ $item->id }}" {{ in_array($item->id, $existingMemberIds) ? 'disabled' : '' }}>
                                     {{ $item->name }}
                                 </option>
                             @endforeach
                         </select>
 
-                        <div class="flex flex-wrap gap-2 mt-4" id="team-members">
-                            <!-- Already assigned team members -->
-                            @if(isset($data->members))
-                                @foreach($data->members as $member)
-                                    <div class='rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80 flex items-center gap-1' style="background: #f9f9fa;">
-                                        <span>{{ $member->user->name }}</span>
-                                        <button type="button" class='p-1 rounded-full hover:bg-gray-200 remove-team-member' data-id="{{ $member->id }}">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                @endforeach
-                            @endif
+                        <div class="space-y-2 mt-4" id="team-members">
+                            <!-- Team members will be added here -->
                         </div>
 
-                        <input type="hidden" name="team_members" id="teamMembers" value="@if(isset($data->members)){{ implode(',', $data->members->pluck('id')->toArray()) }}@endif">
+                        <input type="hidden" name="team_members" id="teamMembers" value="@if(isset($data->members)){{ implode(',', $data->members->pluck('user_id')->toArray()) }}@endif">
                     </div>
                 </div>
-            </div>
+            
         </div>
     </main>
 </form>
@@ -189,126 +202,133 @@
     </script>
 
     <script>
-$(document).ready(function() {
-    // Disable already selected options
-    $('#team-members .remove-team-member').each(function() {
-        const id = $(this).data('id');
-        $(".team option[value='"+id+"']").attr('disabled','disabled');
-    });
-
-    // Add new member
-    $('.team').on('change', function(){
-        const teamMember = $(this).val();
-        const teamMemberName = $(this).find('option:selected').text();
-        $(".team option:selected").attr('disabled','disabled');
-        $('#team-members').append(`
-            <div class='rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80 flex items-center gap-1' style="background: #f9f9fa;">
-                <span>${teamMemberName}</span>
-                <button type="button" class='p-1 rounded-full hover:bg-gray-200 remove-team-member' data-id="${teamMember}">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        `);
-        updateTeamMembersInput();
-    });
-
-    // Remove member
-    $('#team-members').on('click', '.remove-team-member', function(){
-        const id = $(this).data('id');
-        $(this).parent().remove();
-        $(".team option[value='"+id+"']").removeAttr('disabled');
-        updateTeamMembersInput();
-    });
-
-    function updateTeamMembersInput() {
-        const ids = [];
-        $('#team-members .remove-team-member').each(function() {
-            ids.push($(this).data('id'));
+        // Load existing team members on page load
+        $(document).ready(function() {
+            @if(isset($data->members) && $data->members->count() > 0)
+                @foreach($data->members as $member)
+                    // Fetch user data for existing members and display them
+                    $.ajax({
+                        url: `/api/users/{{ $member->user_id }}`,
+                        method: 'GET',
+                        success: function(user) {
+                            addTeamMemberRowExisting({{ $member->user_id }}, user);
+                        },
+                        error: function() {
+                            // Fallback if AJAX fails
+                            const fallbackUser = {
+                                name: '{{ $member->user->name }}',
+                                profile_image_url: null,
+                                role: 'Team Member'
+                            };
+                            addTeamMemberRowExisting({{ $member->user_id }}, fallbackUser);
+                        }
+                    });
+                @endforeach
+            @endif
         });
-        $('#teamMembers').val(ids.join(','));
-    }
-});
-    </script>
 
-    <script>
-        $('.task').on('change', function(){
-            const task = $(this).val();
-            const taskName = $(this).attr('value');
+        $('.team').on('change', function(){
+            const teamMember = $(this).val();
+            const teamMemberName = $(this).find('option:selected').text();
 
-            if ($(this).is(':checked')) {
-                $('#selected-tasks').append(`
-                    <div class='flex items-center justify-between py-2 px-3 rounded-md' style="background: #f9f9fa; margin-top: 0.5rem;">
-                        <span>${taskName}</span>
-                        <button class='p-1 rounded-full hover:bg-gray-200' onclick='removeTask(this)'>
-                            <i data-lucide='x' class='w-4 h-4'></i>x
-                        </button>
-                    </div>
-                `);
+            if (!teamMember) return;
 
-                $('#tasks').val($('#tasks').val() + task + ',');
-            } else {
-                // Use a more robust selector
-                $("#selected-tasks div:contains('" + taskName + "')").remove();
-                removeTask(this); // Ensure the hidden input is updated
-            }
-        })
+            $(".team option:selected").attr('disabled','disabled');
 
-        function removeTask(el) {
-            const task = $(el).parent().find('span').text();
-            $(`#selected-tasks .task:contains(${task})`).prev().prop('checked', false);
-            $(el).parent().remove();
-
-            // Use a more robust selector
-            $(".task").filter(function() {
-                return $(this).val() === task;
-            }).prop("checked", false);
-
-            // Update the hidden input field #tasks
-            const tasks = [];
-            $('#selected-tasks div span').each(function () {
-                tasks.push($(this).text());
+            // Fetch user data including profile picture
+            $.ajax({
+                url: `/api/users/${teamMember}`,
+                method: 'GET',
+                success: function(user) {
+                    addTeamMemberRow(teamMember, user);
+                },
+                error: function() {
+                    // Fallback if AJAX fails
+                    const fallbackUser = {
+                        name: teamMemberName,
+                        profile_image_url: null,
+                        role: 'Team Member'
+                    };
+                    addTeamMemberRow(teamMember, fallbackUser);
+                }
             });
-            $('#tasks').val(tasks.join(',')); // Join the tasks with a comma
+            
+            // Reset the select dropdown
+            $(this).val('');
+        });
 
+        function addTeamMemberRow(teamMemberId, user) {
+            const roleDisplay = user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Team Member';
+
+            $('#team-members').append(`
+                <div class='team-member-row flex items-center justify-between py-2 px-4 rounded-lg bg-white' style="margin-bottom: 8px;">
+                    <div class='flex items-center gap-3'>
+                        <div class='w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0'>
+                            ${user.profile_image_url || user.profile_image_path ? 
+                                `<img src='${user.profile_image_url ? (user.profile_image_url.startsWith('http') ? user.profile_image_url : '/storage/' + user.profile_image_url) : user.profile_image_path}' alt='${user.name}' class='w-full h-full object-cover'>` :
+                                `<div class='w-full h-full bg-black rounded-full'></div>`
+                            }
+                        </div>
+                        <div class='flex flex-col min-w-0 flex-1'>
+                            <span class='text-sm font-medium text-gray-900 truncate'>${user.name}</span>
+                            <span class='text-xs text-gray-500 truncate'>${roleDisplay}</span>
+                        </div>
+                    </div>
+                    <button type='button' class='remove-member-btn p-2 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors flex-shrink-0' onclick='removeTeamMember(this, ${teamMemberId})' title='Remove team member'>
+                        <i data-lucide='x' class='w-4 h-4'></i>
+                    </button>
+                </div>
+            `);
+
+            // Reinitialize Lucide icons for the new elements
+            lucide.createIcons();
+
+            // Update hidden input
+            let currentMembers = $('#teamMembers').val();
+            $('#teamMembers').val(currentMembers + (currentMembers ? ',' : '') + teamMemberId);
         }
 
+        function addTeamMemberRowExisting(teamMemberId, user) {
+            const roleDisplay = user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Team Member';
 
-    </script>
-
-    <script>
-        $('#custom-task-input').on('keypress', function(e){
-            if (e.key === 'Enter') {
-
-                $('.text-muted-foreground ').hide();
-
-                const task = $(this).val();
-
-                $('#selected-tasks').append(`
-                    <div class='flex items-center justify-between py-2 px-3 rounded-md' style="background: #f9f9fa; margin-top: 0.5rem;">
-                        <span>${task}</span>
-                        <button class='p-1 rounded-full hover:bg-gray-200' onclick='removeTask(this)'>
-                            <i data-lucide='x' class='w-4 h-4'></i>x
-                        </button>
+            $('#team-members').append(`
+                <div class='team-member-row flex items-center justify-between py-2 px-4 rounded-lg bg-white' style="margin-bottom: 8px;">
+                    <div class='flex items-center gap-3'>
+                        <div class='w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0'>
+                            ${user.profile_image_url || user.profile_image_path ? 
+                                `<img src='${user.profile_image_url ? (user.profile_image_url.startsWith('http') ? user.profile_image_url : '/storage/' + user.profile_image_url) : user.profile_image_path}' alt='${user.name}' class='w-full h-full object-cover'>` :
+                                `<div class='w-full h-full bg-black rounded-full'></div>`
+                            }
+                        </div>
+                        <div class='flex flex-col min-w-0 flex-1'>
+                            <span class='text-sm font-medium text-gray-900 truncate'>${user.name}</span>
+                            <span class='text-xs text-gray-500 truncate'>${roleDisplay}</span>
+                        </div>
                     </div>
-                `);
+                    <button type='button' class='remove-member-btn p-2 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors flex-shrink-0' onclick='removeTeamMember(this, ${teamMemberId})' title='Remove team member'>
+                        <i data-lucide='x' class='w-4 h-4'></i>
+                    </button>
+                </div>
+            `);
 
-                $('#tasks').val($('#tasks').val() + task + ',');
-                $(this).val('');
-            }
-        })
+            // Reinitialize Lucide icons for the new elements
+            lucide.createIcons();
+        }
+
+        // Function to remove team member
+        function removeTeamMember(button, teamMemberId) {
+            // Re-enable the option in select dropdown
+            $(`.team option[value='${teamMemberId}']`).removeAttr('disabled');
+            
+            // Remove the team member row
+            $(button).closest('div').remove();
+            
+            // Update hidden input by removing the team member ID
+            let currentMembers = $('#teamMembers').val();
+            let membersArray = currentMembers.split(',').filter(id => id !== '' && id != teamMemberId);
+            $('#teamMembers').val(membersArray.join(','));
+        }
     </script>
 
-    <script>
-        // Prevent form submit on Enter key for all inputs
-        $('form').on('keypress', function(e) {
-            if (e.key === 'Enter') {
-                // Allow Enter only for textarea, not for input fields
-                if (e.target.tagName.toLowerCase() !== 'textarea') {
-                    e.preventDefault();
-                    return false;
-                }
-            }
-        });
-    </script>
 </body>
 </html>
