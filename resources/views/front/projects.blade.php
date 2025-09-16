@@ -522,6 +522,14 @@
                     <h5 style="font-size: 20px; font-weight: 600; margin-left: 7px;">{{ $data->name }}</h5>
                 </div>
                 <div class="flex items-center " style="float: right;">
+                            <!-- Undo/Redo Buttons -->
+                            <button class="text-gray-600 hover:text-black" id="undoBtn" style="margin-right: 8px;" title="Undo" disabled>
+                                <i class="fas fa-undo" style="border: 1px solid #eee; padding: 10px 12px; border-radius: 4px; font-size: 14px;"></i>
+                            </button>
+                            <button class="text-gray-600 hover:text-black" id="redoBtn" style="margin-right: 8px;" title="Redo" disabled>
+                                <i class="fas fa-redo" style="border: 1px solid #eee; padding: 10px 12px; border-radius: 4px; font-size: 14px;"></i>
+                            </button>
+                            
                             <button class="text-gray-600 hover:text-black" id="home" style="margin-right: 8px;">
                                 <img src="{{ asset('house.png') }}" style="border: 1px solid #000;padding: 10px 12px;border-radius: 4px;border-color: #eee; ">
                             </button>
@@ -557,6 +565,33 @@
 
                                 .toggle-btn:focus {
                                     outline: none;
+                                }
+                            </style>
+                            
+                            <style>
+                                /* Undo/Redo button styles */
+                                #undoBtn, #redoBtn {
+                                    transition: all 0.2s ease;
+                                }
+                                
+                                #undoBtn:disabled, #redoBtn:disabled {
+                                    opacity: 0.5;
+                                    cursor: not-allowed;
+                                }
+                                
+                                #undoBtn:disabled i, #redoBtn:disabled i {
+                                    border-color: #f3f4f6 !important;
+                                    color: #9ca3af !important;
+                                }
+                                
+                                #undoBtn:not(:disabled):hover i, #redoBtn:not(:disabled):hover i {
+                                    border-color: #000 !important;
+                                    background-color: #f9fafb;
+                                }
+                                
+                                #undoBtn:not(:disabled) i, #redoBtn:not(:disabled) i {
+                                    color: #374151;
+                                    cursor: pointer;
                                 }
                             </style>
                             <script>
@@ -812,7 +847,362 @@
             return currencySymbol + formattedAmount;
         }
         
+        // Undo/Redo functionality - Global scope
+        let undoStack = [];
+        let redoStack = [];
+        const maxHistorySize = 20;
+        let isRestoringState = false; // Flag to prevent state saving during restoration
+        
+        // Function to save current state
+        function saveState() {
+            // Don't save state if we're in the middle of restoring a state
+            if (isRestoringState) return;
+            
+            const currentState = {
+                tasks: [],
+                ganttPositions: []
+            };
+            
+            // Save task positions and dates
+            $('.draggable').each(function() {
+                const $task = $(this);
+                currentState.tasks.push({
+                    id: $task.attr('data-task-id'),
+                    startDate: $task.attr('data-start-date'),
+                    endDate: $task.attr('data-end-date'),
+                    left: $task.css('left'),
+                    width: $task.css('width'),
+                    top: $task.css('top')
+                });
+            });
+            
+            // Save gantt positions
+            $('.draggable').each(function() {
+                const $task = $(this);
+                currentState.ganttPositions.push({
+                    id: $task.attr('data-task-id'),
+                    position: {
+                        left: $task.position().left,
+                        width: $task.outerWidth(),
+                        top: $task.position().top
+                    }
+                });
+            });
+            
+            // Add to undo stack
+            if (undoStack.length >= maxHistorySize) {
+                undoStack.shift(); // Remove oldest state
+            }
+            undoStack.push(JSON.parse(JSON.stringify(currentState)));
+            
+            // Clear redo stack when new action is performed
+            redoStack = [];
+            
+            updateUndoRedoButtons();
+            
+            console.log('State saved. Undo stack length:', undoStack.length);
+        }
+        
+        // Function to save state before an action (this will be the state to restore to)
+        function saveStateBeforeAction() {
+            // Don't save state if we're in the middle of restoring a state
+            if (isRestoringState) return;
+            
+            const currentState = {
+                tasks: [],
+                ganttPositions: []
+            };
+            
+            // Save task positions and dates
+            $('.draggable').each(function() {
+                const $task = $(this);
+                currentState.tasks.push({
+                    id: $task.attr('data-task-id'),
+                    startDate: $task.attr('data-start-date'),
+                    endDate: $task.attr('data-end-date'),
+                    left: $task.css('left'),
+                    width: $task.css('width'),
+                    top: $task.css('top')
+                });
+            });
+            
+            // Save gantt positions
+            $('.draggable').each(function() {
+                const $task = $(this);
+                currentState.ganttPositions.push({
+                    id: $task.attr('data-task-id'),
+                    position: {
+                        left: $task.position().left,
+                        width: $task.outerWidth(),
+                        top: $task.position().top
+                    }
+                });
+            });
+            
+            // Add to undo stack
+            if (undoStack.length >= maxHistorySize) {
+                undoStack.shift(); // Remove oldest state
+            }
+            undoStack.push(JSON.parse(JSON.stringify(currentState)));
+            
+            // Clear redo stack when new action is performed
+            redoStack = [];
+            
+            updateUndoRedoButtons();
+            
+            console.log('State before action saved. Undo stack length:', undoStack.length);
+        }
+        
+        // Function to save task dates to server (used during undo/redo)
+        function saveTaskDatesToServer(taskId, startDate, endDate) {
+            $.ajax({
+                url: '/projects/save-dates',
+                type: 'POST',
+                data: {
+                    stoppedStartDate: startDate,
+                    stoppedEndDate: endDate,
+                    task_id: taskId,
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function (response) {
+                    console.log('Task dates saved to server for task:', taskId);
+                    // Update the date display
+                    $(`.start-${taskId}`).html(formatDateForDisplay(startDate));
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error saving task dates:', error);
+                }
+            });
+        }
+        
+        // Function to restore state
+        function restoreState(state) {
+            if (!state) return;
+            
+            isRestoringState = true; // Set flag to prevent state saving during restoration
+            
+            // Restore task positions and dates
+            state.tasks.forEach(taskState => {
+                const $task = $(`.draggable[data-task-id="${taskState.id}"]`);
+                if ($task.length) {
+                    // First restore the visual position
+                    $task.css({
+                        left: taskState.left,
+                        width: taskState.width,
+                        top: taskState.top
+                    });
+                    
+                    // Recalculate dates based on the restored position (using gantt logic)
+                    const dayWidth = $(".calendar-day").outerWidth();
+                    let ganttStartDate = new Date($('#st_date').val());
+                    ganttStartDate.setDate(ganttStartDate.getDate() - 30); // Apply the 30-day offset
+                    
+                    const startOffset = $task.position().left;
+                    const endOffset = startOffset + $task.outerWidth();
+                    
+                    // Calculate the correct start and end dates using gantt offset logic
+                    const calculatedStartDate = new Date(ganttStartDate);
+                    calculatedStartDate.setDate(ganttStartDate.getDate() + Math.round(startOffset / dayWidth));
+                    
+                    const calculatedEndDate = new Date(ganttStartDate);
+                    calculatedEndDate.setDate(ganttStartDate.getDate() + Math.round(endOffset / dayWidth) - 1);
+                    
+                    const formattedStartDate = calculatedStartDate.toISOString().split('T')[0];
+                    const formattedEndDate = calculatedEndDate.toISOString().split('T')[0];
+                    
+                    // Update task attributes with recalculated dates
+                    $task.attr('data-start-date', formattedStartDate);
+                    $task.attr('data-end-date', formattedEndDate);
+                    
+                    // Update the corresponding date display
+                    $(`.start-${taskState.id}`).html(formatDateForDisplay(formattedStartDate));
+                    
+                    // Save the recalculated dates to server
+                    saveTaskDatesToServer(taskState.id, formattedStartDate, formattedEndDate);
+                }
+            });
+            
+            isRestoringState = false; // Reset flag
+            updateUndoRedoButtons();
+            
+            // Check for overlaps after restore operation
+            setTimeout(() => {
+                if (typeof highlightOverlappingBars === 'function') {
+                    highlightOverlappingBars();
+                }
+            }, 100); // Small delay to ensure all DOM updates are complete
+        }
+        
+        // Function to update button states
+        function updateUndoRedoButtons() {
+            $('#undoBtn').prop('disabled', undoStack.length === 0);
+            $('#redoBtn').prop('disabled', redoStack.length === 0);
+        }
+        
+        // Undo function
+        function performUndo() {
+            if (undoStack.length === 0) return;
+            
+            console.log('Performing undo. Undo stack length before:', undoStack.length);
+            
+            // Capture current state for redo stack before undoing
+            const currentState = {
+                tasks: [],
+                ganttPositions: []
+            };
+            
+            $('.draggable').each(function() {
+                const $task = $(this);
+                currentState.tasks.push({
+                    id: $task.attr('data-task-id'),
+                    startDate: $task.attr('data-start-date'),
+                    endDate: $task.attr('data-end-date'),
+                    left: $task.css('left'),
+                    width: $task.css('width'),
+                    top: $task.css('top')
+                });
+            });
+            
+            // Add current state to redo stack
+            redoStack.push(currentState);
+            
+            // Get and restore previous state (this is the "before" state)
+            const previousState = undoStack.pop();
+            console.log('Undo stack length after pop:', undoStack.length);
+            
+            restoreState(previousState);
+        }
+        
+        // Redo function
+        function performRedo() {
+            if (redoStack.length === 0) return;
+            
+            console.log('Performing redo. Redo stack length before:', redoStack.length);
+            
+            // Get current state and save it to undo stack
+            const currentState = {
+                tasks: [],
+                ganttPositions: []
+            };
+            
+            $('.draggable').each(function() {
+                const $task = $(this);
+                currentState.tasks.push({
+                    id: $task.attr('data-task-id'),
+                    startDate: $task.attr('data-start-date'),
+                    endDate: $task.attr('data-end-date'),
+                    left: $task.css('left'),
+                    width: $task.css('width'),
+                    top: $task.css('top')
+                });
+            });
+            
+            // Add current state to undo stack
+            undoStack.push(currentState);
+            
+            // Get and restore next state
+            const nextState = redoStack.pop();
+            console.log('Redo stack length after pop:', redoStack.length);
+            
+            restoreState(nextState);
+        }
+        
+        // Global overlap checking functions
+        function isOverlap(startA, endA, startB, endB) {
+            return (startA <= endB && endA >= startB);
+        }
+
+        function highlightOverlappingBars() {
+            const bars = $('.gantt-bar-container .draggable');
+            bars.removeClass('alert-danger'); // Remove previous highlights
+
+            bars.each(function(i, barA) {
+                const $barA = $(barA);
+                const startA = new Date($barA.attr('data-start-date'));
+                const endA = new Date($barA.attr('data-end-date'));
+
+                bars.each(function(j, barB) {
+                    if (i === j) return; // Skip self
+                    const $barB = $(barB);
+                    const startB = new Date($barB.attr('data-start-date'));
+                    const endB = new Date($barB.attr('data-end-date'));
+
+                    if (isOverlap(startA, endA, startB, endB)) {
+                        // Both bars should turn red when they overlap
+                        console.log('Overlap detected between bar', $barA.attr('data-task-id'), 'and bar', $barB.attr('data-task-id'));
+                        $barA.addClass('alert-danger');
+                        $barB.addClass('alert-danger');
+                    }
+                });
+            });
+        }
+
         $(function () {
+            // Event listeners for undo/redo buttons
+            $('#undoBtn').on('click', function() {
+                if (!$(this).prop('disabled')) {
+                    performUndo();
+                }
+            });
+            
+            $('#redoBtn').on('click', function() {
+                if (!$(this).prop('disabled')) {
+                    performRedo();
+                }
+            });
+            
+            // Keyboard shortcuts
+            $(document).on('keydown', function(e) {
+                if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
+                    e.preventDefault();
+                    performUndo();
+                } else if ((e.ctrlKey && e.shiftKey && e.key === 'Z') || (e.ctrlKey && e.key === 'y')) {
+                    e.preventDefault();
+                    performRedo();
+                }
+            });
+            
+            // Save initial state immediately as the first undo state
+            setTimeout(() => {
+                const initialState = {
+                    tasks: [],
+                    ganttPositions: []
+                };
+                
+                $('.draggable').each(function() {
+                    const $task = $(this);
+                    initialState.tasks.push({
+                        id: $task.attr('data-task-id'),
+                        startDate: $task.attr('data-start-date'),
+                        endDate: $task.attr('data-end-date'),
+                        left: $task.css('left'),
+                        width: $task.css('width'),
+                        top: $task.css('top')
+                    });
+                });
+                
+                $('.draggable').each(function() {
+                    const $task = $(this);
+                    initialState.ganttPositions.push({
+                        id: $task.attr('data-task-id'),
+                        position: {
+                            left: $task.position().left,
+                            width: $task.outerWidth(),
+                            top: $task.position().top
+                        }
+                    });
+                });
+                
+                // Add initial state directly to undo stack
+                undoStack.push(JSON.parse(JSON.stringify(initialState)));
+                updateUndoRedoButtons();
+                
+                // Check for overlaps after initial load
+                highlightOverlappingBars();
+                
+                console.log('Initial state saved to undo stack. Length:', undoStack.length);
+            }, 1000);
+
             // Pass server-side time entry data to JavaScript
             @php
                 // Collect all time entries for all project members (only actual time entries, not estimates)
@@ -1044,6 +1434,9 @@
                         $task.data("initialLeft", ui.position.left); // Store the initial position
                         $task.data("initialStartDate", $task.attr("data-start-date")); // Store the initial start date
                         $task.data("initialEndDate", $task.attr("data-end-date")); // Store the initial end date
+                        
+                        // Save state before drag action for undo functionality
+                        saveStateBeforeAction();
                     },
                     drag: function(event, ui) {
                         if ($(event.originalEvent.target).hasClass('ui-resizable-handle')) {
@@ -1078,10 +1471,18 @@
 
                         checkDates(initialStartDate, initialEndDate, currentStartDate, currentEndDate, $task.attr("data-task-id"));
 
-
-                        // checkDates();
-
+                        // Update the task attributes with the correctly calculated dates
+                        $task.attr('data-start-date', currentStartDate.toISOString().split('T')[0]);
+                        $task.attr('data-end-date', currentEndDate.toISOString().split('T')[0]);
+                        
                         updateTaskDates($task);
+                        
+                        // Check for overlaps after drag operation (with a slight delay to ensure DOM is updated)
+                        setTimeout(() => {
+                            if (typeof highlightOverlappingBars === 'function') {
+                                highlightOverlappingBars();
+                            }
+                        }, 10);
                     }
                 }).resizable({
                     handles: {
@@ -1097,6 +1498,9 @@
                         $task.data("initialWidth", ui.size.width); // Store the initial width
                         $task.data("initialStartDate", $task.attr("data-start-date")); // Store the initial start date
                         $task.data("initialEndDate", $task.attr("data-end-date")); // Store the initial end date
+                        
+                        // Save state before resize action for undo functionality
+                        saveStateBeforeAction();
                     },
                     resize: function(event, ui) {
                         const $task = $(this);
@@ -1154,6 +1558,13 @@
 
                         // Optionally, call a function to save the updated dates to the server
                         updateTaskDates($task);
+                        
+                        // Check for overlaps after resize operation (with a slight delay to ensure DOM is updated)
+                        setTimeout(() => {
+                            if (typeof highlightOverlappingBars === 'function') {
+                                highlightOverlappingBars();
+                            }
+                        }, 10);
 
                         // Log the final dates (optional)
                         // console.log("Resize Complete - Start Date:", finalStartDate.toISOString().split('T')[0]);
@@ -1178,46 +1589,29 @@
                         _token: '{{ csrf_token() }}'
                     },
                     success: function (response) {
-                        if (response.overlap) {
-                            $task = $('.gantt-bar-container [data-task-id="'+taskId+'"]')
-
-                            // $task.attr('data-start-date', startDate);
-                            // $task.attr('data-end-date', endDate);
-                            // alignGanttBars();
-                            // alert('Dates overlap with another task.');
-                            $task.addClass('alert-danger')
-                            $.ajax({
-                                url: '/projects/save-dates',
-                                type: 'POST',
-                                data: {
-                                    stoppedStartDate: stoppedStartDateFormatted,
-                                    stoppedEndDate: stoppedEndDateFormatted,
-                                    task_id: taskId,
-                                    _token: '{{ csrf_token() }}'
-                                },
-                                success: function (response) {
-                                    $task = $('.gantt-bar-container [data-task-id="'+response.data.id+'"]')
-                                    $('.start-'+taskId).html(formatDateForDisplay(stoppedStartDateFormatted));
-                                }
-                            });
-                        } else {
-                            $.ajax({
-                                url: '/projects/save-dates',
-                                type: 'POST',
-                                data: {
-                                    stoppedStartDate: stoppedStartDateFormatted,
-                                    stoppedEndDate: stoppedEndDateFormatted,
-                                    task_id: taskId,
-                                    _token: '{{ csrf_token() }}'
-                                },
-                                success: function (response) {
-                                    $task = $('.gantt-bar-container [data-task-id="'+response.data.id+'"]')
-                                    $task.removeClass('alert-danger')
-                                    $('.start-'+taskId).html(formatDateForDisplay(stoppedStartDateFormatted));
-                                    // window.location.reload();
-                                }
-                            });
-                        }
+                        // Always save the dates, regardless of overlap status
+                        // Our comprehensive overlap detection will handle the visual highlighting
+                        $.ajax({
+                            url: '/projects/save-dates',
+                            type: 'POST',
+                            data: {
+                                stoppedStartDate: stoppedStartDateFormatted,
+                                stoppedEndDate: stoppedEndDateFormatted,
+                                task_id: taskId,
+                                _token: '{{ csrf_token() }}'
+                            },
+                            success: function (response) {
+                                $task = $('.gantt-bar-container [data-task-id="'+response.data.id+'"]')
+                                $('.start-'+taskId).html(formatDateForDisplay(stoppedStartDateFormatted));
+                                
+                                // Re-check overlaps after saving
+                                setTimeout(() => {
+                                    if (typeof highlightOverlappingBars === 'function') {
+                                        highlightOverlappingBars();
+                                    }
+                                }, 50);
+                            }
+                        });
                     }
                 });
             }
@@ -1239,47 +1633,29 @@
                         _token: '{{ csrf_token() }}'
                     },
                     success: function (response) {
-                        if (response.overlap) {
-                            $task = $('.gantt-bar-container [data-task-id="'+taskId+'"]')
-
-                            // $task.attr('data-start-date', startDate);
-                            // $task.attr('data-end-date', endDate);
-                            // alignGanttBars();
-                            // alert('Dates overlap with another task.');
-                            $task.addClass('alert-danger')
-                            $.ajax({
-                                url: '/projects/save-dates',
-                                type: 'POST',
-                                data: {
-                                    stoppedStartDate: stoppedStartDateFormatted,
-                                    stoppedEndDate: stoppedEndDateFormatted,
-                                    task_id: taskId,
-                                    _token: '{{ csrf_token() }}'
-                                },
-                                success: function (response) {
-                                    $task = $('.gantt-bar-container [data-task-id="'+response.data.id+'"]')
-                                    $('.start-'+taskId).html(formatDateForDisplay(stoppedStartDateFormatted));
-                                }
-                            });
-                        }else{
-                            $.ajax({
-                                url: '/projects/save-dates',
-                                type: 'POST',
-                                data: {
-                                    stoppedStartDate: stoppedStartDateFormatted,
-                                    stoppedEndDate: stoppedEndDateFormatted,
-                                    task_id: taskId,
-                                    _token: '{{ csrf_token() }}'
-                                },
-                                success: function (response) {
-                                    $task = $('.gantt-bar-container [data-task-id="'+response.data.id+'"]')
-                                    $task.removeClass('alert-danger')
-                                    $('.start-'+taskId).html(formatDateForDisplay(stoppedStartDateFormatted));
-                                    // window.location.reload();
-
-                                }
-                            });
-                        }
+                        // Always save the dates, regardless of overlap status
+                        // Our comprehensive overlap detection will handle the visual highlighting
+                        $.ajax({
+                            url: '/projects/save-dates',
+                            type: 'POST',
+                            data: {
+                                stoppedStartDate: stoppedStartDateFormatted,
+                                stoppedEndDate: stoppedEndDateFormatted,
+                                task_id: taskId,
+                                _token: '{{ csrf_token() }}'
+                            },
+                            success: function (response) {
+                                $task = $('.gantt-bar-container [data-task-id="'+response.data.id+'"]')
+                                $('.start-'+taskId).html(formatDateForDisplay(stoppedStartDateFormatted));
+                                
+                                // Re-check overlaps after saving
+                                setTimeout(() => {
+                                    if (typeof highlightOverlappingBars === 'function') {
+                                        highlightOverlappingBars();
+                                    }
+                                }, 50);
+                            }
+                        });
                     }
                 });
             }
@@ -2029,6 +2405,11 @@ $(document).ready(function() {
         highlightToday();
         highlightHolidays();
         
+        // Check for overlaps after sorting
+        setTimeout(() => {
+            highlightOverlappingBars();
+        }, 100); // Small delay to ensure all DOM updates are complete
+        
         asc = !asc;
         $('#sortProjectIcon').toggleClass('fa-sort-alpha-down fa-sort-alpha-up');
     });
@@ -2123,32 +2504,6 @@ const today = new Date();
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    function isOverlap(startA, endA, startB, endB) {
-        return (startA <= endB && endA >= startB);
-    }
-
-    function highlightOverlappingBars() {
-        const bars = $('.gantt-bar-container .draggable');
-        bars.removeClass('alert-danger'); // Remove previous highlights
-
-        bars.each(function(i, barA) {
-            const $barA = $(barA);
-            const startA = new Date($barA.attr('data-start-date'));
-            const endA = new Date($barA.attr('data-end-date'));
-
-            bars.each(function(j, barB) {
-                if (i === j) return; // Skip self
-                const $barB = $(barB);
-                const startB = new Date($barB.attr('data-start-date'));
-                const endB = new Date($barB.attr('data-end-date'));
-
-                if (isOverlap(startA, endA, startB, endB)) {
-                    $barA.addClass('alert-danger');
-                }
-            });
-        });
-    }
-
     // Call after bars are rendered and aligned
     highlightOverlappingBars();
 });
@@ -2287,6 +2642,11 @@ function enableAutoScrollOnDragResize() {
 
 $(function() {
     enableAutoScrollOnDragResize();
+    
+    // Save initial state for undo/redo functionality
+    setTimeout(function() {
+        saveState();
+    }, 100); // Small delay to ensure all elements are fully rendered
 });
 
 // Handle expand/collapse functionality for member time entries

@@ -422,16 +422,16 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-b" x-text="role.display_name"></td>
                                     <td class="px-6 py-4 text-sm text-gray-500 border-b" x-text="role.description"></td>
                                     <td class="px-6 py-4 text-sm text-gray-500 border-b">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800" x-text="role.permissions.length + ' permissions'"></span>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800" x-text="role.permissions.length + ' permissions'" style="background: rgba(120, 145, 160, 0.5); color: #000;"></span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap border-b">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" 
                                               :class="role.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
-                                              x-text="role.is_active ? 'Active' : 'Inactive'"></span>
+                                              x-text="role.is_active ? 'Active' : 'Inactive'" style="background: rgb(220, 183, 151); color: #000;"></span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium border-b">
                                         <button @click.stop="editRole(role)" type="button" class="text-blue-600 hover:text-blue-900 mr-3">
-                                            <i class="fas fa-edit"></i>
+                                            <i class="fas fa-edit" style="color: #000"></i>
                                         </button>
                                         <button @click.stop="deleteRole(role.id)" type="button" class="text-red-600 hover:text-red-900">
                                             <i class="fas fa-trash"></i>

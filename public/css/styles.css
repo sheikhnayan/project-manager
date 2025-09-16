@@ -278,4 +278,122 @@ button[id='add-entry']:hover {
     background: #f9fafb;
 }
 
+/* ===========================================
+   GLOBAL MODAL INPUT & SELECT STYLING
+   =========================================== */
+
+/* Modal input and select styling - consistent height and borders for ALL modals across the system */
+.fixed.inset-0 input[type="text"],
+.fixed.inset-0 input[type="email"],
+.fixed.inset-0 input[type="password"],
+.fixed.inset-0 input[type="number"],
+.fixed.inset-0 input[type="tel"],
+.fixed.inset-0 input[type="url"],
+.fixed.inset-0 select,
+.fixed.inset-0 textarea {
+    height: 42px !important;
+    padding: 8px 12px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 6px !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+    background-color: white !important;
+}
+
+/* Textarea should have auto height but consistent other styling */
+.fixed.inset-0 textarea {
+    height: auto !important;
+    min-height: 42px !important;
+    resize: vertical !important;
+}
+
+/* Focus states for modal inputs */
+.fixed.inset-0 input[type="text"]:focus,
+.fixed.inset-0 input[type="email"]:focus,
+.fixed.inset-0 input[type="password"]:focus,
+.fixed.inset-0 input[type="number"]:focus,
+.fixed.inset-0 input[type="tel"]:focus,
+.fixed.inset-0 input[type="url"]:focus,
+.fixed.inset-0 select:focus,
+.fixed.inset-0 textarea:focus {
+    outline: none !important;
+    border-color: #000 !important;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Ensure checkboxes and radio buttons in modals keep their original size */
+.fixed.inset-0 input[type="checkbox"],
+.fixed.inset-0 input[type="radio"] {
+    height: auto !important;
+    width: auto !important;
+    padding: 0 !important;
+}
+
+/* Alternative modal selector - for modals that might use different classes */
+[data-modal] input[type="text"],
+[data-modal] input[type="email"],
+[data-modal] input[type="password"],
+[data-modal] input[type="number"],
+[data-modal] input[type="tel"],
+[data-modal] input[type="url"],
+[data-modal] select,
+[data-modal] textarea,
+.modal input[type="text"],
+.modal input[type="email"],
+.modal input[type="password"],
+.modal input[type="number"],
+.modal input[type="tel"],
+.modal input[type="url"],
+.modal select,
+.modal textarea {
+    height: 42px !important;
+    padding: 8px 12px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 6px !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+    background-color: white !important;
+}
+
+[data-modal] textarea,
+.modal textarea {
+    height: auto !important;
+    min-height: 42px !important;
+    resize: vertical !important;
+}
+
+[data-modal] input[type="text"]:focus,
+[data-modal] input[type="email"]:focus,
+[data-modal] input[type="password"]:focus,
+[data-modal] input[type="number"]:focus,
+[data-modal] input[type="tel"]:focus,
+[data-modal] input[type="url"]:focus,
+[data-modal] select:focus,
+[data-modal] textarea:focus,
+.modal input[type="text"]:focus,
+.modal input[type="email"]:focus,
+.modal input[type="password"]:focus,
+.modal input[type="number"]:focus,
+.modal input[type="tel"]:focus,
+.modal input[type="url"]:focus,
+.modal select:focus,
+.modal textarea:focus {
+    outline: none !important;
+    border-color: #000 !important;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-modal] input[type="checkbox"],
+[data-modal] input[type="radio"],
+.modal input[type="checkbox"],
+.modal input[type="radio"] {
+    height: auto !important;
+    width: auto !important;
+    padding: 0 !important;
+}
+
 
