@@ -400,7 +400,12 @@
                         </div>
                         <div class="progress-bar__wrapper">
                             @php
-                                $maxHours = max($totalHours, 100); // Set a reasonable maximum or calculate based on estimates
+                                // Get total estimated hours for all tasks
+                                $totalEstimatedHours = 0;
+                                foreach ($data->estimatedtimeEntries as $entry) {
+                                    $totalEstimatedHours += $entry->hours;
+                                }
+                                $maxHours = max($totalEstimatedHours, 1); // Use estimated hours as maximum
                                 $percentage = ($totalHours / $maxHours) * 100;
                             @endphp
 
@@ -452,7 +457,14 @@
                         </div>
                         <div class="progress-bar__wrapper">
                             @php
-                                $maxTaskHours = max($taskHours, 50); // Set a reasonable maximum for task hours
+                                // Get estimated hours for this task
+                                $estimatedTaskHours = 0;
+                                foreach ($data->estimatedtimeEntries as $entry) {
+                                    if ($entry->task_id == $task->id) {
+                                        $estimatedTaskHours += $entry->hours;
+                                    }
+                                }
+                                $maxTaskHours = max($estimatedTaskHours, 1); // Use estimated hours as maximum
                                 $taskPercentage = ($taskHours / $maxTaskHours) * 100;
                             @endphp
                             @if ($taskPercentage > 100)
@@ -487,7 +499,7 @@
         </div>
     </div>
     <div class="col-span-2">
-        <div style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15); padding-top: 0px; border-radius: 8px; margin-right: 0px; padding: 12px; padding-bottom: 20px; height: fit-content;">
+        <div style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15); padding-top: 0px; border-radius: 8px; margin-right: 16px; padding: 12px; padding-bottom: 20px; height: fit-content;">
             <div class="p-4" style="padding-top: 12px; padding-bottom: 0px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                     <h6 style="font-size: 20px; font-weight: bold;">Task Burn Chart</h6>
@@ -1167,6 +1179,15 @@ $(document).ready(function() {
                 }
                 echo $userTotalHours;
             @endphp,
+            totalEstimatedHours: @php
+                $userTotalEstimatedHours = 0;
+                foreach ($data->estimatedtimeEntries as $entry) {
+                    if ($entry->user_id == $member->user->id) {
+                        $userTotalEstimatedHours += $entry->hours;
+                    }
+                }
+                echo $userTotalEstimatedHours;
+            @endphp,
             taskHours: {
                 @foreach ($data->tasks as $task)
                 {{ $task->id }}: @php
@@ -1177,6 +1198,19 @@ $(document).ready(function() {
                         }
                     }
                     echo $userTaskHours;
+                @endphp,
+                @endforeach
+            },
+            taskEstimatedHours: {
+                @foreach ($data->tasks as $task)
+                {{ $task->id }}: @php
+                    $userTaskEstimatedHours = 0;
+                    foreach ($data->estimatedtimeEntries as $entry) {
+                        if ($entry->user_id == $member->user->id && $entry->task_id == $task->id) {
+                            $userTaskEstimatedHours += $entry->hours;
+                        }
+                    }
+                    echo $userTaskEstimatedHours;
                 @endphp,
                 @endforeach
             }
@@ -1193,6 +1227,13 @@ $(document).ready(function() {
             }
             echo $allTotalHours;
         @endphp,
+        totalEstimatedHours: @php
+            $allTotalEstimatedHours = 0;
+            foreach ($data->estimatedtimeEntries as $entry) {
+                $allTotalEstimatedHours += $entry->hours;
+            }
+            echo $allTotalEstimatedHours;
+        @endphp,
         taskHours: {
             @foreach ($data->tasks as $task)
             {{ $task->id }}: @php
@@ -1203,6 +1244,19 @@ $(document).ready(function() {
                     }
                 }
                 echo $allTaskHours;
+            @endphp,
+            @endforeach
+        },
+        taskEstimatedHours: {
+            @foreach ($data->tasks as $task)
+            {{ $task->id }}: @php
+                $allTaskEstimatedHours = 0;
+                foreach ($data->estimatedtimeEntries as $entry) {
+                    if ($entry->task_id == $task->id) {
+                        $allTaskEstimatedHours += $entry->hours;
+                    }
+                }
+                echo $allTaskEstimatedHours;
             @endphp,
             @endforeach
         }
@@ -1218,10 +1272,11 @@ $(document).ready(function() {
         }
 
         // Update total hours display
-        document.getElementById('employeeAllPhaseHours').textContent = currentEmployeeData.totalHours + ' Hours';
+        const estimatedHours = currentEmployeeData.totalEstimatedHours || 0;
+        document.getElementById('employeeAllPhaseHours').textContent = currentEmployeeData.totalHours + ' / ' + estimatedHours + ' Hours';
         
         // Update total hours progress bar
-        const maxHours = Math.max(currentEmployeeData.totalHours, 100);
+        const maxHours = estimatedHours || 1; // Use estimated hours as maximum, prevent division by zero
         const totalPercentage = (currentEmployeeData.totalHours / maxHours) * 100;
         document.getElementById('employee-all-progress').value = Math.min(totalPercentage, 100);
         
@@ -1229,15 +1284,16 @@ $(document).ready(function() {
         document.querySelectorAll('.employee-task-item').forEach(function(taskItem) {
             const taskId = taskItem.getAttribute('data-task-id');
             const taskHours = currentEmployeeData.taskHours[taskId] || 0;
+            const taskEstimatedHours = currentEmployeeData.taskEstimatedHours[taskId] || 0;
             
             // Update hours display
             const hoursElement = taskItem.querySelector('.employee-task-hours');
-            hoursElement.textContent = taskHours + ' Hours';
+            hoursElement.textContent = taskHours + ' / ' + taskEstimatedHours + ' Hours';
             
             // Update progress bar
             const progressBar = document.querySelector('.employee-task-progress[data-task-id="' + taskId + '"]');
             if (progressBar) {
-                const maxTaskHours = Math.max(taskHours, 50);
+                const maxTaskHours = taskEstimatedHours || 1; // Use estimated hours as maximum, prevent division by zero
                 const taskPercentage = (taskHours / maxTaskHours) * 100;
                 progressBar.value = Math.min(taskPercentage, 100);
             }
