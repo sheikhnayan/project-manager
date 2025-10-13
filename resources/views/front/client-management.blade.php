@@ -24,10 +24,16 @@
     <link rel='stylesheet' href='{{asset('css/styles.css')}}'>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
-<body class="bg-gray-50" x-data="{ showModal: false, editModal: false, openEditModal(id, name) {
+<body class="bg-gray-50" x-data="{ showModal: false, editModal: false, openEditModal(id, name, customId, contactPerson, email, phone, address, taxNumber) {
     this.editModal = true;
     document.getElementById('edit-client-id').value = id;
-    document.getElementById('edit-client-name').value = name;
+    document.getElementById('edit-client-name').value = name || '';
+    document.getElementById('edit-client-custom-id').value = customId || '';
+    document.getElementById('edit-client-contact-person').value = contactPerson || '';
+    document.getElementById('edit-client-email').value = email || '';
+    document.getElementById('edit-client-phone').value = phone || '';
+    document.getElementById('edit-client-address').value = address || '';
+    document.getElementById('edit-client-tax-number').value = taxNumber || '';
     document.getElementById('editClientForm').action = `/client-management/${id}`;
 }}">
     @include('front.nav')
@@ -70,6 +76,10 @@
                                 <thead>
                                     <tr class="border-b">
                                         <th class="py-3 px-4 text-left">Name</th>
+                                        <th class="py-3 px-4 text-left">Custom ID</th>
+                                        <th class="py-3 px-4 text-left">Contact Person</th>
+                                        <th class="py-3 px-4 text-left">Email</th>
+                                        <th class="py-3 px-4 text-left">Phone</th>
                                         <th class="py-3 px-4 text-left">Projects</th>
                                         <th class="py-3 px-4 text-left">Status</th>
                                         <th class="py-3 px-4 text-left">Actions</th>
@@ -79,7 +89,11 @@
                                     @foreach ($data as $item)
                                         @if ($item->is_archived == 0)
                                         <tr class="border-b">
-                                            <td class="py-3 px-4">{{ $item->name }}</td>
+                                            <td class="py-3 px-4 font-medium">{{ $item->name }}</td>
+                                            <td class="py-3 px-4 text-gray-600">{{ $item->custom_id ?? '-' }}</td>
+                                            <td class="py-3 px-4 text-gray-600">{{ $item->contact_person ?? '-' }}</td>
+                                            <td class="py-3 px-4 text-gray-600">{{ $item->email ?? '-' }}</td>
+                                            <td class="py-3 px-4 text-gray-600">{{ $item->phone ?? '-' }}</td>
                                             <td class="py-3 px-4">{{ $item->projects->count() }} Active</td>
                                             <td class="py-3 px-4">
                                                 <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm">
@@ -88,7 +102,7 @@
                                             </td>
                                             <td class="py-3 px-4">
                                                 <div class="flex items-center gap-2">
-                                                    <button class="p-1 hover:bg-gray-100 rounded" @click="openEditModal({{ $item->id }}, '{{ $item->name }}')">
+                                                    <button class="p-1 hover:bg-gray-100 rounded" @click="openEditModal({{ $item->id }}, '{{ $item->name }}', '{{ $item->custom_id }}', '{{ $item->contact_person }}', '{{ $item->email }}', '{{ $item->phone }}', '{{ $item->address }}', '{{ $item->tax_number }}')">
                                                         <i data-lucide="pencil" class="w-4 h-4"></i>
                                                     </button>
                                                     <button class="p-1 hover:bg-gray-100 rounded" onclick="archiveClient({{ $item->id }})">
@@ -108,6 +122,10 @@
                                 <thead>
                                     <tr class="border-b">
                                         <th class="py-3 px-4 text-left">Name</th>
+                                        <th class="py-3 px-4 text-left">Custom ID</th>
+                                        <th class="py-3 px-4 text-left">Contact Person</th>
+                                        <th class="py-3 px-4 text-left">Email</th>
+                                        <th class="py-3 px-4 text-left">Phone</th>
                                         <th class="py-3 px-4 text-left">Projects</th>
                                         <th class="py-3 px-4 text-left">Status</th>
                                         <th class="py-3 px-4 text-left">Actions</th>
@@ -117,7 +135,11 @@
                                     @foreach ($data as $item)
                                         @if ($item->is_archived == 1)
                                         <tr class="border-b">
-                                            <td class="py-3 px-4">{{ $item->name }}</td>
+                                            <td class="py-3 px-4 font-medium">{{ $item->name }}</td>
+                                            <td class="py-3 px-4 text-gray-600">{{ $item->custom_id ?? '-' }}</td>
+                                            <td class="py-3 px-4 text-gray-600">{{ $item->contact_person ?? '-' }}</td>
+                                            <td class="py-3 px-4 text-gray-600">{{ $item->email ?? '-' }}</td>
+                                            <td class="py-3 px-4 text-gray-600">{{ $item->phone ?? '-' }}</td>
                                             <td class="py-3 px-4">{{ $item->projects->count() }} Projects</td>
                                             <td class="py-3 px-4">
                                                 <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-sm">
@@ -126,7 +148,7 @@
                                             </td>
                                             <td class="py-3 px-4">
                                                 <div class="flex items-center gap-2">
-                                                    <button class="p-1 hover:bg-gray-100 rounded" @click="openEditModal({{ $item->id }}, '{{ $item->name }}')">
+                                                    <button class="p-1 hover:bg-gray-100 rounded" @click="openEditModal({{ $item->id }}, '{{ $item->name }}', '{{ $item->custom_id }}', '{{ $item->contact_person }}', '{{ $item->email }}', '{{ $item->phone }}', '{{ $item->address }}', '{{ $item->tax_number }}')">
                                                         <i data-lucide="pencil" class="w-4 h-4"></i>
                                                     </button>
                                                     <button class="p-1 hover:bg-gray-100 rounded" onclick="archiveClient({{ $item->id }})">
@@ -148,15 +170,63 @@
 
     <!-- Modal -->
     <div x-show="showModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-        <div class="bg-white rounded-lg shadow-lg p-6 w-1/3">
+        <div class="bg-white rounded-lg shadow-lg p-6 w-1/2 max-h-screen overflow-y-auto">
             <h2 class="text-2xl font-bold mb-4">Add Client</h2>
             <form action="{{route('client.store')}}" method="POST">
                 @csrf
-                <div class="mb-4">
-                    <label for="client-name" class="block text-sm font-medium text-gray-700">Client Name</label>
-                    <input type="text" id="client-name" name="name" class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="mb-4 md:col-span-2">
+                        <label for="client-name" class="block text-sm font-medium text-gray-700">
+                            Client Name <span class="text-red-500">*</span>
+                            <span class="text-xs text-gray-500">(Required)</span>
+                        </label>
+                        <input type="text" id="client-name" name="name" required class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="client-custom-id" class="block text-sm font-medium text-gray-700">
+                            Custom ID <span class="text-xs text-gray-500">(Optional)</span>
+                        </label>
+                        <input type="text" id="client-custom-id" name="custom_id" class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="client-contact-person" class="block text-sm font-medium text-gray-700">
+                            Contact Person <span class="text-xs text-gray-500">(Optional)</span>
+                        </label>
+                        <input type="text" id="client-contact-person" name="contact_person" class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="client-email" class="block text-sm font-medium text-gray-700">
+                            Email <span class="text-xs text-gray-500">(Optional)</span>
+                        </label>
+                        <input type="email" id="client-email" name="email" class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="client-phone" class="block text-sm font-medium text-gray-700">
+                            Phone <span class="text-xs text-gray-500">(Optional)</span>
+                        </label>
+                        <input type="text" id="client-phone" name="phone" class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black">
+                    </div>
+                    
+                    <div class="mb-4 md:col-span-2">
+                        <label for="client-address" class="block text-sm font-medium text-gray-700">
+                            Address <span class="text-xs text-gray-500">(Optional)</span>
+                        </label>
+                        <textarea id="client-address" name="address" rows="3" class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"></textarea>
+                    </div>
+                    
+                    <div class="mb-4 md:col-span-2">
+                        <label for="client-tax-number" class="block text-sm font-medium text-gray-700">
+                            Tax Number <span class="text-xs text-gray-500">(Optional)</span>
+                        </label>
+                        <input type="text" id="client-tax-number" name="tax_number" class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black">
+                    </div>
                 </div>
-                <div class="flex justify-end">
+                
+                <div class="flex justify-end mt-6">
                     <button type="button" @click="showModal = false" class="bg-gray-300 text-black px-4 py-2 rounded-md mr-2">Cancel</button>
                     <button type="submit" class="bg-black text-white px-4 py-2 rounded-md">Save</button>
                 </div>
@@ -166,17 +236,65 @@
 
     <!-- Edit Client Modal -->
     <div x-show="editModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-        <div class="bg-white rounded-lg shadow-lg p-6 w-1/3">
+        <div class="bg-white rounded-lg shadow-lg p-6 w-1/2 max-h-screen overflow-y-auto">
             <h2 class="text-2xl font-bold mb-4">Edit Client</h2>
             <form id="editClientForm" method="POST">
                 @csrf
                 @method('PUT')
                 <input type="hidden" id="edit-client-id" name="id">
-                <div class="mb-4">
-                    <label for="edit-client-name" class="block text-sm font-medium text-gray-700">Client Name</label>
-                    <input type="text" id="edit-client-name" name="name" class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="mb-4 md:col-span-2">
+                        <label for="edit-client-name" class="block text-sm font-medium text-gray-700">
+                            Client Name <span class="text-red-500">*</span>
+                            <span class="text-xs text-gray-500">(Required)</span>
+                        </label>
+                        <input type="text" id="edit-client-name" name="name" required class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="edit-client-custom-id" class="block text-sm font-medium text-gray-700">
+                            Custom ID <span class="text-xs text-gray-500">(Optional)</span>
+                        </label>
+                        <input type="text" id="edit-client-custom-id" name="custom_id" class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="edit-client-contact-person" class="block text-sm font-medium text-gray-700">
+                            Contact Person <span class="text-xs text-gray-500">(Optional)</span>
+                        </label>
+                        <input type="text" id="edit-client-contact-person" name="contact_person" class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="edit-client-email" class="block text-sm font-medium text-gray-700">
+                            Email <span class="text-xs text-gray-500">(Optional)</span>
+                        </label>
+                        <input type="email" id="edit-client-email" name="email" class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="edit-client-phone" class="block text-sm font-medium text-gray-700">
+                            Phone <span class="text-xs text-gray-500">(Optional)</span>
+                        </label>
+                        <input type="text" id="edit-client-phone" name="phone" class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black">
+                    </div>
+                    
+                    <div class="mb-4 md:col-span-2">
+                        <label for="edit-client-address" class="block text-sm font-medium text-gray-700">
+                            Address <span class="text-xs text-gray-500">(Optional)</span>
+                        </label>
+                        <textarea id="edit-client-address" name="address" rows="3" class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"></textarea>
+                    </div>
+                    
+                    <div class="mb-4 md:col-span-2">
+                        <label for="edit-client-tax-number" class="block text-sm font-medium text-gray-700">
+                            Tax Number <span class="text-xs text-gray-500">(Optional)</span>
+                        </label>
+                        <input type="text" id="edit-client-tax-number" name="tax_number" class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black">
+                    </div>
                 </div>
-                <div class="flex justify-end">
+                
+                <div class="flex justify-end mt-6">
                     <button type="button" @click="editModal = false" class="bg-gray-300 text-black px-4 py-2 rounded-md mr-2">Cancel</button>
                     <button type="submit" class="bg-black text-white px-4 py-2 rounded-md">Save</button>
                 </div>

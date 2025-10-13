@@ -433,7 +433,6 @@
             cursor: pointer;
             font-size: 12px;
             margin-left: 8px;
-            transition: transform 0.3s ease;
             user-select: none;
             padding: 4px;
             display: inline-block;
@@ -448,13 +447,9 @@
             border-radius: 3px;
         }
 
-        .expand-arrow.expanded {
-            transform: rotate(90deg);
-        }
-
         .member-time-entries {
             background-color: #f9fafb;
-            border-left: 3px solid #d1d5db;
+            border-left: 0px solid #d1d5db;
         }
 
         .member-time-entries.expanded {
@@ -462,7 +457,7 @@
         }
 
         .time-entry-row {
-            border-left: 3px solid #e5e7eb;
+            border-left: 0px solid #e5e7eb;
             background-color: #f8fafc;
         }
 
@@ -735,7 +730,7 @@
                                             {{ formatCurrency($totalCost) }}
                                         </span>
                                         <span style="width: 15%; font-size: 11px; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; text-align: center;" class="member-time-hours-{{ $item->user_id }}">
-                                            {{ number_format($totalHours, 1) }}h
+                                            {{ number_format($totalHours, 0) }}
                                         </span>
                                         <span style="width: 10%; font-size: 11px; padding-top: 4px; padding-bottom: 4px; text-align: center;"></span>
                                     </div>
@@ -805,6 +800,7 @@
     <input type="hidden" id="en_date" value={{ $data->end_date }}>
     <input type="hidden" id="task_count" value={{ count($data->tasks) }}>
     <input type="hidden" id="date_format" value="{{ globalSettings('date_format') }}">
+    <input type="hidden" id="currency_symbol" value="{{ str_replace(number_format(0, 0), '', formatCurrency(0)) }}">
 
     <script>
         // Function to format date according to user settings
@@ -838,8 +834,8 @@
 
         // Function to format currency with symbol
         function formatCurrency(amount) {
-            // You can customize the currency symbol and format here
-            const currencySymbol = '$'; // Change this to your preferred currency symbol
+            // Get dynamic currency symbol from backend settings
+            const currencySymbol = document.getElementById('currency_symbol').value;
             const formattedAmount = Number(amount).toLocaleString('en-US', {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 2
@@ -1978,7 +1974,7 @@
 
                         $('.user-hour-'+user_id).html(responseData.data.total);
 
-                        $('.user-cost-'+user_id).html(formatCurrency(responseData.data.cost));
+                        $('.user-cost-'+user_id).html(responseData.data.cost);
 
                         $('#fetch').load('/projects/reload-data/' + project_id, function() {
                             setTimeout(() => {
@@ -2025,7 +2021,7 @@
 
                     $('.user-hour-'+user_id).html(responseData.data.total);
 
-                    $('.user-cost-'+user_id).html(formatCurrency(responseData.data.cost));
+                    $('.user-cost-'+user_id).html(responseData.data.cost);
 
                     $('#fetch').load('/projects/reload-data/' + project_id, function() {
                             setTimeout(() => {
@@ -2325,10 +2321,10 @@
       $('input[name="date"], #startDate, #startDateedit').daterangepicker({
         opens: 'left',
         locale: {
-          format: 'DD/MM/YYYY'
+          format: 'YYYY-MM-DD'
         }
       }, function(start, end, label) {
-        console.log("A new date selection was made: " + start.format('DD/MM/YYYY') + ' to ' + end.format('DD/MM/YYYY'));
+        console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
       });
     });
     </script>
@@ -2727,8 +2723,8 @@ function updateMemberTimeSummary(userId, projectId) {
     const totalCost = totalHours * hourlyRate;
     
     // Update the summary display
-    $(`.member-time-cost-${userId}`).text('$' + totalCost.toFixed(2));
-    $(`.member-time-hours-${userId}`).text(totalHours.toFixed(1) + 'h');
+    $(`.member-time-cost-${userId}`).text(formatCurrency(totalCost.toFixed(2)));
+    $(`.member-time-hours-${userId}`).text(totalHours);
 }
 
 // Add event listener for input changes

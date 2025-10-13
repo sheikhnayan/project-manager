@@ -65,6 +65,7 @@
                         <a href='/user-management'>User Management</a>
                         <a href='/client-management'>Client Management</a>
                         <a href='/project-management'>Project Management</a>
+                        <a href='/internal-tasks'>Internal Tasks</a>
                         <a href='/settings'>Settings</a>
                         <hr class="my-1">
                         <form method="POST" action="{{ route('logout') }}" class="m-0">

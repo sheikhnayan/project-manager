@@ -37,12 +37,27 @@ class ClientController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request->all());
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'custom_id' => 'nullable|string|max:255',
+            'contact_person' => 'nullable|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:255',
+            'address' => 'nullable|string',
+            'tax_number' => 'nullable|string|max:255',
+        ]);
+
         $add = new Client;
         $add->name = $request->name;
+        $add->custom_id = $request->custom_id;
+        $add->contact_person = $request->contact_person;
+        $add->email = $request->email;
+        $add->phone = $request->phone;
+        $add->address = $request->address;
+        $add->tax_number = $request->tax_number;
         $add->save();
 
-        return redirect()->route('client');
+        return redirect()->route('client')->with('success', 'Client created successfully.');
     }
 
     /**
@@ -68,10 +83,22 @@ class ClientController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'custom_id' => 'nullable|string|max:255',
+            'contact_person' => 'nullable|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:255',
+            'address' => 'nullable|string',
+            'tax_number' => 'nullable|string|max:255',
         ]);
 
         $client = Client::findOrFail($id);
         $client->name = $request->name;
+        $client->custom_id = $request->custom_id;
+        $client->contact_person = $request->contact_person;
+        $client->email = $request->email;
+        $client->phone = $request->phone;
+        $client->address = $request->address;
+        $client->tax_number = $request->tax_number;
         $client->save();
 
         return redirect()->route('client')->with('success', 'Client updated successfully.');

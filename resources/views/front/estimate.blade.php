@@ -101,7 +101,7 @@
     </div>
 </div>
 
-<div class="content grid grid-cols-4 gap-4">
+<div class="content grid grid-cols-5 gap-4">
     <div style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15); padding-top: 0px; border-radius: 8px; margin-right: 0px; padding: 12px; padding-bottom: 20px;">
         <div class="p-4" style="padding-top: 0px; padding-bottom: 0px; margin-top: -40px;">
             <h6 style="float: left; font-size: 20px; font-weight: bold;;">Estimated Project <br /> Costing</h6>
@@ -174,17 +174,17 @@
 
                         <style>
                             .progress-{{ $data->id }}::-webkit-progress-value {
-                                background-color: #000 !important; /* Color of the progress value */
+                                background-color: #22c55e !important; /* Green color for the progress value */
                                 border-radius: 10px;
                             }
 
                             .progress-{{ $data->id }}::-moz-progress-bar {
-                                background-color: #000 !important; /* Color of the progress value for Firefox */
+                                background-color: #22c55e !important; /* Green color for the progress value for Firefox */
                             }
                         </style>
                         @endif
 
-                        <progress class="rounded-full h-2.5 progress-{{ $data->id }}" id="progress-bar" style="width:100%; @if($percentage > 100) accent-color: red; @else accent-color: #000; @endif" value="{{ $percentage }}" max="100"></progress>
+                        <progress class="rounded-full h-2.5 progress-{{ $data->id }}" id="progress-bar" style="width:100%; @if($percentage > 100) accent-color: red; @else accent-color: #22c55e; @endif" value="{{ $percentage }}" max="100"></progress>
                     </div>
                 </div>
 
@@ -237,16 +237,16 @@
 
                     <style>
                         .progress-{{ $key }}::-webkit-progress-value {
-                            background-color: #000; /* Color of the progress value */
+                            background-color: #22c55e; /* Green color for the progress value */
                             border-radius: 10px;
                         }
 
                         .progress-{{ $key }}::-moz-progress-bar {
-                            background-color: #000; /* Color of the progress value for Firefox */
+                            background-color: #22c55e; /* Green color for the progress value for Firefox */
                         }
                     </style>
                     @endif
-                    <progress class="rounded-full h-2.5 progress-{{ $key }}" id="progress-bar" style="accent-color:#27e3cb; width:100%" value="{{ $percentage }}" max="100"></progress>
+                    <progress class="rounded-full h-2.5 progress-{{ $key }}" id="progress-bar" style="accent-color:#22c55e; width:100%" value="{{ $percentage }}" max="100"></progress>
                 </div>
                 @endforeach
             </div>
@@ -305,17 +305,17 @@
                             @else
                             <style>
                                 .actual-progresss-{{ $data->id }}::-webkit-progress-value {
-                                    background-color: #000; /* Color of the progress value */
+                                    background-color: #22c55e; /* Green color for the progress value */
                                     border-radius: 10px;
                                 }
 
                                 .actual-progresss-{{ $data->id }}::-moz-progress-bar {
-                                    background-color: #000; /* Color of the progress value for Firefox */
+                                    background-color: #22c55e; /* Green color for the progress value for Firefox */
                                 }
                             </style>
                             @endif
 
-                            <progress class="rounded-full h-2.5 actual-progresss-{{ $data->id }}" id="actual-progress-bar" style="accent-color:#27e3cb; width:100%" value="{{ $percentage }}" max="100"></progress>
+                            <progress class="rounded-full h-2.5 actual-progresss-{{ $data->id }}" id="actual-progress-bar" style="accent-color:#22c55e; width:100%" value="{{ $percentage }}" max="100"></progress>
                         </div>
                     </div>
 
@@ -356,18 +356,132 @@
                         @else
                         <style>
                             .actual-progress-{{ $key }}::-webkit-progress-value {
-                                background-color: #000; /* Color of the progress value */
+                                background-color: #22c55e; /* Green color for the progress value */
                                 border-radius: 10px;
                             }
 
                             .actual-progress-{{ $key }}::-moz-progress-bar {
-                                background-color: #000; /* Color of the progress value for Firefox */
+                                background-color: #22c55e; /* Green color for the progress value for Firefox */
                             }
                         </style>
                         @endif
-                        <progress class="rounded-full h-2.5 actual-progress-{{ $key }}" id="actual-progress-bar" style="accent-color:#27e3cb; width:100%" value="{{ $percentage }}" max="100"></progress>
+                        <progress class="rounded-full h-2.5 actual-progress-{{ $key }}" id="actual-progress-bar" style="accent-color:#22c55e; width:100%" value="{{ $percentage }}" max="100"></progress>
                     </div>
                     @endforeach
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="">
+        <div style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15); padding-top: 0px; border-radius: 8px; margin-right: 0px; padding: 12px; padding-bottom: 20px;">
+            <div class="p-4" style="padding-top: 0px; padding-bottom: 0px; margin-top: -40px;">
+                <h6 style="float: left; font-size: 20px; font-weight: bold;">Employee Hours <br /> Tracking</h6>
+                <div style="float: right; display: flex; align-items: center; margin-top: 10px;">
+                    <select id="employeeSelector" style="padding: 8px 12px; border: 1px solid #D1D5DB; border-radius: 6px; background: white; font-size: 14px;">
+                        <option value="all">All Employees</option>
+                        @foreach ($data->members as $member)
+                            <option value="{{ $member->user->id }}">{{ $member->user->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-group" style="margin-top: 3rem; font-size: 12px;">
+                    <div>
+                        <div class="heading">
+                            <h6 class="mt-4 mb-3" style="float: left; width: 63%">All Phase</h6>
+                            <h6 class="mt-4 mb-3" style="float: right;" id="employeeAllPhaseHours">
+                                @php
+                                    $totalHours = 0;
+                                    foreach ($data->timeEntries as $entry) {
+                                        $totalHours += $entry->hours;
+                                    }
+                                @endphp
+                                {{ $totalHours }} Hours
+                            </h6>
+                        </div>
+                        <div class="progress-bar__wrapper">
+                            @php
+                                $maxHours = max($totalHours, 100); // Set a reasonable maximum or calculate based on estimates
+                                $percentage = ($totalHours / $maxHours) * 100;
+                            @endphp
+
+                            @if ($percentage > 100)
+                            <style>
+                                .employee-progress-all::-webkit-progress-value {
+                                    background-color: red; /* Color of the progress value */
+                                    border-radius: 10px;
+                                }
+
+                                .employee-progress-all::-moz-progress-bar {
+                                    background-color: red; /* Color of the progress value for Firefox */
+                                }
+                            </style>
+                            @else
+                            <style>
+                                .employee-progress-all::-webkit-progress-value {
+                                    background-color: #22c55e; /* Green color for the progress value */
+                                    border-radius: 10px;
+                                }
+
+                                .employee-progress-all::-moz-progress-bar {
+                                    background-color: #22c55e; /* Green color for the progress value for Firefox */
+                                }
+                            </style>
+                            @endif
+
+                            <progress class="rounded-full h-2.5 employee-progress-all" id="employee-all-progress" style="accent-color:#22c55e; width:100%" value="{{ min($percentage, 100) }}" max="100"></progress>
+                        </div>
+                    </div>
+
+                    <div id="employeeTaskBreakdown">
+                        @foreach ($data->tasks as $key => $task)
+                        <div class="heading employee-task-item" data-task-id="{{ $task->id }}"
+                        @if ($key == 0)
+                            style="margin-top: 40px;"
+                        @endif
+                        >
+                            <h6 class="mt-4 mb-3" style="float: left">{{ $task->name }}</h6>
+                            @php
+                                $taskHours = 0;
+                                foreach ($data->timeEntries as $entry) {
+                                    if ($entry->task_id == $task->id) {
+                                        $taskHours += $entry->hours;
+                                    }
+                                }
+                            @endphp
+                            <h6 class="mt-4 mb-3 employee-task-hours" style="float: right;">{{ $taskHours }} Hours</h6>
+                        </div>
+                        <div class="progress-bar__wrapper">
+                            @php
+                                $maxTaskHours = max($taskHours, 50); // Set a reasonable maximum for task hours
+                                $taskPercentage = ($taskHours / $maxTaskHours) * 100;
+                            @endphp
+                            @if ($taskPercentage > 100)
+                            <style>
+                                .employee-task-progress-{{ $key }}::-webkit-progress-value {
+                                    background-color: red; /* Color of the progress value */
+                                    border-radius: 10px;
+                                }
+
+                                .employee-task-progress-{{ $key }}::-moz-progress-bar {
+                                    background-color: red; /* Color of the progress value for Firefox */
+                                }
+                            </style>
+                            @else
+                            <style>
+                                .employee-task-progress-{{ $key }}::-webkit-progress-value {
+                                    background-color: #22c55e; /* Green color for the progress value */
+                                    border-radius: 10px;
+                                }
+
+                                .employee-task-progress-{{ $key }}::-moz-progress-bar {
+                                    background-color: #22c55e; /* Green color for the progress value for Firefox */
+                                }
+                            </style>
+                            @endif
+                            <progress class="rounded-full h-2.5 employee-task-progress-{{ $key }} employee-task-progress" data-task-id="{{ $task->id }}" style="accent-color:#22c55e; width:100%" value="{{ min($taskPercentage, 100) }}" max="100"></progress>
+                        </div>
+                        @endforeach
+                    </div>
                 </div>
             </div>
         </div>
@@ -1036,6 +1150,106 @@ $(document).ready(function() {
     // Handle dropdown change
     document.getElementById('taskSelector').addEventListener('change', function() {
         updateChart(this.value);
+    });
+
+    // Employee Hours Tracking functionality
+    const employeeTimeData = {
+        @foreach ($data->members as $member)
+        {{ $member->user->id }}: {
+            id: {{ $member->user->id }},
+            name: "{{ $member->user->name }}",
+            totalHours: @php
+                $userTotalHours = 0;
+                foreach ($data->timeEntries as $entry) {
+                    if ($entry->user_id == $member->user->id) {
+                        $userTotalHours += $entry->hours;
+                    }
+                }
+                echo $userTotalHours;
+            @endphp,
+            taskHours: {
+                @foreach ($data->tasks as $task)
+                {{ $task->id }}: @php
+                    $userTaskHours = 0;
+                    foreach ($data->timeEntries as $entry) {
+                        if ($entry->user_id == $member->user->id && $entry->task_id == $task->id) {
+                            $userTaskHours += $entry->hours;
+                        }
+                    }
+                    echo $userTaskHours;
+                @endphp,
+                @endforeach
+            }
+        },
+        @endforeach
+    };
+
+    // All employees data
+    const allEmployeesData = {
+        totalHours: @php
+            $allTotalHours = 0;
+            foreach ($data->timeEntries as $entry) {
+                $allTotalHours += $entry->hours;
+            }
+            echo $allTotalHours;
+        @endphp,
+        taskHours: {
+            @foreach ($data->tasks as $task)
+            {{ $task->id }}: @php
+                $allTaskHours = 0;
+                foreach ($data->timeEntries as $entry) {
+                    if ($entry->task_id == $task->id) {
+                        $allTaskHours += $entry->hours;
+                    }
+                }
+                echo $allTaskHours;
+            @endphp,
+            @endforeach
+        }
+    };
+
+    function updateEmployeeHours(selectedEmployeeId) {
+        let currentEmployeeData;
+        
+        if (selectedEmployeeId === 'all') {
+            currentEmployeeData = allEmployeesData;
+        } else {
+            currentEmployeeData = employeeTimeData[selectedEmployeeId];
+        }
+
+        // Update total hours display
+        document.getElementById('employeeAllPhaseHours').textContent = currentEmployeeData.totalHours + ' Hours';
+        
+        // Update total hours progress bar
+        const maxHours = Math.max(currentEmployeeData.totalHours, 100);
+        const totalPercentage = (currentEmployeeData.totalHours / maxHours) * 100;
+        document.getElementById('employee-all-progress').value = Math.min(totalPercentage, 100);
+        
+        // Update each task's hours and progress bar
+        document.querySelectorAll('.employee-task-item').forEach(function(taskItem) {
+            const taskId = taskItem.getAttribute('data-task-id');
+            const taskHours = currentEmployeeData.taskHours[taskId] || 0;
+            
+            // Update hours display
+            const hoursElement = taskItem.querySelector('.employee-task-hours');
+            hoursElement.textContent = taskHours + ' Hours';
+            
+            // Update progress bar
+            const progressBar = document.querySelector('.employee-task-progress[data-task-id="' + taskId + '"]');
+            if (progressBar) {
+                const maxTaskHours = Math.max(taskHours, 50);
+                const taskPercentage = (taskHours / maxTaskHours) * 100;
+                progressBar.value = Math.min(taskPercentage, 100);
+            }
+        });
+    }
+
+    // Initialize with "All Employees"
+    updateEmployeeHours('all');
+
+    // Handle employee selector change
+    document.getElementById('employeeSelector').addEventListener('change', function() {
+        updateEmployeeHours(this.value);
     });
 });
 </script>

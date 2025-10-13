@@ -11,12 +11,42 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\InternalTaskController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\StripeWebhookController;
+use App\Http\Controllers\StripeController;
 
+
+Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle'])->name('stripe.webhook');
 Route::get('/', function () {
-    return view('front.index');
-})->name('index');
+    // Check if user is authenticated
+    if (Auth::check()) {
+        $user = Auth::user();
+        
+        // If user has superadmin role (role_id 8), redirect to dashboard
+        if ($user->role_id == 8) {
+            return redirect()->route('projects');
+        }
+        
+        // For other authenticated users, check if their company has an active subscription
+        if ($user->company && $user->company->is_subscribed) {
+            return redirect()->route('projects');
+        }
+        
+        // If user is authenticated but no active subscription, show subscription page
+        return view('front.homepage');
+    }
+    
+    // If not authenticated, show the public subscription page
+    return view('front.homepage');
+})->name('homepage');
+
+Route::post('/subscribe', [StripeController::class, 'subscribe'])->name('stripe.subscribe');
+
+// Route::get('/', function () {
+//     return view('front.index');
+// })->name('index');
 
 Route::get('/foo', function () {
     Artisan::call('storage:link');
@@ -59,6 +89,8 @@ Route::post('/estimated-time-tracking/save', [TimeSheetController::class, 'store
 Route::post('/estimated-time-tracking/weekly/{id}/save', [TimeSheetController::class, 'store_estimated_weekly'])->name('estimated-time-tracking.store')->middleware('permission:edit_own_timesheet,edit_all_timesheets');
 
 Route::get('/time-tracking/tasks/{projectId}', [TimeSheetController::class, 'getTasksByProject'])->middleware('permission:view_own_timesheet,view_all_timesheets');
+
+Route::get('/time-tracking/internal-tasks', [TimeSheetController::class, 'getInternalTasks'])->middleware('permission:view_own_timesheet,view_all_timesheets');
 
 Route::get('/api/countries/task-lists', [ProjectController::class, 'getCountryTaskLists']);
 
@@ -150,6 +182,30 @@ Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('
 
 Route::get('/test-mail', [\App\Http\Controllers\UserController::class, 'testMail']);
 
+// Internal Tasks Management Routes (Admin only)
+Route::middleware(['auth', 'permission:manage_settings'])->group(function () {
+    Route::resource('internal-tasks', InternalTaskController::class);
+    Route::post('/internal-tasks/{id}/toggle-status', [InternalTaskController::class, 'toggleStatus']);
+});
+
+// Internal Tasks API for Time Tracking (All authenticated users)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/api/internal-tasks/active', [InternalTaskController::class, 'getActiveTasks']);
+});
+
+// Department and Category Management API (Admin users with edit_settings permission)
+Route::middleware(['auth', 'permission:edit_settings'])->group(function () {
+    Route::get('/api/departments', [App\Http\Controllers\DepartmentController::class, 'index']);
+    Route::post('/api/departments', [App\Http\Controllers\DepartmentController::class, 'store']);
+    Route::put('/api/departments/{id}', [App\Http\Controllers\DepartmentController::class, 'update']);
+    Route::delete('/api/departments/{id}', [App\Http\Controllers\DepartmentController::class, 'destroy']);
+    
+    Route::get('/api/categories', [App\Http\Controllers\CategoryController::class, 'index']);
+    Route::post('/api/categories', [App\Http\Controllers\CategoryController::class, 'store']);
+    Route::put('/api/categories/{id}', [App\Http\Controllers\CategoryController::class, 'update']);
+    Route::delete('/api/categories/{id}', [App\Http\Controllers\CategoryController::class, 'destroy']);
+});
+
 Route::post('/login', function (Request $request) {
     $credentials = $request->only('email', 'password');
     if (Auth::attempt($credentials)) {
@@ -169,3 +225,19 @@ Route::post('/logout', function (Request $request) {
     $request->session()->regenerateToken();
     return redirect('/login');
 })->name('logout');
+
+// Debug endpoint to check user permissions
+Route::get('/debug/user', function () {
+    $user = auth()->user();
+    if (!$user) {
+        return response()->json(['error' => 'Not authenticated']);
+    }
+    
+    return response()->json([
+        'user_id' => $user->id,
+        'email' => $user->email,
+        'role_id' => $user->role_id,
+        'company_id' => $user->company_id,
+        'has_edit_settings' => $user->hasPermission('edit_settings')
+    ]);
+})->middleware('auth');

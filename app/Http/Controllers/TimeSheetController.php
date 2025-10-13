@@ -9,6 +9,7 @@ use App\Models\Task;
 use App\Models\EstimatedTimeEntry;
 use App\Models\Project;
 use App\Models\ProjectTeamMember;
+use App\Models\InternalTask;
 use Carbon\Carbon;
 
 class TimeSheetController extends Controller
@@ -30,16 +31,18 @@ class TimeSheetController extends Controller
         $startDate = date('Y-m-d', strtotime($dates[0]));
         $endDate = date('Y-m-d', strtotime($dates[1]));
 
-        // Fetch time entries for the user and date range
-        $timeEntries = TimeEntry::with(['project', 'task'])
+        // Fetch time entries for the user and date range (both project and internal)
+        $timeEntries = TimeEntry::with(['project', 'task', 'internalTask'])
             ->where('user_id', $user)
             ->whereBetween('entry_date', [$startDate, $endDate])
             ->get();
 
-        // dd($timeEntries);
+        // Separate project and internal entries
+        $projectEntries = $timeEntries->where('task_type', 'project');
+        $internalEntries = $timeEntries->where('task_type', 'internal');
 
-        // Transform the data into the required format
-        $groupedEntries = $timeEntries->groupBy('project.id')->map(function ($entries, $project) {
+        // Transform project entries (existing logic - unchanged)
+        $groupedProjectEntries = $projectEntries->groupBy('project.id')->map(function ($entries, $project) {
             $tasks = $entries->groupBy('task.id')->map(function ($taskEntries, $task) {
                 $days = $taskEntries->mapWithKeys(function ($entry) {
                     $day = strtolower(date('D', strtotime($entry->entry_date))); // Get day abbreviation (e.g., 'mon')
@@ -51,12 +54,33 @@ class TimeSheetController extends Controller
             return $tasks->values();
         });
 
-        // Flatten the data for JSON response
+        // Transform internal entries (new logic)
+        $groupedInternalEntries = $internalEntries->groupBy('internal_task_id')->map(function ($entries, $internalTaskId) {
+            $days = $entries->mapWithKeys(function ($entry) {
+                $day = strtolower(date('D', strtotime($entry->entry_date)));
+                return [$day => $entry->hours];
+            });
+            return array_merge([
+                'task' => $internalTaskId,
+                'task_type' => 'internal',
+                'task_name' => $entries->first()->internalTask->name ?? 'Unknown Internal Task',
+                'department' => $entries->first()->internalTask->department ?? 'Unknown'
+            ], $days->toArray());
+        });
+
+        // Flatten the data for JSON response (combine both types)
         $response = [];
-        foreach ($groupedEntries as $project => $tasks) {
+        
+        // Add project entries (existing format maintained)
+        foreach ($groupedProjectEntries as $project => $tasks) {
             foreach ($tasks as $task) {
-                $response[] = array_merge(['project' => $project], $task);
+                $response[] = array_merge(['project' => $project, 'task_type' => 'project'], $task);
             }
+        }
+        
+        // Add internal entries (new format)
+        foreach ($groupedInternalEntries as $taskData) {
+            $response[] = array_merge(['project' => null], $taskData);
         }
 
         // Get all projects the user is a member of
@@ -153,6 +177,26 @@ class TimeSheetController extends Controller
     }
 
     /**
+     * Get internal tasks for time tracking
+     */
+    public function getInternalTasks()
+    {
+        $user = auth()->user();
+        
+        $query = \App\Models\InternalTask::where('is_active', true)
+            ->select('id', 'name', 'department', 'category', 'max_hours_per_day');
+        
+        // Filter by company for non-superadmin users
+        if ($user->role_id != 8 && $user->company_id) {
+            $query->where('company_id', $user->company_id);
+        }
+        
+        $tasks = $query->orderBy('department')->orderBy('name')->get();
+        
+        return response()->json($tasks);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
@@ -171,45 +215,67 @@ class TimeSheetController extends Controller
 
         // Loop through the data and save each entry
         foreach ($request['data'] as $entry) {
-            // dd($entry);
             foreach (['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as $day) {
                 if (!empty($entry[$day]) && $entry[$day] > 0) {
                     $entryDate = date('Y-m-d', strtotime("{$day} this week", strtotime($startDate)));
 
-                    // dd($entryDate, $entry[$day]);
-
                     try {
-                        //code...
-                        // dd($entryDate);
-                        $check = TimeEntry::where('user_id', $request['user'])
-                            ->where('project_id', $entry['project'])
-                            ->where('task_id', $entry['task'])
-                            ->where('entry_date', $entryDate)
-                            ->first();
+                        // Determine if this is a project or internal task entry
+                        $taskType = $entry['task_type'] ?? 'project'; // Default to project for backward compatibility
+                        
+                        if ($taskType === 'internal') {
+                            // Handle internal task entries
+                            $check = TimeEntry::where('user_id', $request['user'])
+                                ->where('task_type', 'internal')
+                                ->where('internal_task_id', $entry['task'])
+                                ->where('entry_date', $entryDate)
+                                ->first();
 
-                        if ($check) {
-
-                            $check->hours = $entry[$day];
-
-                            $check->update();
+                            if ($check) {
+                                $check->hours = $entry[$day];
+                                $check->update();
+                            } else {
+                                // Create new internal task entry
+                                $d = new TimeEntry;
+                                $d->user_id = $request['user'];
+                                $d->task_type = 'internal';
+                                $d->internal_task_id = $entry['task'];
+                                $d->project_id = null;
+                                $d->task_id = null;
+                                $d->entry_date = $entryDate;
+                                $d->hours = $entry[$day];
+                                $d->description = $entry['description'] ?? null;
+                                $d->save();
+                            }
                         } else {
-                            // Create a new time entry
-                            $d = new TimeEntry;
-                            $d->user_id = $request['user'];
-                            $d->project_id = $entry['project'];
-                            $d->task_id = $entry['task'];
-                            $d->entry_date = $entryDate;
-                            $d->hours = $entry[$day];
-                            $d->save();
+                            // Handle project task entries (existing logic - unchanged)
+                            $check = TimeEntry::where('user_id', $request['user'])
+                                ->where('task_type', 'project')
+                                ->where('project_id', $entry['project'])
+                                ->where('task_id', $entry['task'])
+                                ->where('entry_date', $entryDate)
+                                ->first();
+
+                            if ($check) {
+                                $check->hours = $entry[$day];
+                                $check->update();
+                            } else {
+                                // Create new project task entry (existing logic - unchanged)
+                                $d = new TimeEntry;
+                                $d->user_id = $request['user'];
+                                $d->task_type = 'project';
+                                $d->project_id = $entry['project'];
+                                $d->task_id = $entry['task'];
+                                $d->internal_task_id = null;
+                                $d->entry_date = $entryDate;
+                                $d->hours = $entry[$day];
+                                $d->save();
+                            }
                         }
                     } catch (\Throwable $th) {
-                        //throw $th;
-                        dd($th);
+                        \Log::error('Time entry save error: ' . $th->getMessage());
+                        return response()->json(['error' => 'Failed to save time entry: ' . $th->getMessage()], 500);
                     }
-
-
-
-                    // dd($d);
                 }
             }
         }
@@ -280,7 +346,7 @@ class TimeSheetController extends Controller
 
         $user = User::find($request->user_id);
 
-        $data['cost'] = $data['total']*$user->hourly_rate;
+        $data['cost'] = formatCurrency($data['total']*$user->hourly_rate);
 
 
         return response()->json(['data' => $data, 'message' => 'Time entries saved successfully.']);
@@ -341,7 +407,7 @@ class TimeSheetController extends Controller
 
         $user = User::find($request->user_id);
 
-        $data['cost'] = $data['total']*$user->hourly_rate;
+        $data['cost'] = formatCurrency($data['total']*$user->hourly_rate);
 
 
 

@@ -22,6 +22,11 @@ class CheckPermission
 
         $user = Auth::user()->load('userRole.permissions');
         
+        // Super admin (role_id = 8) bypasses all permission checks
+        if ($user->role_id == 8) {
+            return $next($request);
+        }
+        
         // If no role assigned, deny access
         if (!$user->role_id || !$user->userRole) {
             abort(403, 'Access denied. No role assigned.');

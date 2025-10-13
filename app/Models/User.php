@@ -27,6 +27,9 @@ class User extends Authenticatable
         'profile_image_url',
         'profile_image_path',
         'role_id',
+        'company_id',
+        'first_name',
+        'last_name',
     ];
 
     /**
@@ -65,6 +68,14 @@ class User extends Authenticatable
     public function projects()
     {
         return $this->hasMany(ProjectTeamMember::class);
+    }
+
+    /**
+     * Get the company that the user belongs to.
+     */
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 
     /**

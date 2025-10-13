@@ -676,7 +676,7 @@
                         @foreach ($data as $item)
                             @if ($item->is_archived == 1)
                             <div class="task-item team-member-row data-id-{{ $item->id }}" data-user-id="{{ $item->id }}" style="position: unset">
-                                <span style="width: 35%; font-size: 12px; display: inline-flex; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; align-items: center;">
+                                <span style="width: 40%; font-size: 12px; display: inline-flex; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; align-items: center;">
                                     <div class="drag-handle">⋮⋮</div>
                                     <img src="{{ $item->profile_image_url ? asset('storage/'.$item->profile_image_url) : 'https://randomuser.me/api/portraits/men/4.jpg' }}"> 
                                     @php
@@ -688,14 +688,14 @@
                                     {{ $displayName }}
                                     <div class="expand-arrow" data-target="member-projects" data-id="{{ $item->id }}">▶</div>
                                 </span>
-                                <span style="width: 20%; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;">
+                                <span style="width: 22%; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;">
                                     {{ ucfirst(str_replace('_', ' ', $item->role)) }}
                                 </span>
                                     @php
                                         $es = DB::table('time_entries')->where('user_id',$item->id)->sum('hours');
                                     @endphp
-                                <span style="width: 18%; font-size: 12px; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;" class="user-cost-{{ $item->id }}">{{ $item->hourly_rate*$es }}</span>
-                                <span style="width: 19%; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;" class="user-hour-{{ $item->id }}">
+                                <span style="width: 15%; font-size: 12px; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;" class="user-cost-{{ $item->id }}">{{ $item->hourly_rate*$es }}</span>
+                                <span style="width: 15%; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;" class="user-hour-{{ $item->id }}">
                                     {{ $es }}
                                 </span>
                                 <span style="width: 8%; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;">
@@ -797,7 +797,7 @@
             </div>
 
     <!-- Add User Modal -->
-    <div x-show="showAddUserModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50" style="display: none;" x-cloak>
+    <div x-show="showAddUserModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50" style="z-index: 9999; display: none;" x-cloak>
         <div class="bg-white rounded-lg shadow-lg p-6 w-1/3">
             <h2 class="text-2xl font-bold mb-4">Add User</h2>
             <form method="POST" action="{{ route('users.store') }}" enctype="multipart/form-data">

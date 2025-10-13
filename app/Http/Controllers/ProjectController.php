@@ -287,16 +287,14 @@ class ProjectController extends Controller
             // Clean the date strings and validate format
             $startDateString = trim($dates[0]);
             $endDateString = trim($dates[1]);
-            $startDateString = Carbon::parse($startDateString)->format('Y-m-d');
-            $endDateString = Carbon::parse($endDateString)->format('Y-m-d');
             
-            // Check if date is in Y-m-d format (2025-08-17) or d/m/Y format (17/08/2025)
+            // Check if date is in Y-m-d format (2025-08-17) first
             if (preg_match('/^\d{4}-\d{1,2}-\d{1,2}$/', $startDateString) && preg_match('/^\d{4}-\d{1,2}-\d{1,2}$/', $endDateString)) {
-                // Date is already in Y-m-d format
+                // Date is already in Y-m-d format from daterangepicker
                 $start_date = Carbon::createFromFormat('Y-m-d', $startDateString)->format('Y-m-d');
                 $end_date = Carbon::createFromFormat('Y-m-d', $endDateString)->format('Y-m-d');
             } elseif (preg_match('/^\d{1,2}\/\d{1,2}\/\d{4}$/', $startDateString) && preg_match('/^\d{1,2}\/\d{1,2}\/\d{4}$/', $endDateString)) {
-                // Date is in d/m/Y format
+                // Date is in d/m/Y format - handle day/month correctly
                 $start_date = Carbon::createFromFormat('d/m/Y', $startDateString)->format('Y-m-d');
                 $end_date = Carbon::createFromFormat('d/m/Y', $endDateString)->format('Y-m-d');
             } else {
@@ -337,21 +335,17 @@ class ProjectController extends Controller
             // Clean the date strings and validate format
             $startDateString = trim($dates[0]);
             $endDateString = trim($dates[1]);
-            $startDateString = Carbon::parse($startDateString)->format('Y-m-d');
-            $endDateString = Carbon::parse($endDateString)->format('Y-m-d');
             
-            
-            // Check if date is in Y-m-d format (2025-08-17) or d/m/Y format (17/08/2025)
+            // Check if date is in Y-m-d format (2025-08-17) first
             if (preg_match('/^\d{4}-\d{1,2}-\d{1,2}$/', $startDateString) && preg_match('/^\d{4}-\d{1,2}-\d{1,2}$/', $endDateString)) {
-                // Date is already in Y-m-d format
+                // Date is already in Y-m-d format from daterangepicker
                 $start_date = Carbon::createFromFormat('Y-m-d', $startDateString)->format('Y-m-d');
                 $end_date = Carbon::createFromFormat('Y-m-d', $endDateString)->format('Y-m-d');
             } elseif (preg_match('/^\d{1,2}\/\d{1,2}\/\d{4}$/', $startDateString) && preg_match('/^\d{1,2}\/\d{1,2}\/\d{4}$/', $endDateString)) {
-                // Date is in d/m/Y format
+                // Date is in d/m/Y format - handle day/month correctly
                 $start_date = Carbon::createFromFormat('d/m/Y', $startDateString)->format('Y-m-d');
                 $end_date = Carbon::createFromFormat('d/m/Y', $endDateString)->format('Y-m-d');
             } else {
-                
                 return back()->withErrors(['date' => 'Invalid date format. Please use dd/mm/yyyy or yyyy-mm-dd format.']);
             }
         } catch (\Exception $e) {
