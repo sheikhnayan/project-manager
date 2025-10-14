@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
 // use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Client extends Model
 {
+    use CompanyScope;
     // use SoftDeletes;
 
     protected $fillable = [
@@ -17,6 +19,7 @@ class Client extends Model
         'phone',
         'address',
         'tax_number',
+        'company_id',
         'is_archived',
     ];
 
@@ -27,5 +30,10 @@ class Client extends Model
     public function projects()
     {
         return $this->hasMany(Project::class);
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 }

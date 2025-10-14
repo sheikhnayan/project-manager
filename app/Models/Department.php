@@ -13,6 +13,7 @@ class Department extends Model
         'name',
         'description',
         'company_id',
+        'created_by',
         'is_active'
     ];
 
@@ -42,6 +43,23 @@ class Department extends Model
     public function internalTasks()
     {
         return $this->hasMany(InternalTask::class, 'department', 'name');
+    }
+
+    /**
+     * Get the users assigned to this department
+     */
+    public function assignedUsers()
+    {
+        return $this->belongsToMany(User::class, 'department_user_assignments', 'department_id', 'user_id')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Get the user who created this department
+     */
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     /**

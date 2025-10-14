@@ -10,10 +10,70 @@ use App\Models\EstimatedTimeEntry;
 use App\Models\Project;
 use App\Models\ProjectTeamMember;
 use App\Models\InternalTask;
+use App\Models\Department;
 use Carbon\Carbon;
 
 class TimeSheetController extends Controller
 {
+    /**
+     * Get departments for a specific user
+     */
+    public function getUserDepartments($userId)
+    {
+        $currentUser = auth()->user();
+        $targetUser = User::findOrFail($userId);
+        
+        // Check if user can view the requested user's data
+        if ($currentUser->role_id != 8 && $currentUser->id != $userId) {
+            // Non-admin users can only view their own data
+            return response()->json(['error' => 'You can only view your own departments'], 403);
+        }
+
+        // For regular users, ensure they're in the same company
+        if ($currentUser->role_id != 8 && $currentUser->company_id != $targetUser->company_id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+        
+        // Get all departments the user is assigned to
+        $query = Department::whereHas('assignedUsers', function($query) use ($userId) {
+            $query->where('user_id', $userId);
+        })->where('is_active', true);
+        
+        // Filter by company for non-admin users
+        if ($currentUser->role_id != 8) {
+            $query->where('company_id', $currentUser->company_id);
+        }
+        
+        $departments = $query->select('id', 'name')
+                           ->orderBy('name')
+                           ->get();
+          
+        return response()->json(['departments' => $departments]);
+    }
+
+    /**
+     * Get tasks for a specific department
+     */
+    public function getDepartmentTasks($departmentId)
+    {
+        $user = auth()->user();
+        $department = \App\Models\Department::findOrFail($departmentId);
+        
+        // Check if user is assigned to the department
+        if (!$department->assignedUsers->contains($user->id)) {
+            return response()->json(['error' => 'You are not assigned to this department'], 403);
+        }
+        
+        // Get all tasks for the department
+        $tasks = InternalTask::where('department', $department->name)
+                           ->where('is_active', true)
+                           ->select('id', 'name')
+                           ->orderBy('name')
+                           ->get();
+                           
+        return response()->json($tasks);
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -28,6 +88,7 @@ class TimeSheetController extends Controller
         
         // Parse the date range
         $dates = explode(' - ', $daterange);
+        // dd($dates);
         $startDate = date('Y-m-d', strtotime($dates[0]));
         $endDate = date('Y-m-d', strtotime($dates[1]));
 
@@ -87,10 +148,16 @@ class TimeSheetController extends Controller
         $projectIds = ProjectTeamMember::where('user_id', $user)->pluck('project_id');
         $projects = Project::whereIn('id', $projectIds)->get(['id', 'name', 'project_number']);
 
-        // Return the transformed data as JSON, including projects list
+        // Get all departments the user is assigned to
+        $departments = \App\Models\Department::whereHas('assignedUsers', function($query) use ($user) {
+            $query->where('user_id', $user);
+        })->where('is_active', true)->get(['id', 'name']);
+
+        // Return the transformed data as JSON, including projects and departments list
         return response()->json([
             'entries' => $response,
             'projects' => $projects,
+            'departments' => $departments,
         ]);
     }
 
@@ -183,8 +250,21 @@ class TimeSheetController extends Controller
     {
         $user = auth()->user();
         
+        // Get tasks from departments that the user is assigned to
         $query = \App\Models\InternalTask::where('is_active', true)
-            ->select('id', 'name', 'department', 'category', 'max_hours_per_day');
+            ->select('id', 'name', 'department', 'max_hours_per_day')
+            ->whereIn('department', function($subQuery) use ($user) {
+                $subQuery->select('departments.name')
+                    ->from('departments')
+                    ->join('department_user_assignments', 'departments.id', '=', 'department_user_assignments.department_id')
+                    ->where('department_user_assignments.user_id', $user->id)
+                    ->where('departments.is_active', true);
+                    
+                // Filter by company for non-superadmin users
+                if ($user->role_id != 8 && $user->company_id) {
+                    $subQuery->where('departments.company_id', $user->company_id);
+                }
+            });
         
         // Filter by company for non-superadmin users
         if ($user->role_id != 8 && $user->company_id) {

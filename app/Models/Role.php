@@ -2,17 +2,19 @@
 
 namespace App\Models;
 
+use App\Traits\CompanyScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Role extends Model
 {
-    use HasFactory;
+    use HasFactory, CompanyScope;
 
     protected $fillable = [
         'name',
         'display_name',
         'description',
+        'company_id',
         'is_active'
     ];
 
@@ -65,7 +67,7 @@ class Role extends Model
     /**
      * Remove permission from role
      */
-    public function removePermission($permission)
+    public function revokePermission($permission)
     {
         if (is_string($permission)) {
             $permission = Permission::where('name', $permission)->first();
@@ -74,5 +76,21 @@ class Role extends Model
         if ($permission) {
             $this->permissions()->detach($permission);
         }
+    }
+
+    /**
+     * Get the company that owns the role
+     */
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    /**
+     * Scope a query to filter by company
+     */
+    public function scopeForCompany($query, $companyId)
+    {
+        return $query->where('company_id', $companyId);
     }
 }

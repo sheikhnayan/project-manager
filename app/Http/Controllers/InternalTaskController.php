@@ -53,16 +53,17 @@ class InternalTaskController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
-            'department' => 'required|string|max:100',
-            'category' => 'required|string|max:100',
-            'hourly_rate' => 'nullable|numeric|min:0|max:9999.99',
-            'max_hours_per_day' => 'nullable|integer|min:1|max:24',
-            'requires_approval' => 'boolean',
-            'is_active' => 'boolean',
-        ]);
+        // dd($request->all());
+        // $request->validate([
+        //     'name' => 'required|string|max:255',
+        //     'description' => 'nullable|string|max:1000',
+        //     'department' => 'required|string|max:100',
+        //     'category' => 'required|string|max:100',
+        //     'hourly_rate' => 'nullable|numeric|min:0|max:9999.99',
+        //     'max_hours_per_day' => 'nullable|integer|min:1|max:24',
+        //     'requires_approval' => 'boolean',
+        //     'is_active' => 'boolean',
+        // ]);
 
         $user = auth()->user();
         
@@ -75,7 +76,7 @@ class InternalTaskController extends Controller
             'max_hours_per_day' => $request->max_hours_per_day,
             'requires_approval' => $request->boolean('requires_approval', false),
             'is_active' => $request->boolean('is_active', true),
-            'company_id' => $user->role_id == 8 ? null : $user->company_id,
+            'company_id' => $user->company_id,
             'created_by' => $user->id,
         ]);
 
@@ -229,5 +230,247 @@ class InternalTaskController extends Controller
 
         return redirect()->route('internal-tasks.index')
             ->with('success', 'Internal task deleted successfully.');
+    }
+
+    /**
+     * Get departments with task counts and user assignments
+     */
+    public function getDepartments()
+    {
+        $user = auth()->user();
+        
+        $query = Department::with([
+            'assignedUsers:id,name', // Include assigned users, but only id and name fields
+            'internalTasks', // For task count
+        ]);
+        
+        // Filter by company for non-superadmin users
+        if ($user->role_id != 8 && $user->company_id) {
+            $query->where('company_id', $user->company_id);
+        }
+        
+        $departments = $query->get();
+        
+        // Add counts to departments
+        $departments->each(function ($department) {
+            $department->tasks_count = $department->internalTasks->count();
+            $department->assigned_users_count = $department->assignedUsers->count();
+        });
+        
+        return response()->json($departments);
+    }
+
+    /**
+     * Store a new department
+     */
+    public function storeDepartment(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'user_ids' => 'nullable|json'
+        ]);
+
+        $user = auth()->user();
+        $companyId = $user->role_id == 8 ? null : $user->company_id;
+
+        $department = \App\Models\Department::create([
+            'name' => $request->name,
+            'description' => $request->description,
+            'company_id' => $companyId
+        ]);
+
+        // Handle user assignments if provided
+        if ($request->filled('user_ids')) {
+            $userIds = json_decode($request->user_ids);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($userIds)) {
+                // Verify all users belong to the same company (unless super admin)
+                if ($user->role_id != 8) {
+                    $userIds = \App\Models\User::where('company_id', $user->company_id)
+                        ->whereIn('id', $userIds)
+                        ->pluck('id')
+                        ->toArray();
+                }
+                // Sync user assignments
+                $department->assignedUsers()->sync($userIds);
+            }
+        }
+
+        // Load the department with its assigned users for the response
+        $department->load('assignedUsers:id,name');
+
+        return response()->json(['success' => true, 'department' => $department]);
+    }
+
+    /**
+     * Show a specific department with its tasks and assigned users
+     */
+    public function showDepartment($id)
+    {
+        $user = auth()->user();
+        
+        $query = \App\Models\Department::with(['internalTasks', 'assignedUsers']);
+        
+        // Filter by company for non-superadmin users
+        if ($user->role_id != 8 && $user->company_id) {
+            $query->where('company_id', $user->company_id);
+        }
+        
+        $department = $query->findOrFail($id);
+        
+        return view('front.internal-tasks.department', compact('department'));
+    }
+
+    /**
+     * Show the form for editing a department
+     */
+    public function editDepartment($id)
+    {
+        $user = auth()->user();
+        
+        $query = \App\Models\Department::query();
+        
+        // Filter by company for non-superadmin users
+        if ($user->role_id != 8 && $user->company_id) {
+            $query->where('company_id', $user->company_id);
+        }
+        
+        $department = $query->findOrFail($id);
+        
+        return view('front.internal-tasks.edit-department', compact('department'));
+    }
+
+    /**
+     * Update a department
+     */
+    public function updateDepartment(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'user_ids' => 'nullable|json'
+        ]);
+
+        $user = auth()->user();
+        
+        $query = \App\Models\Department::query();
+        
+        // Filter by company for non-superadmin users
+        if ($user->role_id != 8 && $user->company_id) {
+            $query->where('company_id', $user->company_id);
+        }
+        
+        $department = $query->findOrFail($id);
+        
+        $department->update([
+            'name' => $request->name,
+            'description' => $request->description
+        ]);
+
+        // Handle user assignments if provided
+        if ($request->filled('user_ids')) {
+            $userIds = json_decode($request->user_ids);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($userIds)) {
+                // Verify all users belong to the same company (unless super admin)
+                if ($user->role_id != 8) {
+                    $userIds = \App\Models\User::where('company_id', $user->company_id)
+                        ->whereIn('id', $userIds)
+                        ->pluck('id')
+                        ->toArray();
+                }
+                // Sync user assignments
+                $department->assignedUsers()->sync($userIds);
+            }
+        }
+
+        // Load the department with its assigned users for the response
+        $department->load('assignedUsers:id,name');
+
+        return response()->json(['success' => true, 'department' => $department]);
+    }
+
+    /**
+     * Delete a department
+     */
+    public function deleteDepartment($id)
+    {
+        $user = auth()->user();
+        
+        $query = \App\Models\Department::query();
+        
+        // Filter by company for non-superadmin users
+        if ($user->role_id != 8 && $user->company_id) {
+            $query->where('company_id', $user->company_id);
+        }
+        
+        $department = $query->findOrFail($id);
+        
+        // Check if department has tasks
+        if ($department->internalTasks()->exists()) {
+            return response()->json(['error' => 'Cannot delete department that has tasks'], 400);
+        }
+        
+        $department->delete();
+        
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Assign a user to a department
+     */
+    public function assignUser(Request $request, $id)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id'
+        ]);
+
+        $user = auth()->user();
+        
+        $query = \App\Models\Department::query();
+        
+        // Filter by company for non-superadmin users
+        if ($user->role_id != 8 && $user->company_id) {
+            $query->where('company_id', $user->company_id);
+        }
+        
+        $department = $query->findOrFail($id);
+        
+        // Check if user already assigned
+        if ($department->assignedUsers()->where('user_id', $request->user_id)->exists()) {
+            return response()->json(['error' => 'User is already assigned to this department'], 400);
+        }
+        
+        // Assign user
+        $department->assignedUsers()->attach($request->user_id, [
+            'assigned_by' => $user->id
+        ]);
+        
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Unassign a user from a department
+     */
+    public function unassignUser(Request $request, $id)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id'
+        ]);
+
+        $user = auth()->user();
+        
+        $query = \App\Models\Department::query();
+        
+        // Filter by company for non-superadmin users
+        if ($user->role_id != 8 && $user->company_id) {
+            $query->where('company_id', $user->company_id);
+        }
+        
+        $department = $query->findOrFail($id);
+        
+        // Unassign user
+        $department->assignedUsers()->detach($request->user_id);
+        
+        return response()->json(['success' => true]);
     }
 }

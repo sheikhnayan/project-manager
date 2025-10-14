@@ -11,7 +11,6 @@ class InternalTask extends Model
         'name',
         'description',
         'department',
-        'category',
         'hourly_rate',
         'is_active',
         'requires_approval',
@@ -49,6 +48,14 @@ class InternalTask extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Relationship with Department (based on department name)
+     */
+    public function departmentModel()
+    {
+        return $this->belongsTo(Department::class, 'department', 'name');
     }
 
     /**

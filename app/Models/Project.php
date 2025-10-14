@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\CompanyScope;
 use Illuminate\Database\Eloquent\Model;
 // use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Project extends Model
 {
+    use CompanyScope;
     // use SoftDeletes;
 
     protected $fillable = [
@@ -14,6 +16,7 @@ class Project extends Model
         'name',
         'description',
         'client_id',
+        'company_id',
         'start_date',
         'end_date',
         'status',
@@ -57,5 +60,10 @@ class Project extends Model
     public function members()
     {
         return $this->hasMany(ProjectTeamMember::class, 'project_id', 'id');
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 }

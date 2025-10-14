@@ -13,11 +13,15 @@ class SettingController extends Controller
 {
     public function index()
     {
-        $data = Setting::first();
+        $user = auth()->user();
+        $data = Setting::forUserCompany($user)->first();
         
-        // Get all countries with their task lists
-        $countries = Country::with(['taskLists' => function($query) {
+        // Get all countries with their task lists (filtered by company)
+        $countries = Country::with(['taskLists' => function($query) use ($user) {
             $query->orderBy('position');
+            if ($user->role_id != 8 && $user->company_id) {
+                $query->where('company_id', $user->company_id);
+            }
         }])->get();
         
         // Format data for the frontend
@@ -50,7 +54,13 @@ class SettingController extends Controller
 
     public function update(Request $request)
     {
-        $settings = Setting::firstOrNew([]);
+        $user = auth()->user();
+        $settings = Setting::firstOrNew(['company_id' => $user->company_id]);
+        
+        // Set company_id for new settings
+        if (!$settings->exists && $user->company_id) {
+            $settings->company_id = $user->company_id;
+        }
         
         // Update new fields
         $settings->time_format = $request->input('time_format');

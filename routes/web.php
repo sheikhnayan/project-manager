@@ -91,6 +91,8 @@ Route::post('/estimated-time-tracking/weekly/{id}/save', [TimeSheetController::c
 Route::get('/time-tracking/tasks/{projectId}', [TimeSheetController::class, 'getTasksByProject'])->middleware('permission:view_own_timesheet,view_all_timesheets');
 
 Route::get('/time-tracking/internal-tasks', [TimeSheetController::class, 'getInternalTasks'])->middleware('permission:view_own_timesheet,view_all_timesheets');
+Route::get('/user/{id}/departments', [TimeSheetController::class, 'getUserDepartments']);
+Route::get('/time-tracking/departments/{id}/tasks', [TimeSheetController::class, 'getDepartmentTasks'])->middleware('permission:view_own_timesheet,view_all_timesheets');
 
 Route::get('/api/countries/task-lists', [ProjectController::class, 'getCountryTaskLists']);
 
@@ -170,6 +172,8 @@ Route::post('/users/{id}', [UserController::class, 'update'])->name('users.updat
 Route::post('/users/{id}/archive', [UserController::class, 'archive'])->name('users.archive')->middleware('permission:archive_users');
 Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy')->middleware('permission:delete_users');
 
+Route::get('/users/list', [UserController::class, 'list'])->middleware('auth');
+
 Route::get('/user/{user}/projects', [UserController::class, 'getProjects']);
 
 Route::get('/project/{project}/tasks', [UserController::class, 'getTasks']);
@@ -186,6 +190,16 @@ Route::get('/test-mail', [\App\Http\Controllers\UserController::class, 'testMail
 Route::middleware(['auth', 'permission:manage_settings'])->group(function () {
     Route::resource('internal-tasks', InternalTaskController::class);
     Route::post('/internal-tasks/{id}/toggle-status', [InternalTaskController::class, 'toggleStatus']);
+    
+    // Department Management Routes
+    Route::get('/internal-tasks/departments', [InternalTaskController::class, 'getDepartments']);
+    Route::post('/internal-tasks/departments', [InternalTaskController::class, 'storeDepartment']);
+    Route::get('/internal-tasks/departments/{id}', [InternalTaskController::class, 'showDepartment']);
+    Route::get('/internal-tasks/departments/{id}/edit', [InternalTaskController::class, 'editDepartment']);
+    Route::put('/internal-tasks/departments/{id}', [InternalTaskController::class, 'updateDepartment']);
+    Route::delete('/internal-tasks/departments/{id}', [InternalTaskController::class, 'deleteDepartment']);
+    Route::post('/internal-tasks/departments/{id}/assign-user', [InternalTaskController::class, 'assignUser']);
+    Route::post('/internal-tasks/departments/{id}/unassign-user', [InternalTaskController::class, 'unassignUser']);
 });
 
 // Internal Tasks API for Time Tracking (All authenticated users)

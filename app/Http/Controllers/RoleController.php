@@ -14,7 +14,8 @@ class RoleController extends Controller
      */
     public function index()
     {
-        $roles = Role::with('permissions')->get();
+        $user = auth()->user();
+        $roles = Role::with('permissions')->forUserCompany($user)->get();
         return response()->json($roles);
     }
 
@@ -43,10 +44,12 @@ class RoleController extends Controller
                 'permissions.*' => 'exists:permissions,id'
             ]);
 
+            $user = auth()->user();
             $role = Role::create([
                 'name' => Str::slug($request->display_name, '_'),
                 'display_name' => $request->display_name,
                 'description' => $request->description,
+                'company_id' => $user->company_id,
                 'is_active' => true
             ]);
 
@@ -72,6 +75,13 @@ class RoleController extends Controller
      */
     public function show(Role $role)
     {
+        $user = auth()->user();
+        
+        // Check company access
+        if ($user->role_id != 8 && $user->company_id != $role->company_id) {
+            abort(404);
+        }
+        
         return response()->json($role->load('permissions'));
     }
 
@@ -80,6 +90,13 @@ class RoleController extends Controller
      */
     public function edit(Role $role)
     {
+        $user = auth()->user();
+        
+        // Check company access
+        if ($user->role_id != 8 && $user->company_id != $role->company_id) {
+            abort(404);
+        }
+        
         $permissions = Permission::active()->orderBy('group', 'asc')->orderBy('display_name', 'asc')->get();
         return response()->json([
             'role' => $role->load('permissions'),
@@ -92,6 +109,13 @@ class RoleController extends Controller
      */
     public function update(Request $request, Role $role)
     {
+        $user = auth()->user();
+        
+        // Check company access
+        if ($user->role_id != 8 && $user->company_id != $role->company_id) {
+            abort(404);
+        }
+        
         $request->validate([
             'display_name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -120,6 +144,13 @@ class RoleController extends Controller
      */
     public function destroy(Role $role)
     {
+        $user = auth()->user();
+        
+        // Check company access
+        if ($user->role_id != 8 && $user->company_id != $role->company_id) {
+            abort(404);
+        }
+        
         // Check if role has users
         if ($role->users()->count() > 0) {
             return response()->json([

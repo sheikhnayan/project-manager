@@ -23,14 +23,20 @@ class ProjectController extends Controller
     public function index(Request $request)
     {
         $sort = $request->get('sort', 'asc');
+        $user = auth()->user();
 
-        $data = Project::where('is_archived',0)->get()
+        $query = Project::where('is_archived', 0);
+        
+        // Filter by company for non-superadmin users
+        if ($user->role_id != 8 && $user->company_id) {
+            $query->where('company_id', $user->company_id);
+        }
+
+        $data = $query->get()
         ->sortBy(function($item) {
             return strtolower($item->name);
         }, SORT_REGULAR, $sort === 'desc')
         ->values();
-
-        // dd($data);
 
         return view('front.project-list', compact('data'));
     }
@@ -50,27 +56,59 @@ class ProjectController extends Controller
     }
 
     public function edits($id){
-        $data = Project::find($id);
+        $user = auth()->user();
+        $query = Project::where('id', $id);
+        
+        // Filter by company for non-superadmin users
+        if ($user->role_id != 8 && $user->company_id) {
+            $query->where('company_id', $user->company_id);
+        }
+        
+        $data = $query->firstOrFail();
 
-        $team = User::where('role','!=','admin')->get();
+        // Filter team by company for non-superadmin users
+        $teamQuery = User::where('role','!=','admin');
+        if ($user->role_id != 8 && $user->company_id) {
+            $teamQuery->where('company_id', $user->company_id);
+        }
+        $team = $teamQuery->get();
 
-        $client = Client::all();
+        // Filter clients by company for non-superadmin users
+        $clientQuery = Client::query();
+        if ($user->role_id != 8 && $user->company_id) {
+            $clientQuery->where('company_id', $user->company_id);
+        }
+        $client = $clientQuery->get();
 
         return view('front.edit-project', compact('data','team','client'));
     }
 
     public function reload($id)
     {
-        $data = Project::find($id);
+        $user = auth()->user();
+        $query = Project::where('id', $id);
+        
+        // Filter by company for non-superadmin users
+        if ($user->role_id != 8 && $user->company_id) {
+            $query->where('company_id', $user->company_id);
+        }
+        
+        $data = $query->firstOrFail();
 
         return view('front.estimate', ['data' => $data]);
     }
 
     public function index_manage()
     {
-        $data = Project::all();
-
-        // dd($data);
+        $user = auth()->user();
+        $query = Project::query();
+        
+        // Filter by company for non-superadmin users
+        if ($user->role_id != 8 && $user->company_id) {
+            $query->where('company_id', $user->company_id);
+        }
+        
+        $data = $query->get();
 
         return view('front.project-management', compact('data'));
     }
@@ -157,11 +195,25 @@ class ProjectController extends Controller
      */
     public function create()
     {
-        $team = User::where('role','!=','admin')->get();
+        $user = auth()->user();
+        
+        // Filter clients by company for non-superadmin users
+        $clientsQuery = Client::query();
+        if ($user->role_id != 8 && $user->company_id) {
+            $clientsQuery->where('company_id', $user->company_id);
+        }
+        $clients = $clientsQuery->get();
+        
+        // Filter users by company for non-superadmin users
+        $usersQuery = User::query();
+        if ($user->role_id != 8 && $user->company_id) {
+            $usersQuery->where('company_id', $user->company_id);
+        }
+        $users = $usersQuery->get();
+        
+        $skills = \App\Models\Skill::all();
 
-        $client = Client::all();
-
-        return view('front.create-project', compact('team','client'));
+        return view('front.add-project', compact('clients', 'users', 'skills'));
     }
 
     /**
@@ -169,6 +221,7 @@ class ProjectController extends Controller
      */
     public function store(Request $request)
     {
+        $user = auth()->user();
 
         $new = new Project;
         $new->project_number = $request->project_number;
@@ -178,6 +231,12 @@ class ProjectController extends Controller
         $new->start_date = Carbon::now()->format('Y-m-d');
         $new->end_date = Carbon::now()->addDays(365)->format('Y-m-d');
         $new->budget_total = 0;
+        
+        // Set company_id for new projects (from authenticated user)
+        if ($user->company_id) {
+            $new->company_id = $user->company_id;
+        }
+        
         $new->save();
 
         $members = explode(',',$request->team_members);
@@ -382,14 +441,30 @@ class ProjectController extends Controller
      */
     public function show(string $id)
     {
-        $data = Project::find($id);
+        $user = auth()->user();
+        $query = Project::where('id', $id);
+        
+        // Filter by company for non-superadmin users
+        if ($user->role_id != 8 && $user->company_id) {
+            $query->where('company_id', $user->company_id);
+        }
+        
+        $data = $query->firstOrFail();
 
         return view('front.projects', compact('data'));
     }
 
     public function show_weekly(string $id)
     {
-        $data = Project::find($id);
+        $user = auth()->user();
+        $query = Project::where('id', $id);
+        
+        // Filter by company for non-superadmin users
+        if ($user->role_id != 8 && $user->company_id) {
+            $query->where('company_id', $user->company_id);
+        }
+        
+        $data = $query->firstOrFail();
 
         return view('front.projects-weekly', compact('data'));
     }
@@ -412,7 +487,16 @@ class ProjectController extends Controller
 
     public function archive($id)
     {
-        $project = Project::findOrFail($id);
+        $user = auth()->user();
+        $query = Project::where('id', $id);
+        
+        // Filter by company for non-superadmin users
+        if ($user->role_id != 8 && $user->company_id) {
+            $query->where('company_id', $user->company_id);
+        }
+        
+        $project = $query->firstOrFail();
+        
         if ($project->is_archived == 1) {
             # code...
             $project->is_archived = 0;

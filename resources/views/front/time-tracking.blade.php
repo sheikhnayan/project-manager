@@ -166,8 +166,8 @@
                 <table id="time-table" class="min-w-full bg-white border border-gray-400">
                     <thead style="height: 65px;">
                         <tr class="w-full bg-gray-100 text-left text-gray-600 text-sm leading-normal">
-                            <th class="py-1" style="padding-left: 1rem; width: 120px;">Type</th>
-                            <th class="py-1" style="padding-left: 1rem;">Project/Task</th>
+                            <th class="py-1" style="padding-left: 1rem;">Project</th>
+                            <th class="py-1" style="padding-left: 1rem;">Task</th>
                             <th class="py-1" style="width: 70px; text-align: center;">Monday</th>
                             <th class="py-1" style="width: 70px; text-align: center;">Tuesday</th>
                             <th class="py-1" style="width: 70px; text-align: center;">Wednesday</th>
@@ -376,19 +376,21 @@
 
             // Function to validate task selection and disable/enable time inputs
             function validateTaskSelection(row) {
-                const taskTypeSelect = row.querySelector('.task-type-select');
+                const projectSelect = row.querySelector('.project-select');
                 const taskSelect = row.querySelector('.task-select');
-                const internalTaskSelect = row.querySelector('.internal-task-select');
                 const timeInputs = row.querySelectorAll('.input-field');
                 
                 let hasValidSelection = false;
                 
-                if (taskTypeSelect && taskTypeSelect.value === 'internal') {
-                    // Check internal task selection
-                    hasValidSelection = internalTaskSelect && internalTaskSelect.value;
-                } else {
-                    // Check project task selection
-                    hasValidSelection = taskSelect && taskSelect.value;
+                // Check if a valid project/task combination is selected
+                if (projectSelect && projectSelect.value) {
+                    if (projectSelect.value.startsWith('internal_')) {
+                        // Internal task selected - always valid since no sub-tasks
+                        hasValidSelection = true;
+                    } else {
+                        // Regular project selected - need task selection too
+                        hasValidSelection = taskSelect && taskSelect.value;
+                    }
                 }
                 
                 if (!hasValidSelection) {
@@ -440,20 +442,25 @@
 
                 const rows = Array.from(timeTable.querySelectorAll('tbody tr'));
                 const data = rows.map(row => {
-                    const taskTypeSelect = row.querySelector('.task-type-select');
-                    const taskType = taskTypeSelect ? taskTypeSelect.value : 'project';
+                    const projectSelect = row.querySelector('.project-select');
+                    const taskSelect = row.querySelector('.task-select');
                     
+                    let taskType = 'project';
                     let projectId = null;
                     let taskId = null;
                     
-                    if (taskType === 'internal') {
-                        const internalTaskSelect = row.querySelector('.internal-task-select');
-                        taskId = internalTaskSelect ? internalTaskSelect.value : null;
-                    } else {
-                        const projectSelect = row.querySelector('.project-select');
-                        const taskSelect = row.querySelector('.task-select');
-                        projectId = projectSelect ? projectSelect.value : null;
-                        taskId = taskSelect ? taskSelect.value : null;
+                    if (projectSelect && projectSelect.value) {
+                        if (projectSelect.value.startsWith('internal_')) {
+                            // Internal task selected
+                            taskType = 'internal';
+                            taskId = projectSelect.value.replace('internal_', '');
+                            projectId = null;
+                        } else {
+                            // Regular project selected
+                            taskType = 'project';
+                            projectId = projectSelect.value;
+                            taskId = taskSelect ? taskSelect.value : null;
+                        }
                     }
                     
                     return {
@@ -592,7 +599,7 @@
                         data.entries.forEach(row => {
                             const taskType = row.task_type || 'project';
                             if (taskType === 'internal') {
-                                addRow('', row.task, row.mon, row.tue, row.wed, row.thu, row.fri, row.sat, row.sun, 'internal');
+                                addRow(row.task, row.task, row.mon, row.tue, row.wed, row.thu, row.fri, row.sat, row.sun, 'internal');
                             } else {
                                 addRow(row.project, row.task, row.mon, row.tue, row.wed, row.thu, row.fri, row.sat, row.sun, 'project');
                             }
@@ -612,10 +619,20 @@
             }
 
             // Add a new row to the table with async project/task handling
-            async function addRowWithProjects(project = '', task = '', mon = '', tue = '', wed = '', thu = '', fri = '', sat = '', sun = '') {
-                const tbody = timeTable.querySelector('tbody');
+
+
+            // Add a new row to the table
+            function addRow(project = '', task = '', mon = '', tue = '', wed = '', thu = '', fri = '', sat = '', sun = '', taskType = 'project') {
+
+                const tbody = timeTable.querySelector('tbody'); // Reference the <tbody> element
                 const newRow = document.createElement('tr');
                 newRow.className = "border-b border-gray-200 hover:bg-gray-100";
+
+                // Convert internal task format for loading existing data
+                let projectValue = project;
+                if (taskType === 'internal' && project) {
+                    projectValue = 'internal_' + project;
+                }
 
                 newRow.innerHTML = `
                     <td class="py-3 px-4">
@@ -658,227 +675,45 @@
                 const projectSelect = newRow.querySelector('.project-select');
                 const taskSelect = newRow.querySelector('.task-select');
 
-                // Wait for projects to load, then set the selected project and load tasks
-                await fetchProjectsForUser(projectSelect, project);
-                if (project && task) {
-                    await fetchTasksForProject(project, taskSelect, task);
-                }
+                // Fetch projects (including internal tasks) and set selections
+                fetchProjectsForUser(projectSelect, projectValue).then(() => {
+                    if (projectValue) {
+                        if (projectValue.startsWith('internal_')) {
+                            // Handle internal task
+                            taskSelect.innerHTML = '<option value="internal">Internal Task</option>';
+                            taskSelect.value = 'internal';
+                            taskSelect.disabled = true;
+                            taskSelect.style.backgroundColor = '#f3f4f6';
+                        } else {
+                            // Handle regular project
+                            fetchTasksForProject(projectValue, taskSelect, task);
+                        }
+                    }
+                });
 
                 // Event listener to fetch tasks when a project is selected
                 projectSelect.addEventListener('change', function () {
-                    const projectId = this.value;
-                    fetchTasksForProject(projectId, taskSelect);
-                    // Clear task selection when project changes
-                    taskSelect.value = '';
-                    validateTaskSelection(newRow);
-                });
-
-                // Event listener for task selection
-                taskSelect.addEventListener('change', function () {
-                    validateTaskSelection(newRow);
-                });
-
-                // Initial validation
-                validateTaskSelection(newRow);
-
-                // Add delete functionality
-                newRow.querySelector('.delete-row').addEventListener('click', function () {
-                    const row = this.closest('tr');
-                    row.remove();
-                    updateDailyTotals();
-                    saveData();
+                    const selectedValue = this.value;
                     
-                    // Ensure there's always an empty row after deletion
-                    ensureEmptyRow();
-                });
-
-                // Add event listeners to input fields for updating totals
-                newRow.querySelectorAll('.input-field').forEach(input => {
-                    input.addEventListener('input', function () {
-                        // Check if task is selected before allowing new input (but allow existing values to remain)
-                        const taskSelect = this.closest('tr').querySelector('.task-select');
-                        if (!taskSelect.value && this.value !== this.dataset.originalValue) {
-                            // Only prevent new input, don't clear existing values
-                            this.value = this.dataset.originalValue || '';
-                            return;
-                        }
-                        
-                        let val = this.value.trim().replace(',', '.');
-                        if (val === '' || val.includes(':')) {
-                            this.dataset.lastValid = val;
-                            updateTotal(newRow);
-                            updateDailyTotals();
-                            saveData();
-                            return;
-                        }
-                        if (/^(\d+(\.5)?|\.5|\d+\.)$/.test(val)) {
-                            this.dataset.lastValid = val;
-                        } else {
-                            this.value = this.dataset.lastValid || '';
-                            return;
-                        }
-                        updateTotal(newRow);
-                        updateDailyTotals();
-                        saveData();
-                    });
-
-                    input.addEventListener('focus', function () {
-                        // Store original value for comparison
-                        this.dataset.originalValue = this.value;
-                        
-                        // Check if task is selected before allowing focus
-                        const taskSelect = this.closest('tr').querySelector('.task-select');
-                        if (!taskSelect.value) {
-                            this.blur();
-                            return;
-                        }
-                        this.select();
-                    });
-
-                    input.addEventListener('blur', function () {
-                        const value = input.value.trim();
-                        if (value) {
-                            const decimalHours = parseTime(value);
-                            input.value = formatTime(decimalHours);
-                        } else {
-                            input.value = '0:00';
-                        }
-                    });
-                });
-
-                updateTotal(newRow);
-                updateDailyTotals();
-            }
-
-            // Add a new row to the table
-            function addRow(project = '', task = '', mon = '', tue = '', wed = '', thu = '', fri = '', sat = '', sun = '', taskType = 'project') {
-
-                const tbody = timeTable.querySelector('tbody'); // Reference the <tbody> element
-                const newRow = document.createElement('tr');
-                newRow.className = "border-b border-gray-200 hover:bg-gray-100";
-
-                newRow.innerHTML = `
-                    <td class="py-3 px-4">
-                        <select class="block appearance-none w-full bg-white border border-gray-300 px-4 py-2 rounded task-type-select" style="background: ${taskType === 'internal' ? '#f3f4f6' : 'white'};">
-                            <option value="project" ${taskType === 'project' ? 'selected' : ''}>📁 Project</option>
-                            <option value="internal" ${taskType === 'internal' ? 'selected' : ''}>⚙️ Internal</option>
-                        </select>
-                    </td>
-                    <td class="py-3 px-4">
-                        <div class="project-task-container">
-                            <select class="block appearance-none w-full bg-white border border-gray-300 px-4 py-2 rounded project-select" style="display: ${taskType === 'project' ? 'block' : 'none'};">
-                                <option value="">Select Project</option>
-                            </select>
-                            <select class="block appearance-none w-full bg-white border border-gray-300 px-4 py-2 rounded task-select" style="display: ${taskType === 'project' ? 'block' : 'none'}; margin-top: ${taskType === 'project' ? '8px' : '0'};">
-                                <option value="">Select Task</option>
-                            </select>
-                            <select class="block appearance-none w-full bg-white border border-gray-300 px-4 py-2 rounded internal-task-select" style="display: ${taskType === 'internal' ? 'block' : 'none'};">
-                                <option value="">Select Internal Task</option>
-                            </select>
-                        </div>
-                    </td>
-                    <td class="py-3 px-4 editable" data-day="mon">
-                        <input type="text" class="input-field" value="${mon ? formatTime(mon) : ''}" placeholder="0:00">
-                    </td>
-                    <td class="py-3 px-4 editable" data-day="tue">
-                        <input type="text" class="input-field" value="${tue ? formatTime(tue) : ''}" placeholder="0:00">
-                    </td>
-                    <td class="py-3 px-4 editable" data-day="wed">
-                        <input type="text" class="input-field" value="${wed ? formatTime(wed) : ''}" placeholder="0:00">
-                    </td>
-                    <td class="py-3 px-4 editable" data-day="thu">
-                        <input type="text" class="input-field" value="${thu ? formatTime(thu) : ''}" placeholder="0:00">
-                    </td>
-                    <td class="py-3 px-4 editable" data-day="fri">
-                        <input type="text" class="input-field" value="${fri ? formatTime(fri) : ''}" placeholder="0:00">
-                    </td>
-                    <td class="py-3 px-4 editable holiday" data-day="sat">
-                        <input type="text" class="input-field" value="${sat ? formatTime(sat) : ''}" placeholder="0:00">
-                    </td>
-                    <td class="py-3 px-4 editable holiday" data-day="sun">
-                        <input type="text" class="input-field" value="${sun ? formatTime(sun) : ''}" placeholder="0:00">
-                    </td>
-                    <td class="py-3 px-4 total" style="text-align: center;">0:00</td>
-                    <td class="py-3 px-4 delete-row"><i class="fas fa-trash-alt"></i></td>
-                `;
-
-                tbody.appendChild(newRow);
-
-                const taskTypeSelect = newRow.querySelector('.task-type-select');
-                const projectSelect = newRow.querySelector('.project-select');
-                const taskSelect = newRow.querySelector('.task-select');
-                const internalTaskSelect = newRow.querySelector('.internal-task-select');
-
-                // Initialize based on task type
-                if (taskType === 'internal') {
-                    fetchInternalTasks(internalTaskSelect, task);
-                } else {
-                    // Fetch projects for the user and populate the project dropdown
-                    fetchProjectsForUser(projectSelect, project).then(() => {
-                        if (project) {
-                            fetchTasksForProject(project, taskSelect, task);
-                        }
-                    });
-                }
-
-                // Event listener for task type change
-                taskTypeSelect.addEventListener('change', function () {
-                    const selectedType = this.value;
-                    const projectContainer = newRow.querySelector('.project-select');
-                    const taskContainer = newRow.querySelector('.task-select');
-                    const internalContainer = newRow.querySelector('.internal-task-select');
-                    
-                    if (selectedType === 'internal') {
-                        // Show internal task selector, hide project/task selectors
-                        projectContainer.style.display = 'none';
-                        taskContainer.style.display = 'none';
-                        internalContainer.style.display = 'block';
-                        
-                        // Reset project/task selections
-                        projectContainer.value = '';
-                        taskContainer.value = '';
-                        
-                        // Load internal tasks
-                        fetchInternalTasks(internalContainer);
-                        
-                        // Update row styling
-                        taskTypeSelect.style.background = '#f3f4f6';
+                    if (selectedValue.startsWith('internal_')) {
+                        // Handle internal task selection
+                        taskSelect.innerHTML = '<option value="internal">Internal Task</option>';
+                        taskSelect.value = 'internal';
+                        taskSelect.disabled = true;
+                        taskSelect.style.backgroundColor = '#f3f4f6';
                     } else {
-                        // Show project/task selectors, hide internal task selector
-                        projectContainer.style.display = 'block';
-                        taskContainer.style.display = 'block';
-                        taskContainer.style.marginTop = '8px';
-                        internalContainer.style.display = 'none';
-                        
-                        // Reset internal task selection
-                        internalContainer.value = '';
-                        
-                        // Load projects
-                        fetchProjectsForUser(projectContainer);
-                        
-                        // Update row styling
-                        taskTypeSelect.style.background = 'white';
+                        // Handle regular project selection
+                        taskSelect.disabled = false;
+                        taskSelect.style.backgroundColor = 'white';
+                        fetchTasksForProject(selectedValue, taskSelect);
+                        taskSelect.value = '';
                     }
                     
                     validateTaskSelection(newRow);
                 });
 
-                // Event listener to fetch tasks when a project is selected
-                projectSelect.addEventListener('change', function () {
-                    const projectId = this.value;
-                    fetchTasksForProject(projectId, taskSelect);
-                    // Clear task selection when project changes
-                    taskSelect.value = '';
-                    validateTaskSelection(newRow);
-                });
-
                 // Event listener for task selection
                 taskSelect.addEventListener('change', function () {
-                    validateTaskSelection(newRow);
-                });
-
-                // Event listener for internal task selection
-                internalTaskSelect.addEventListener('change', function () {
                     validateTaskSelection(newRow);
                 });
 
@@ -967,48 +802,120 @@
                     return Promise.resolve();
                 }
 
-                return fetch(`/user/${userId}/projects`)
-                    .then(response => response.json())
-                    .then(projects => {
-                        projectSelect.innerHTML = '<option value="">Select Project</option>';
-                        
-                        // Group projects by client
-                        const projectsByClient = {};
-                        projects.forEach(project => {
-                            const clientName = project.client ? project.client.name : 'No Client';
-                            if (!projectsByClient[clientName]) {
-                                projectsByClient[clientName] = [];
-                            }
-                            projectsByClient[clientName].push(project);
-                        });
+                // Fetch both regular projects and departments
+                const projectsPromise = fetch(`/user/${userId}/projects`).then(response => response.json());
+                const departmentsPromise = fetch(`/user/${userId}/departments`).then(response => response.json());
 
-                        // Sort clients alphabetically
-                        const sortedClients = Object.keys(projectsByClient).sort();
+                return Promise.all([projectsPromise, departmentsPromise])
+                    .then(([projects, departmentsData]) => {
+                        projectSelect.innerHTML = '<option value="">Select Project</option>';
 
                         // Add projects grouped by client
-                        sortedClients.forEach(clientName => {
-                            // Add client header as optgroup
-                            const optgroup = document.createElement('optgroup');
-                            optgroup.label = clientName;
+                        if (projects && projects.length > 0) {
+                            // Group projects by client
+                            const projectsByClient = {};
+                            projects.forEach(project => {
+                                const clientName = project.client ? project.client.name : 'No Client';
+                                if (!projectsByClient[clientName]) {
+                                    projectsByClient[clientName] = [];
+                                }
+                                projectsByClient[clientName].push(project);
+                            });
+
+                            // Sort clients alphabetically
+                            const sortedClients = Object.keys(projectsByClient).sort();
+
+                            // Add projects grouped by client
+                            sortedClients.forEach(clientName => {
+                                const optgroup = document.createElement('optgroup');
+                                optgroup.label = clientName;
+                                
+                                // Sort projects within each client
+                                const clientProjects = projectsByClient[clientName].sort((a, b) => 
+                                    a.project_number.localeCompare(b.project_number)
+                                );
+                                
+                                clientProjects.forEach(project => {
+                                    const option = document.createElement('option');
+                                    option.value = project.id;
+                                    option.textContent = project.project_number + '_' + project.name;
+                                    option.setAttribute('data-type', 'project');
+                                    if (project.id == selectedProject) {
+                                        option.selected = true;
+                                    }
+                                    optgroup.appendChild(option);
+                                });
+                                
+                                projectSelect.appendChild(optgroup);
+                            });
+                        }
+                        
+                        // Add Internal Tasks section with departments
+                        if (departmentsData.departments && departmentsData.departments.length > 0) {
+                            const internalOptgroup = document.createElement('optgroup');
+                            internalOptgroup.label = 'Internal Tasks';
                             
-                            // Sort projects within each client alphabetically
-                            const clientProjects = projectsByClient[clientName].sort((a, b) => 
+                            // Sort departments alphabetically
+                            const sortedDepartments = departmentsData.departments.sort((a, b) => 
                                 a.name.localeCompare(b.name)
                             );
                             
-                            // Add projects under this client
-                            clientProjects.forEach(project => {
+                            sortedDepartments.forEach(dept => {
                                 const option = document.createElement('option');
-                                option.value = project.id;
-                                option.textContent = project.project_number + '_' + project.name;
-                                if (project.id == selectedProject) {
+                                option.value = `internal_dept_${dept.id}`;
+                                option.textContent = dept.name;
+                                option.setAttribute('data-type', 'internal');
+                                option.setAttribute('data-department-id', dept.id);
+                                if (option.value === selectedProject) {
                                     option.selected = true;
                                 }
-                                optgroup.appendChild(option);
+                                internalOptgroup.appendChild(option);
                             });
                             
-                            projectSelect.appendChild(optgroup);
-                        });
+                            projectSelect.appendChild(internalOptgroup);
+                        }
+                        
+                        // Add Regular Projects section
+                        if (projects && projects.length > 0) {
+                            // Group projects by client
+                            const projectsByClient = {};
+                            projects.forEach(project => {
+                                const clientName = project.client ? project.client.name : 'No Client';
+                                if (!projectsByClient[clientName]) {
+                                    projectsByClient[clientName] = [];
+                                }
+                                projectsByClient[clientName].push(project);
+                            });
+
+                            // Sort clients alphabetically
+                            const sortedClients = Object.keys(projectsByClient).sort();
+
+                            // Add projects grouped by client
+                            sortedClients.forEach(clientName => {
+                                // Add client header as optgroup
+                                const optgroup = document.createElement('optgroup');
+                                optgroup.label = clientName;
+                                
+                                // Sort projects within each client alphabetically
+                                const clientProjects = projectsByClient[clientName].sort((a, b) => 
+                                    a.name.localeCompare(b.name)
+                                );
+                                
+                                // Add projects under this client
+                                clientProjects.forEach(project => {
+                                    const option = document.createElement('option');
+                                    option.value = project.id;
+                                    option.textContent = project.project_number + '_' + project.name;
+                                    option.setAttribute('data-type', 'project');
+                                    if (project.id == selectedProject) {
+                                        option.selected = true;
+                                    }
+                                    optgroup.appendChild(option);
+                                });
+                                
+                                projectSelect.appendChild(optgroup);
+                            });
+                        }
                     })
                     .catch(error => {
                         console.error('Error fetching projects:', error);
@@ -1017,10 +924,35 @@
 
             function fetchTasksForProject(projectId, taskSelect, selectedTask = '') {
                 if (!projectId) {
-                    taskSelect.innerHTML = '<option value="">Select Task</option>';
+                    taskSelect.innerHTML = '<option value="">Select Project/Department First</option>';
                     return Promise.resolve();
                 }
 
+                // Check if this is a department selection
+                if (projectId.startsWith('internal_dept_')) {
+                    const departmentId = projectId.replace('internal_dept_', '');
+                    return fetch(`/time-tracking/departments/${departmentId}/tasks`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(tasks => {
+                            taskSelect.innerHTML = '<option value="">Select Task</option>';
+                            tasks.forEach(task => {
+                                const option = document.createElement('option');
+                                option.value = 'internal_' + task.id;
+                                option.textContent = task.name;
+                                if (option.value === selectedTask) {
+                                    option.selected = true;
+                                }
+                                taskSelect.appendChild(option);
+                            });
+                        });
+                }
+
+                // Handle regular project tasks
                 return fetch(`/project/${projectId}/tasks`)
                     .then(response => {
                         if (!response.ok) {
@@ -1035,7 +967,7 @@
                                 const option = document.createElement('option');
                                 option.value = task.id;
                                 option.textContent = task.name;
-                                if (task.id == selectedTask) { // Use == for loose comparison
+                                if (task.id == selectedTask) {
                                     option.selected = true;
                                 }
                                 taskSelect.appendChild(option);
@@ -1048,55 +980,7 @@
                     });
             }
 
-            function fetchInternalTasks(internalTaskSelect, selectedTask = '') {
-                return fetch('/time-tracking/internal-tasks')
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(tasks => {
-                        internalTaskSelect.innerHTML = '<option value="">Select Internal Task</option>';
-                        
-                        if (tasks && Array.isArray(tasks)) {
-                            // Group tasks by department
-                            const tasksByDepartment = {};
-                            tasks.forEach(task => {
-                                const dept = task.department || 'Other';
-                                if (!tasksByDepartment[dept]) {
-                                    tasksByDepartment[dept] = [];
-                                }
-                                tasksByDepartment[dept].push(task);
-                            });
 
-                            // Sort departments
-                            const sortedDepartments = Object.keys(tasksByDepartment).sort();
-
-                            // Add tasks grouped by department
-                            sortedDepartments.forEach(department => {
-                                const optgroup = document.createElement('optgroup');
-                                optgroup.label = department;
-                                
-                                tasksByDepartment[department].forEach(task => {
-                                    const option = document.createElement('option');
-                                    option.value = task.id;
-                                    option.textContent = `${task.name} (${task.category})`;
-                                    if (task.id == selectedTask) {
-                                        option.selected = true;
-                                    }
-                                    optgroup.appendChild(option);
-                                });
-                                
-                                internalTaskSelect.appendChild(optgroup);
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error fetching internal tasks:', error);
-                        internalTaskSelect.innerHTML = '<option value="">Error loading internal tasks</option>';
-                    });
-            }
 
             // Convert decimal hours to "HH:MM" format
             function formatTime(decimalHours) {

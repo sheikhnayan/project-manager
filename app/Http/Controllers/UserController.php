@@ -16,6 +16,22 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
+    public function list(Request $request)
+    {
+        $user = auth()->user();
+        $query = User::query();
+        
+        // Only return users from the same company unless superadmin
+        if ($user->role_id != 8 && $user->company_id) {
+            $query->where('company_id', $user->company_id);
+        }
+        
+        // Only return active users
+        $query->where('is_active', true);
+        
+        return $query->select('id', 'name')->get();
+    }
+
     public function getProjects($id)
     {
         $user = User::find($id);
