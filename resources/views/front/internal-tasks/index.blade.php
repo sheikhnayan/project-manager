@@ -122,17 +122,25 @@
                                                 <span x-text="dept.is_active ? 'Active' : 'Inactive'"></span>
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-center">
-                                            <div class="flex justify-center space-x-2">
-                                                <button @click="viewDepartment(dept.id)" class="text-blue-600 hover:text-blue-800" title="View">
-                                                    <i data-lucide="eye" class="w-4 h-4"></i>
-                                                </button>
-                                                <button @click="editDepartment(dept)" class="text-green-600 hover:text-green-800" title="Edit">
-                                                    <i data-lucide="edit" class="w-4 h-4"></i>
-                                                </button>
-                                                <button @click="deleteDepartment(dept.id)" class="text-red-600 hover:text-red-800" title="Delete">
-                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                                </button>
+                                        <td class="px-6 py-4 whitespace-nowrap text-center relative">
+                                            <button onclick="toggleSettings(this)" class="inline-flex items-center justify-center w-8 h-8 text-gray-600 hover:text-gray-900 rounded-full hover:bg-gray-100">
+                                                <i data-lucide="more-vertical" class="w-5 h-5"></i>
+                                            </button>
+                                            <div class="settings-menu hidden absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                                                <div class="py-1">
+                                                    <button @click="viewDepartment(dept.id)" class="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                        <i data-lucide="eye" class="w-4 h-4 mr-2"></i>
+                                                        View Details
+                                                    </button>
+                                                    <button @click="editDepartment(dept)" class="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                        <i data-lucide="edit" class="w-4 h-4 mr-2"></i>
+                                                        Edit
+                                                    </button>
+                                                    <button @click="deleteDepartment(dept.id)" class="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                                        <i data-lucide="trash-2" class="w-4 h-4 mr-2"></i>
+                                                        Delete
+                                                    </button>
+                                                </div>
                                             </div>
                                         </td>
                                     </tr>
@@ -208,6 +216,53 @@
     </main>
 
     <script>
+        // Settings toggle function
+        function toggleSettings(element) {
+            try {
+                // Find the settings menu as the next sibling
+                const settingsMenu = element.nextElementSibling;
+                
+                // Check if the settings menu exists and has the correct class
+                if (!settingsMenu || !settingsMenu.classList.contains('settings-menu')) {
+                    console.error('Settings menu not found or missing settings-menu class');
+                    return;
+                }
+
+                // Close all other settings menus first
+                document.querySelectorAll('.settings-menu').forEach(menu => {
+                    if (menu !== settingsMenu) {
+                        menu.classList.add('hidden');
+                    }
+                });
+
+                // Toggle the current menu
+                settingsMenu.classList.toggle('hidden');
+
+                // Handle clicking outside
+                const handleClickOutside = (event) => {
+                    if (!settingsMenu.contains(event.target) && !element.contains(event.target)) {
+                        settingsMenu.classList.add('hidden');
+                        // Remove the event listener once the menu is closed
+                        document.removeEventListener('click', handleClickOutside);
+                    }
+                };
+
+                // Add click outside listener
+                document.addEventListener('click', handleClickOutside);
+            } catch (error) {
+                console.error('Error in toggleSettings:', error);
+            }
+        }
+
+        // Close menus when pressing escape
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                document.querySelectorAll('.settings-menu').forEach(menu => {
+                    menu.classList.add('hidden');
+                });
+            }
+        });
+
         // Alpine.js component for departments management
         function departmentsManager() {
             return {

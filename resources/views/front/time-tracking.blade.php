@@ -450,8 +450,18 @@
                     let taskId = null;
                     
                     if (projectSelect && projectSelect.value) {
-                        if (projectSelect.value.startsWith('internal_')) {
-                            // Internal task selected
+                        if (projectSelect.value.startsWith('internal_dept_')) {
+                            // Department selected - check if task is also selected
+                            if (!taskSelect || !taskSelect.value || taskSelect.value === '') {
+                                console.warn('Department selected without task - skipping');
+                                return null;
+                            }
+                            // Internal task selected from department
+                            taskType = 'internal';
+                            taskId = taskSelect.value.replace('internal_', '');
+                            projectId = null;
+                        } else if (projectSelect.value.startsWith('internal_')) {
+                            // Internal task selected directly (old format, probably not used)
                             taskType = 'internal';
                             taskId = projectSelect.value.replace('internal_', '');
                             projectId = null;
@@ -475,7 +485,7 @@
                         sat: parseTime(row.querySelector('td:nth-child(8) .input-field').value.trim()) || 0,
                         sun: parseTime(row.querySelector('td:nth-child(9) .input-field').value.trim()) || 0,
                     };
-                });
+                }).filter(entry => entry !== null); // Filter out null entries
 
                 // console.log('Saving data:', { user, dateRange, data });
                 // Debug the data being sent
@@ -490,8 +500,11 @@
                         body: JSON.stringify({ user, dateRange, data }),
                     });
 
+                    const result = await response.json();
+
                     if (!response.ok) {
-                        throw new Error('Failed to save data');
+                        const errorMsg = result.error || result.message || 'Failed to save data';
+                        throw new Error(errorMsg);
                     }
 
                     console.log('Data saved successfully'); // Debug success
@@ -503,6 +516,7 @@
 
                 } catch (error) {
                     console.error('Error saving data:', error); // Debug errors
+                    alert('Error: ' + error.message);
                 }
 
                 // Always ensure there's an empty row after saving
@@ -598,10 +612,17 @@
                         // Populate the table with data
                         data.entries.forEach(row => {
                             const taskType = row.task_type || 'project';
+                            console.log('Loading row:', row, 'taskType:', taskType);
                             if (taskType === 'internal') {
-                                addRow(row.task, row.task, row.mon, row.tue, row.wed, row.thu, row.fri, row.sat, row.sun, 'internal');
+                                // Pass department_id and task_id for internal tasks
+                                console.log('Loading internal task - dept:', row.department_id, 'task:', row.task);
+                                addRow(row.department_id, row.task, row.mon || '', row.tue || '', row.wed || '', row.thu || '', row.fri || '', row.sat || '', row.sun || '', 'internal');
                             } else {
-                                addRow(row.project, row.task, row.mon, row.tue, row.wed, row.thu, row.fri, row.sat, row.sun, 'project');
+                                // Only add project tasks that have a valid project
+                                if (row.project) {
+                                    console.log('Loading project task - project:', row.project, 'task:', row.task);
+                                    addRow(row.project, row.task, row.mon || '', row.tue || '', row.wed || '', row.thu || '', row.fri || '', row.sat || '', row.sun || '', 'project');
+                                }
                             }
                         });
 
@@ -629,9 +650,10 @@
                 newRow.className = "border-b border-gray-200 hover:bg-gray-100";
 
                 // Convert internal task format for loading existing data
-                let projectValue = project;
+                let projectValue = project ? String(project) : ''; // Ensure it's a string
                 if (taskType === 'internal' && project) {
-                    projectValue = 'internal_' + project;
+                    // For internal tasks, project is the department_id
+                    projectValue = 'internal_dept_' + project;
                 }
 
                 newRow.innerHTML = `
@@ -678,12 +700,10 @@
                 // Fetch projects (including internal tasks) and set selections
                 fetchProjectsForUser(projectSelect, projectValue).then(() => {
                     if (projectValue) {
-                        if (projectValue.startsWith('internal_')) {
-                            // Handle internal task
-                            taskSelect.innerHTML = '<option value="internal">Internal Task</option>';
-                            taskSelect.value = 'internal';
-                            taskSelect.disabled = true;
-                            taskSelect.style.backgroundColor = '#f3f4f6';
+                        if (projectValue.startsWith('internal_dept_')) {
+                            // Handle internal task - load department tasks and select the specific task
+                            const taskValue = task ? 'internal_' + task : '';
+                            fetchTasksForProject(projectValue, taskSelect, taskValue);
                         } else {
                             // Handle regular project
                             fetchTasksForProject(projectValue, taskSelect, task);

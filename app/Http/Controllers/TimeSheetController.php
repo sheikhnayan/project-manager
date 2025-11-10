@@ -99,7 +99,10 @@ class TimeSheetController extends Controller
             ->get();
 
         // Separate project and internal entries
-        $projectEntries = $timeEntries->where('task_type', 'project');
+        $projectEntries = $timeEntries->where('task_type', 'project')->filter(function($entry) {
+            // Only include entries that have both project_id and task_id
+            return $entry->project_id && $entry->task_id;
+        });
         $internalEntries = $timeEntries->where('task_type', 'internal');
 
         // Transform project entries (existing logic - unchanged)
@@ -117,15 +120,24 @@ class TimeSheetController extends Controller
 
         // Transform internal entries (new logic)
         $groupedInternalEntries = $internalEntries->groupBy('internal_task_id')->map(function ($entries, $internalTaskId) {
+            $internalTask = $entries->first()->internalTask;
             $days = $entries->mapWithKeys(function ($entry) {
                 $day = strtolower(date('D', strtotime($entry->entry_date)));
                 return [$day => $entry->hours];
             });
+            
+            // Get department info
+            $department = null;
+            if ($internalTask) {
+                $department = Department::where('name', $internalTask->department)->first();
+            }
+            
             return array_merge([
                 'task' => $internalTaskId,
                 'task_type' => 'internal',
-                'task_name' => $entries->first()->internalTask->name ?? 'Unknown Internal Task',
-                'department' => $entries->first()->internalTask->department ?? 'Unknown'
+                'task_name' => $internalTask->name ?? 'Unknown Internal Task',
+                'department' => $internalTask->department ?? 'Unknown',
+                'department_id' => $department ? $department->id : null
             ], $days->toArray());
         });
 
@@ -304,6 +316,13 @@ class TimeSheetController extends Controller
                         $taskType = $entry['task_type'] ?? 'project'; // Default to project for backward compatibility
                         
                         if ($taskType === 'internal') {
+                            // Validate internal task exists
+                            $internalTask = \App\Models\InternalTask::find($entry['task']);
+                            if (!$internalTask) {
+                                \Log::error('Internal task not found: ' . $entry['task']);
+                                continue; // Skip this entry
+                            }
+                            
                             // Handle internal task entries
                             $check = TimeEntry::where('user_id', $request['user'])
                                 ->where('task_type', 'internal')
@@ -313,6 +332,7 @@ class TimeSheetController extends Controller
 
                             if ($check) {
                                 $check->hours = $entry[$day];
+                                $check->description = $entry['description'] ?? null;
                                 $check->update();
                             } else {
                                 // Create new internal task entry

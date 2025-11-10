@@ -102,162 +102,164 @@
 </div>
 
 <div class="content grid grid-cols-5 gap-4">
-    <div style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15); padding-top: 0px; border-radius: 8px; margin-right: 0px; padding: 12px; padding-bottom: 20px;">
-        <div class="p-4" style="padding-top: 0px; padding-bottom: 0px; margin-top: -40px;">
-            <h6 style="float: left; font-size: 20px; font-weight: bold;;">Estimated Project <br /> Costing</h6>
-            {{-- <p>Includes all billable and non-billable works</p> --}}
-            <div style="float: right; display: flex">
-                @php
-                    $totalBudget = $data->tasks->sum('budget_total');
-                    $b = $totalBudget < 1 ? 1 : $totalBudget;
-                    $spent = 0;
-
-                    foreach ($data->estimatedtimeEntries as  $value) {
-                        # code...
-                        $rate = $value->user->hourly_rate;
-
-
-                        $spent += $rate*$value->hours;
-                    }
-                    $p = $b - $spent;
-                    $pe = ($p / $b)*100;
-                @endphp
-                <span class="circle"
-                @if($pe <  $data->expected_profit)
-                style="background: red; font-size: 13px; margin-right: 0px;"
-                @else
-                style="background: green; font-size: 13px; margin-right: 0px;"
-                @endif
-                >{{ round($pe) }}%</span>
-                <span class="circle" style="background: orange; font-size: 13px; margin-right: 0px;">{{ $data->expected_profit }}%</span>
-            </div>
-            <div class="form-group" style="margin-top: 3rem; font-size: 12px;">
-                <div>
-                    <div class="heading">
-                        <h6 class="mt-4 mb-3" style="float: left; width: 63%">All Phase</h6>
-                        <h6 class="mt-4 mb-3" style="float: right;">
-                            @php
-                            // $time = DB::table('time_entries')->where('project_id',$data->id)->get();
-
-                            $spent = 0;
-
-                            foreach ($data->estimatedtimeEntries as  $value) {
-                                # code...
-                                $rate = $value->user->hourly_rate;
-
-
-                                $spent += $rate*$value->hours;
-                            }
-
-                        @endphp
-                            {{ formatCurrency($spent) }} OF {{ formatCurrency($data->tasks->sum('budget_total')) }}</h6>
-                    </div>
-                    <div class="progress-bar__wrapper">
-                        @php
-                            $budget = $data->tasks->sum('budget_total') < 1 ? 1 : $data->tasks->sum('budget_total');
-                            $percentage = ($spent / $budget) * 100;
-                        @endphp
-
-                        @if ($percentage > 100)
-
-                        <style>
-                            .progress-{{ $data->id }}::-webkit-progress-value {
-                                background-color: red !important; /* Color of the progress value */
-                                border-radius: 10px;
-                            }
-
-                            .progress-{{ $data->id }}::-moz-progress-bar {
-                                background-color: red !important; /* Color of the progress value for Firefox */
-                            }
-                        </style>
-                        @else
-
-                        <style>
-                            .progress-{{ $data->id }}::-webkit-progress-value {
-                                background-color: #22c55e !important; /* Green color for the progress value */
-                                border-radius: 10px;
-                            }
-
-                            .progress-{{ $data->id }}::-moz-progress-bar {
-                                background-color: #22c55e !important; /* Green color for the progress value for Firefox */
-                            }
-                        </style>
-                        @endif
-
-                        <progress class="rounded-full h-2.5 progress-{{ $data->id }}" id="progress-bar" style="width:100%; @if($percentage > 100) accent-color: red; @else accent-color: #22c55e; @endif" value="{{ $percentage }}" max="100"></progress>
-                    </div>
-                </div>
-
-                @foreach ($data->tasks as $key => $p)
-                <div class="heading"
-                @if ($key == 0)
-                    style="margin-top: 40px;"
-                @endif
-                >
-                    <h6 class="mt-4 mb-3" style="float: left">{{ $p->name }}</h6>
-                    @php
-                        // $time = DB::table('time_entries')->where('project_id',$data->id)->where('task_id',$p->id)->get();
-
-                        $spent = 0;
-
-                        foreach ($data->estimatedtimeEntries as  $value) {
-                            # code...
-                            // $rate = DB::table('teams')->where('id',$value->team_id)->first();
-                            if ($value->task_id == $p->id) {
-                                # code...
-                                $rate = $value->user->hourly_rate;
-
-
-                                $spent += $rate*$value->hours;
-                            }
-                        }
-
-                    @endphp
-                    <h6 class="mt-4 mb-3" style="float: right;"> {{ formatCurrency($spent) }} OF {{ formatCurrency($p->budget_total) }}</h6>
-                </div>
-                <div class="progress-bar__wrapper">
-                    @php
-                    // dd($spent);
-                        $budget = $p->budget_total < 1 ? 1 : $p->budget_total;
-                        $percentage = ($spent / $budget) * 100;
-                    @endphp
-                    @if ($percentage > 100)
-
-                    <style>
-                        .progress-{{ $key }}::-webkit-progress-value {
-                            background-color: red; /* Color of the progress value */
-                            border-radius: 10px;
-                        }
-
-                        .progress-{{ $key }}::-moz-progress-bar {
-                            background-color: red; /* Color of the progress value for Firefox */
-                        }
-                    </style>
-                    @else
-
-                    <style>
-                        .progress-{{ $key }}::-webkit-progress-value {
-                            background-color: #22c55e; /* Green color for the progress value */
-                            border-radius: 10px;
-                        }
-
-                        .progress-{{ $key }}::-moz-progress-bar {
-                            background-color: #22c55e; /* Green color for the progress value for Firefox */
-                        }
-                    </style>
-                    @endif
-                    <progress class="rounded-full h-2.5 progress-{{ $key }}" id="progress-bar" style="accent-color:#22c55e; width:100%" value="{{ $percentage }}" max="100"></progress>
-                </div>
-                @endforeach
-            </div>
+    <div style="">
+        <div style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15); padding-top: 0px; border-radius: 8px; margin-right: 16px; padding: 12px; padding-bottom: 20px; height: fit-content;">
+          <div class="p-4" style="padding-top: 1rem; padding-bottom: 0px;">
+              <h6 style="font-size: 20px; font-weight: bold;">Estimated Project Costing</h6>
+              {{-- <p>Includes all billable and non-billable works</p> --}}
+              <div style="display: flex">
+                  @php
+                      $totalBudget = $data->tasks->sum('budget_total');
+                      $b = $totalBudget < 1 ? 1 : $totalBudget;
+                      $spent = 0;
+  
+                      foreach ($data->estimatedtimeEntries as  $value) {
+                          # code...
+                          $rate = $value->user->hourly_rate;
+  
+  
+                          $spent += $rate*$value->hours;
+                      }
+                      $p = $b - $spent;
+                      $pe = ($p / $b)*100;
+                  @endphp
+                  <span class="circle"
+                  @if($pe <  $data->expected_profit)
+                  style="background: red; font-size: 13px; margin-right: 0px; margin: 0px; margin-top: 1rem;"
+                  @else
+                  style="background: green; font-size: 13px; margin-right: 0px; margin: 0px; margin-top: 1rem;"
+                  @endif
+                  >{{ round($pe) }}%</span>
+                  <span class="circle" style="background: orange; font-size: 13px; margin-right: 0px; margin: 0px; margin-top: 1rem; margin-left: 1rem;">{{ $data->expected_profit }}%</span>
+              </div>
+              <div class="form-group" style="margin-top: 1rem; font-size: 12px;">
+                  <div>
+                      <div class="heading">
+                          <h6 class="mt-4 mb-3" style="float: left; width: 50%">All Phase</h6>
+                          <h6 class="mt-4 mb-3" style="float: right;">
+                              @php
+                              // $time = DB::table('time_entries')->where('project_id',$data->id)->get();
+  
+                              $spent = 0;
+  
+                              foreach ($data->estimatedtimeEntries as  $value) {
+                                  # code...
+                                  $rate = $value->user->hourly_rate;
+  
+  
+                                  $spent += $rate*$value->hours;
+                              }
+  
+                          @endphp
+                              {{ formatCurrency($spent) }} OF {{ formatCurrency($data->tasks->sum('budget_total')) }}</h6>
+                      </div>
+                      <div class="progress-bar__wrapper">
+                          @php
+                              $budget = $data->tasks->sum('budget_total') < 1 ? 1 : $data->tasks->sum('budget_total');
+                              $percentage = ($spent / $budget) * 100;
+                          @endphp
+  
+                          @if ($percentage > 100)
+  
+                          <style>
+                              .progress-{{ $data->id }}::-webkit-progress-value {
+                                  background-color: red !important; /* Color of the progress value */
+                                  border-radius: 10px;
+                              }
+  
+                              .progress-{{ $data->id }}::-moz-progress-bar {
+                                  background-color: red !important; /* Color of the progress value for Firefox */
+                              }
+                          </style>
+                          @else
+  
+                          <style>
+                              .progress-{{ $data->id }}::-webkit-progress-value {
+                                  background-color: #22c55e !important; /* Green color for the progress value */
+                                  border-radius: 10px;
+                              }
+  
+                              .progress-{{ $data->id }}::-moz-progress-bar {
+                                  background-color: #22c55e !important; /* Green color for the progress value for Firefox */
+                              }
+                          </style>
+                          @endif
+  
+                          <progress class="rounded-full h-2.5 progress-{{ $data->id }}" id="progress-bar" style="width:100%; @if($percentage > 100) accent-color: red; @else accent-color: #22c55e; @endif" value="{{ $percentage }}" max="100"></progress>
+                      </div>
+                  </div>
+  
+                  @foreach ($data->tasks as $key => $p)
+                  <div class="heading"
+                  @if ($key == 0)
+                      style="margin-top: 40px;"
+                  @endif
+                  >
+                      <h6 class="mt-4 mb-3" style="float: left">{{ $p->name }}</h6>
+                      @php
+                          // $time = DB::table('time_entries')->where('project_id',$data->id)->where('task_id',$p->id)->get();
+  
+                          $spent = 0;
+  
+                          foreach ($data->estimatedtimeEntries as  $value) {
+                              # code...
+                              // $rate = DB::table('teams')->where('id',$value->team_id)->first();
+                              if ($value->task_id == $p->id) {
+                                  # code...
+                                  $rate = $value->user->hourly_rate;
+  
+  
+                                  $spent += $rate*$value->hours;
+                              }
+                          }
+  
+                      @endphp
+                      <h6 class="mt-4 mb-3" style="float: right;"> {{ formatCurrency($spent) }} OF {{ formatCurrency($p->budget_total) }}</h6>
+                  </div>
+                  <div class="progress-bar__wrapper">
+                      @php
+                      // dd($spent);
+                          $budget = $p->budget_total < 1 ? 1 : $p->budget_total;
+                          $percentage = ($spent / $budget) * 100;
+                      @endphp
+                      @if ($percentage > 100)
+  
+                      <style>
+                          .progress-{{ $key }}::-webkit-progress-value {
+                              background-color: red; /* Color of the progress value */
+                              border-radius: 10px;
+                          }
+  
+                          .progress-{{ $key }}::-moz-progress-bar {
+                              background-color: red; /* Color of the progress value for Firefox */
+                          }
+                      </style>
+                      @else
+  
+                      <style>
+                          .progress-{{ $key }}::-webkit-progress-value {
+                              background-color: #22c55e; /* Green color for the progress value */
+                              border-radius: 10px;
+                          }
+  
+                          .progress-{{ $key }}::-moz-progress-bar {
+                              background-color: #22c55e; /* Green color for the progress value for Firefox */
+                          }
+                      </style>
+                      @endif
+                      <progress class="rounded-full h-2.5 progress-{{ $key }}" id="progress-bar" style="accent-color:#22c55e; width:100%" value="{{ $percentage }}" max="100"></progress>
+                  </div>
+                  @endforeach
+              </div>
+            </div>  
         </div>
     </div>
     <div class="">
-        <div style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15); padding-top: 0px; border-radius: 8px; margin-right: 0px; padding: 12px; padding-bottom: 20px;">
-            <div class="p-4" style="padding-top: 0px; padding-bottom: 0px; margin-top: -40px;">
-                <h6 style="float: left; font-size: 20px; font-weight: bold;;">Actual Project <br /> Costing</h6>
+        <div style="border: 1px solid #D1D5DB; padding-top: 0; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15); padding-top: 0px; border-radius: 8px; margin-right: 0px; padding: 12px; padding-bottom: 20px;">
+            <div class="p-4" style="padding-top: 1rem; padding-bottom: 0px;">
+                <h6 style="font-size: 20px; font-weight: bold;;">Actual Project Costing</h6>
                 {{-- <p>Includes all billable and non-billable works</p> --}}
-                <div style="float: right; display: flex">
+                <div style="display: flex">
                     @php
                         $actualSpent = 0;
                         foreach ($data->timeEntries as  $value) {
@@ -271,17 +273,17 @@
                     @endphp
                     <span class="circle"
                     @if($pe <  $data->expected_profit)
-                    style="background: red; font-size: 13px; margin-right: 0px;"
+                    style="background: red; font-size: 13px; margin-right: 0px; margin: 0px; margin-top: 1rem;"
                     @else
-                    style="background: green; font-size: 13px; margin-right: 0px;"
+                    style="background: green; font-size: 13px; margin-right: 0px; margin: 0px; margin-top: 1rem;"
                     @endif
                     >{{ round($pe) }}%</span>
-                    <span class="circle" style="background: orange; font-size: 13px; margin-right: 0px;">{{ $data->expected_profit }}%</span>
+                    <span class="circle" style="background: orange; font-size: 13px; margin-right: 0px; margin: 0px; margin-top: 1rem; margin-left: 1rem;">{{ $data->expected_profit }}%</span>
                 </div>
-                <div class="form-group" style="margin-top: 3rem; font-size: 12px;">
+                <div class="form-group" style="margin-top: 1rem; font-size: 12px;">
                     <div>
                         <div class="heading">
-                            <h6 class="mt-4 mb-3" style="float: left; width: 63%">All Phase</h6>
+                            <h6 class="mt-4 mb-3" style="float: left; width: 50%">All Phase</h6>
                             <h6 class="mt-4 mb-3" style="float: right;">
                                 {{ formatCurrency($actualSpent) }} OF {{ formatCurrency($totalBudget) }}</h6>
                         </div>
@@ -374,9 +376,9 @@
     </div>
     <div class="">
         <div style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15); padding-top: 0px; border-radius: 8px; margin-right: 0px; padding: 12px; padding-bottom: 20px;">
-            <div class="p-4" style="padding-top: 0px; padding-bottom: 0px; margin-top: -40px;">
-                <h6 style="float: left; font-size: 20px; font-weight: bold;">Employee Hours <br /> Tracking</h6>
-                <div style="float: right; display: flex; align-items: center; margin-top: 10px;">
+            <div class="p-4" style="padding-top: 0px; padding-bottom: 0px; padding-top: 1rem;">
+                <h6 style="font-size: 20px; font-weight: bold;">Employee Hours Tracking</h6>
+                <div style="display: flex; align-items: center; margin-top: 1rem;">
                     <select id="employeeSelector" style="padding: 8px 12px; border: 1px solid #D1D5DB; border-radius: 6px; background: white; font-size: 14px;">
                         <option value="all">All Employees</option>
                         @foreach ($data->members as $member)
@@ -384,7 +386,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="form-group" style="margin-top: 3rem; font-size: 12px;">
+                <div class="form-group" style="margin-top: 2rem; font-size: 12px;">
                     <div>
                         <div class="heading">
                             <h6 class="mt-4 mb-3" style="float: left; width: 63%">All Phase</h6>

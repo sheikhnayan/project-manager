@@ -179,14 +179,60 @@
                 presets: {{ json_encode($data->task_presets ?? []) }},
                 showAddPreset: false,
                 editingPreset: null,
+                currentPresetIndex: 0,
                 newPreset: {
                     title: '',
                     tasks: []
                 },
+                saving: false,
+                saveMessage: '',
                 init() {
                     this.$nextTick(() => {
                         this.initSortable();
                     });
+                },
+                nextPreset() {
+                    if (this.currentPresetIndex < this.presets.length - 1) {
+                        this.currentPresetIndex++;
+                    }
+                },
+                prevPreset() {
+                    if (this.currentPresetIndex > 0) {
+                        this.currentPresetIndex--;
+                    }
+                },
+                async savePresets() {
+                    this.saving = true;
+                    this.saveMessage = '';
+                    
+                    try {
+                        const response = await fetch('/settings/presets', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                task_presets: this.presets
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (response.ok) {
+                            this.saveMessage = 'Preset saved successfully!';
+                            setTimeout(() => this.saveMessage = '', 3000);
+                        } else {
+                            throw new Error(result.message || 'Failed to save preset');
+                        }
+                    } catch (error) {
+                        console.error('Error saving preset:', error);
+                        this.saveMessage = 'Error: ' + error.message;
+                        setTimeout(() => this.saveMessage = '', 5000);
+                    } finally {
+                        this.saving = false;
+                    }
                 },
                 initSortable() {
                     // Re-initialize sortable when tasks change
@@ -238,7 +284,33 @@
                 }
             }">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-lg font-semibold text-gray-900">Task List Presets</h2>
+                    <div class="flex items-center gap-4">
+                        <h2 class="text-lg font-semibold text-gray-900">Task List Presets</h2>
+                        
+                        <!-- Navigation Arrows -->
+                        <div x-show="presets.length > 0" class="flex items-center gap-2">
+                            <button type="button" 
+                                    @click="prevPreset()"
+                                    :disabled="currentPresetIndex === 0"
+                                    :class="currentPresetIndex === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-100'"
+                                    class="p-1 rounded transition-colors">
+                                <i class="fas fa-chevron-left text-black"></i>
+                            </button>
+                            <span class="text-sm text-gray-600" x-text="`${currentPresetIndex + 1} / ${presets.length}`"></span>
+                            <button type="button" 
+                                    @click="nextPreset()"
+                                    :disabled="currentPresetIndex === presets.length - 1"
+                                    :class="currentPresetIndex === presets.length - 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-100'"
+                                    class="p-1 rounded transition-colors">
+                                <i class="fas fa-chevron-right text-black"></i>
+                            </button>
+                        </div>
+                        
+                        <p x-show="saveMessage" 
+                           :class="saveMessage.includes('Error') ? 'text-red-600' : 'text-green-600'" 
+                           class="text-sm"
+                           x-text="saveMessage"></p>
+                    </div>
                     <button type="button" 
                             @click="showAddPreset = true; newPreset = {title: '', tasks: []}"
                             class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black">
@@ -247,10 +319,17 @@
                     </button>
                 </div>
 
-                <!-- Existing Presets List -->
-                <div class="space-y-4 mb-6">
+                <!-- Single Preset Display with Navigation -->
+                <div x-show="presets.length > 0" class="mb-6">
                     <template x-for="(preset, presetIndex) in presets" :key="presetIndex">
-                        <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                        <div x-show="presetIndex === currentPresetIndex" 
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 transform translate-x-4"
+                             x-transition:enter-end="opacity-100 transform translate-x-0"
+                             x-transition:leave="transition ease-in duration-150"
+                             x-transition:leave-start="opacity-100 transform translate-x-0"
+                             x-transition:leave-end="opacity-0 transform -translate-x-4"
+                             class="border border-gray-200 rounded-lg p-4 bg-gray-50">
                             <div class="flex items-center justify-between mb-3">
                                 <div>
                                     <h3 class="font-semibold text-gray-900" x-text="preset.title"></h3>
@@ -262,7 +341,11 @@
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     <button type="button" 
-                                            @click.stop="presets.splice(presetIndex, 1)"
+                                            @click.stop="if(confirm('Are you sure you want to delete this preset?')) { 
+                                                presets.splice(presetIndex, 1); 
+                                                if (currentPresetIndex >= presets.length) currentPresetIndex = Math.max(0, presets.length - 1);
+                                                savePresets(); 
+                                            }"
                                             class="text-red-600 hover:text-red-800">
                                         <i class="fas fa-trash"></i>
                                     </button>
@@ -280,6 +363,11 @@
                         </div>
                     </template>
                 </div>
+                
+                <!-- Empty State -->
+                <div x-show="presets.length === 0" class="text-center py-8 text-gray-500">
+                    No presets available. Click "Add Preset" to create one.
+                </div>
 
                 <!-- Add/Edit Preset Modal -->
                 <div x-show="showAddPreset" 
@@ -291,8 +379,8 @@
                      x-transition:leave-end="opacity-0"
                      class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
                      style="display: none;">
-                    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
-                        <div class="mt-3">
+                    <div class="relative top-10 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white max-h-[90vh] flex flex-col">
+                        <div class="flex-1 flex flex-col">
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="text-lg font-medium text-gray-900" 
                                     x-text="editingPreset !== null ? 'Edit Task Preset' : 'Add New Task Preset'"></h3>
@@ -303,18 +391,18 @@
                                 </button>
                             </div>
 
-                            <div class="space-y-4">
+                            <div class="space-y-4 flex-1 flex flex-col overflow-hidden">
                                 <!-- Country/Title Input -->
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Preset Heading</label>
                                     <input type="text" 
                                            x-model="newPreset.title"
                                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
-                                           placeholder="e.g., Denmark Standard Tasks or Germany Construction">
+                                           placeholder="i.e. enter the steps that suits your workflow">
                                 </div>
 
                                 <!-- Tasks List -->
-                                <div>
+                                <div class="flex-1 flex flex-col overflow-hidden">
                                     <div class="flex items-center justify-between mb-2">
                                         <label class="block text-sm font-medium text-gray-700">Tasks</label>
                                         <button type="button" 
@@ -324,27 +412,27 @@
                                         </button>
                                     </div>
                                     
-                                    <div class="space-y-3 max-h-64 overflow-y-auto task-sortable">
+                                    <div class="space-y-2 flex-1 overflow-y-auto task-sortable pr-2" style="scrollbar-width: thin;">
                                         <template x-for="(task, taskIndex) in newPreset.tasks" :key="taskIndex">
-                                            <div class="flex items-center space-x-3 p-3 border border-gray-200 rounded-md bg-gray-50">
+                                            <div class="flex items-center space-x-2 px-2 py-1.5 border border-gray-200 rounded bg-gray-50 hover:bg-gray-100 transition-colors">
                                                 <!-- Drag Handle -->
-                                                <div class="cursor-move text-gray-400 hover:text-gray-600 transition-colors">
-                                                    <i class="fas fa-grip-vertical"></i>
+                                                <div class="cursor-move text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0">
+                                                    <i class="fas fa-grip-vertical text-xs"></i>
                                                 </div>
                                                 
                                                 <!-- Task Name -->
-                                                <div class="flex-1">
+                                                <div class="flex-1 min-w-0">
                                                     <input type="text" 
                                                            x-model="task.name"
-                                                           class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black"
+                                                           class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-black focus:border-black"
                                                            placeholder="Task name">
                                                 </div>
                                                 
                                                 <!-- Remove Button -->
                                                 <button type="button" 
                                                         @click.stop="newPreset.tasks.splice(taskIndex, 1); updateTaskPositions()"
-                                                        class="text-red-600 hover:text-red-800">
-                                                    <i class="fas fa-trash text-sm"></i>
+                                                        class="text-red-600 hover:text-red-800 flex-shrink-0">
+                                                    <i class="fas fa-trash text-xs"></i>
                                                 </button>
                                             </div>
                                         </template>
@@ -368,11 +456,14 @@
                                                 updateTaskPositions();
                                                 presets.push(JSON.parse(JSON.stringify(newPreset)));
                                             }
+                                            savePresets();
                                             showAddPreset = false; 
                                             editingPreset = null;
                                         "
-                                        class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800">
-                                    <span x-text="editingPreset !== null ? 'Update' : 'Save'"></span> Preset
+                                        :disabled="saving"
+                                        class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <span x-show="!saving" x-text="editingPreset !== null ? 'Update' : 'Save'"></span>
+                                    <span x-show="saving">Saving...</span>
                                 </button>
                             </div>
                         </div>
@@ -391,6 +482,33 @@
                 },
                 deleteRole(roleId) {
                     window.roleManager.deleteRole(roleId);
+                },
+                init() {
+                    this.$nextTick(() => {
+                        this.initRoleSortable();
+                    });
+                },
+                initRoleSortable() {
+                    const tbody = document.querySelector('.roles-sortable');
+                    if (tbody) {
+                        if (tbody.sortableInstance) {
+                            tbody.sortableInstance.destroy();
+                        }
+                        
+                        tbody.sortableInstance = Sortable.create(tbody, {
+                            animation: 150,
+                            handle: '.drag-handle',
+                            ghostClass: 'bg-blue-50',
+                            chosenClass: 'bg-gray-50',
+                            dragClass: 'opacity-50',
+                            onEnd: (evt) => {
+                                // Reorder the roles array
+                                const movedRole = this.roles[evt.oldIndex];
+                                this.roles.splice(evt.oldIndex, 1);
+                                this.roles.splice(evt.newIndex, 0, movedRole);
+                            }
+                        });
+                    }
                 }
             }" x-init="window.roleManager = window.roleManager || {};">
             <div class="flex items-center justify-between mb-6">
@@ -409,6 +527,7 @@
                     <table class="min-w-full border border-gray-300">
                         <thead class="bg-gray-50">
                             <tr>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b w-12"></th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Role Name</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Description</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Permissions</th>
@@ -416,9 +535,14 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Actions</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody class="bg-white divide-y divide-gray-200 roles-sortable">
                             <template x-for="role in roles" :key="role.id">
-                                <tr>
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-3 py-4 border-b">
+                                        <div class="drag-handle cursor-move text-gray-400 hover:text-gray-600 transition-colors">
+                                            <i class="fas fa-grip-vertical"></i>
+                                        </div>
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-b" x-text="role.display_name"></td>
                                     <td class="px-6 py-4 text-sm text-gray-500 border-b" x-text="role.description"></td>
                                     <td class="px-6 py-4 text-sm text-gray-500 border-b">
@@ -771,8 +895,44 @@
             background-color: rgba(0, 0, 0, 0.1) !important;
         }
         
+        /* Roles table sortable styles */
+        .roles-sortable tr {
+            transition: background-color 0.2s ease;
+        }
+        
+        .roles-sortable .sortable-ghost {
+            opacity: 0.4;
+        }
+        
+        .roles-sortable .sortable-chosen {
+            background-color: rgba(59, 130, 246, 0.1) !important;
+        }
+        
+        .roles-sortable .sortable-drag {
+            opacity: 0.8;
+        }
+        
         .task-sortable .sortable-drag {
             opacity: 0.6;
+        }
+        
+        /* Custom scrollbar for modal */
+        .task-sortable::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .task-sortable::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        
+        .task-sortable::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+        
+        .task-sortable::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
     </style>
     

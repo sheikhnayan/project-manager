@@ -124,4 +124,91 @@ class SettingController extends Controller
 
         return redirect()->back()->with('success', 'Settings updated successfully.');
     }
+
+    public function savePresets(Request $request)
+    {
+        try {
+            $user = auth()->user();
+            $taskPresets = $request->input('task_presets');
+            
+            if (!is_array($taskPresets)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid data format'
+                ], 400);
+            }
+
+            // Get all existing countries that have task lists
+            $existingCountries = Country::with('taskLists')->get();
+            
+            // Get country names from the submitted presets
+            $submittedCountryNames = collect($taskPresets)->pluck('title')->filter()->toArray();
+            
+            // Delete countries and their task lists that are no longer in the submitted data
+            foreach ($existingCountries as $existingCountry) {
+                // Apply company filter for non-superadmin users
+                if ($user->role_id != 8 && $user->company_id) {
+                    // Only delete if this country's task lists belong to user's company
+                    $hasCompanyTaskLists = $existingCountry->taskLists->where('company_id', $user->company_id)->count() > 0;
+                    if (!$hasCompanyTaskLists) {
+                        continue; // Skip countries that don't belong to this company
+                    }
+                }
+                
+                if (!in_array($existingCountry->name, $submittedCountryNames)) {
+                    // Delete task lists for this country (with company filter if applicable)
+                    $taskListQuery = TaskList::where('country_id', $existingCountry->id);
+                    if ($user->role_id != 8 && $user->company_id) {
+                        $taskListQuery->where('company_id', $user->company_id);
+                    }
+                    $taskListQuery->delete();
+                    
+                    // Delete the country only if it has no more task lists
+                    if ($existingCountry->taskLists()->count() == 0) {
+                        $existingCountry->delete();
+                    }
+                }
+            }
+            
+            // Process each preset
+            foreach ($taskPresets as $preset) {
+                if (!empty($preset['title'])) {
+                    // Find or create country using title as country name
+                    $country = Country::firstOrCreate(['name' => $preset['title']]);
+                    
+                    // Delete existing task lists for this country (with company filter)
+                    $taskListQuery = TaskList::where('country_id', $country->id);
+                    if ($user->role_id != 8 && $user->company_id) {
+                        $taskListQuery->where('company_id', $user->company_id);
+                    }
+                    $taskListQuery->delete();
+                    
+                    // Create new task lists
+                    if (isset($preset['tasks']) && is_array($preset['tasks'])) {
+                        foreach ($preset['tasks'] as $task) {
+                            if (!empty($task['name'])) {
+                                TaskList::create([
+                                    'name' => $task['name'],
+                                    'country_id' => $country->id,
+                                    'position' => $task['position'] ?? 1,
+                                    'company_id' => ($user->role_id != 8 && $user->company_id) ? $user->company_id : null
+                                ]);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Preset saved successfully!'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error saving presets: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while saving the preset: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

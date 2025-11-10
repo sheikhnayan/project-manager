@@ -202,18 +202,16 @@ class ProjectController extends Controller
         if ($user->role_id != 8 && $user->company_id) {
             $clientsQuery->where('company_id', $user->company_id);
         }
-        $clients = $clientsQuery->get();
+        $client = $clientsQuery->get();
         
         // Filter users by company for non-superadmin users
-        $usersQuery = User::query();
+        $teamQuery = User::where('role','!=','admin');
         if ($user->role_id != 8 && $user->company_id) {
-            $usersQuery->where('company_id', $user->company_id);
+            $teamQuery->where('company_id', $user->company_id);
         }
-        $users = $usersQuery->get();
+        $team = $teamQuery->get();
         
-        $skills = \App\Models\Skill::all();
-
-        return view('front.add-project', compact('clients', 'users', 'skills'));
+        return view('front.create-project', compact('client', 'team'));
     }
 
     /**
@@ -454,6 +452,23 @@ class ProjectController extends Controller
         return view('front.projects', compact('data'));
     }
 
+    public function gantt(string $id)
+    {
+        $user = auth()->user();
+        $query = Project::where('id', $id);
+        
+        // Filter by company for non-superadmin users
+        if ($user->role_id != 8 && $user->company_id) {
+            $query->where('company_id', $user->company_id);
+        }
+        
+        $data = $query->with(['tasks' => function($query) {
+            $query->orderBy('id', 'asc');
+        }, 'members.user'])->firstOrFail();
+
+        return view('front.gantt-clean', compact('data'));
+    }
+
     public function show_weekly(string $id)
     {
         $user = auth()->user();
@@ -517,25 +532,16 @@ class ProjectController extends Controller
             
             // Transform the data to the expected format
             $countryTaskLists = $countries->map(function($country) {
-                // Always start with the base tasks
-                $tasks = [
-                    '01_BD & Contracts',
-                    '02_Competition / Pitch'
-                ];
-                
-                // Add the country-specific tasks sorted by position
+                // Get the country-specific tasks sorted by position
                 $countryTasks = $country->taskLists()
                     ->orderBy('position')
                     ->get()
                     ->pluck('name')
                     ->toArray();
                 
-                // Merge with proper numbering
-                $allTasks = array_merge($tasks, $countryTasks);
-                
                 // Ensure proper numbering if tasks don't have numbers
                 $numberedTasks = [];
-                foreach ($allTasks as $index => $task) {
+                foreach ($countryTasks as $index => $task) {
                     if (!preg_match('/^\d{2}_/', $task)) {
                         $numberedTasks[] = sprintf('%02d_%s', $index + 1, $task);
                     } else {
@@ -573,6 +579,72 @@ class ProjectController extends Controller
                 'success' => false,
                 'message' => 'Error fetching country task lists: ' . $e->getMessage(),
                 'data' => []
+            ], 500);
+        }
+    }
+
+    public function update_progress(Request $request)
+    {
+        try {
+            $task = Task::findOrFail($request->task_id);
+            
+            // Check authorization
+            $user = auth()->user();
+            if ($user->role_id != 8 && $task->project->company_id != $user->company_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized'
+                ], 403);
+            }
+            
+            $task->progress = $request->progress;
+            $task->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Progress updated successfully',
+                'data' => $task
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating progress: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getTaskDetails($id)
+    {
+        try {
+            $task = Task::with(['assignees'])->findOrFail($id);
+            
+            // Check authorization
+            $user = auth()->user();
+            if ($user->role_id != 8 && $task->project->company_id != $user->company_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized'
+                ], 403);
+            }
+            
+            return response()->json([
+                'id' => $task->id,
+                'name' => $task->name,
+                'description' => $task->description,
+                'start_date' => $task->start_date,
+                'end_date' => $task->end_date,
+                'progress' => $task->progress ?? 0,
+                'assignees' => $task->assignees->map(function($assignee) {
+                    return [
+                        'id' => $assignee->id,
+                        'name' => $assignee->name
+                    ];
+                })
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching task details: ' . $e->getMessage()
             ], 500);
         }
     }

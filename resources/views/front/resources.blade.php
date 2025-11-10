@@ -586,7 +586,7 @@
                             Cost
                             <img style="margin-left: 5px;" src="{{ asset('sort.svg') }}" id="sortCostIcon" alt="">
                         </span>
-                        <span id="sortHours" style="width: 15%; font-size: 12px; cursor: pointer; display: inherit; padding-left: 10px; border-right: 1px solid #eee; padding-top: 17px; padding-bottom: 17px; text-align: center;">
+                        <span id="sortHours" style="width: 15%; font-size: 12px; cursor: pointer; display: inherit; padding-left: 6px; border-right: 1px solid #eee; padding-top: 17px; padding-bottom: 17px; text-align: center;">
                             Hours
                             <img style="margin-left: 5px;" src="{{ asset('sort.svg') }}" id="sortHoursIcon" alt="">
                         </span>
@@ -1768,66 +1768,184 @@ document.addEventListener('DOMContentLoaded', function() {
 <script>
     // Team member drag and drop functionality
     $(document).ready(function() {
-        // Make the team member lists sortable
-        $('.not-archived, .archied').sortable({
+        // Variable to prevent multiple simultaneous reorders
+        var reorderTimeout = null;
+        
+        // Make the team member lists sortable - be VERY specific about which containers
+        $('.task-list .not-archived, .task-list .archied').sortable({
             handle: '.drag-handle',
             axis: 'y',
             cursor: 'move',
-            helper: 'clone',
+            helper: function(e, item) {
+                // Create a clone for dragging
+                return item.clone();
+            },
             placeholder: 'ui-sortable-placeholder',
             tolerance: 'pointer',
-            connectWith: '.not-archived, .archied', // Allow moving between archived and non-archived
-            update: function(event, ui) {
-                // Get the updated order of team members
-                var memberOrder = [];
+            items: '> .team-member-row', // Only sort direct team member rows
+            connectWith: '.task-list .not-archived, .task-list .archied',
+            start: function(event, ui) {
+                // Store the member-projects element that follows this team member
+                var userId = ui.item.data('user-id');
+                var $memberProjects = $('.member-projects[data-user-id="' + userId + '"]');
+                ui.item.data('memberProjects', $memberProjects);
+                ui.item.data('memberProjectsParent', $memberProjects.parent());
+                console.log('Dragging user:', userId, 'Has projects div:', $memberProjects.length > 0, 'Parent:', $memberProjects.parent().attr('class'));
+            },
+            stop: function(event, ui) {
+                // Move the associated member-projects div after the team member
+                var userId = ui.item.data('user-id');
+                var $memberProjects = ui.item.data('memberProjects');
                 
-                // Get order from non-archived section
-                $('.not-archived .team-member-row').each(function() {
-                    memberOrder.push($(this).data('user-id'));
-                });
+                console.log('Stop - User:', userId, 'Projects div exists:', $memberProjects && $memberProjects.length > 0);
                 
-                // Get order from archived section (if visible)
-                $('.archied .team-member-row').each(function() {
-                    memberOrder.push($(this).data('user-id'));
-                });
+                if ($memberProjects && $memberProjects.length > 0) {
+                    // Detach and reattach the projects div right after the team member
+                    $memberProjects.detach().insertAfter(ui.item);
+                    console.log('Moved projects div for user:', userId, 'to after team member row');
+                } else {
+                    // Try to find it again in case it got lost
+                    $memberProjects = $('.member-projects[data-user-id="' + userId + '"]');
+                    if ($memberProjects.length > 0) {
+                        $memberProjects.detach().insertAfter(ui.item);
+                        console.log('Found and moved projects div for user:', userId);
+                    } else {
+                        console.warn('Could not find projects div for user:', userId);
+                    }
+                }
                 
-                // Reorder the calendar input rows accordingly
-                reorderCalendarInputs(memberOrder);
-                
-                console.log('Team members reordered:', memberOrder);
+                // Debounce the reorder to avoid double-triggering
+                clearTimeout(reorderTimeout);
+                reorderTimeout = setTimeout(function() {
+                    console.log('About to perform reorder, checking if user', userId, 'is in DOM...');
+                    var $check = $('.team-member-row[data-user-id="' + userId + '"]');
+                    console.log('User', userId, 'found:', $check.length, 'Parent:', $check.parent().attr('class'));
+                    performReorder();
+                }, 150); // Increased delay to ensure DOM has settled
             }
         });
         
+        // Function to perform the actual reordering
+        function performReorder() {
+            console.log('Performing reorder');
+            
+            // Get the updated order of team members - be VERY specific about which container
+            var memberOrder = [];
+            
+            // Get order from non-archived section (ONLY from task-list, not scroll-container)
+            $('.task-list .not-archived > .team-member-row').each(function() {
+                var userId = $(this).data('user-id');
+                memberOrder.push(userId);
+                console.log('Non-archived user:', userId);
+            });
+            
+            // Get order from archived section (if visible) - again, ONLY from task-list
+            $('.task-list .archied > .team-member-row').each(function() {
+                var userId = $(this).data('user-id');
+                memberOrder.push(userId);
+                console.log('Archived user:', userId);
+            });
+            
+            console.log('Final member order:', memberOrder);
+            
+            // Reorder the calendar input rows accordingly
+            reorderCalendarInputs(memberOrder);
+        }
+        
         // Function to reorder calendar inputs based on team member order
         function reorderCalendarInputs(memberOrder) {
+            console.log('Reordering calendar inputs for:', memberOrder);
+            
+            // Double-check we're targeting the right containers
             var $notArchivedContainer = $('.scroll-container .not-archived');
             var $archivedContainer = $('.scroll-container .archied');
             
-            // Collect all input elements
-            var $allInputs = $notArchivedContainer.find('.second-input').add($archivedContainer.find('.second-input'));
+            console.log('Calendar container (not-archived) found:', $notArchivedContainer.length);
+            console.log('Calendar container (archived) found:', $archivedContainer.length);
             
-            // Detach all inputs
-            var $detachedInputs = $allInputs.detach();
+            // Verify team member containers are NOT being touched
+            console.log('Team member container children BEFORE:', $('.task-list .not-archived > .team-member-row').length);
+            
+            // Collect all calendar elements grouped by user
+            var inputGroups = {};
+            
+            // Collect from both containers
+            [$notArchivedContainer, $archivedContainer].forEach(function($container) {
+                $container.children('.second-input').each(function() {
+                    var $element = $(this);
+                    var userId = $element.data('user-id');
+                    
+                    if (!userId) return;
+                    
+                    // Initialize group if not exists
+                    if (!inputGroups[userId]) {
+                        inputGroups[userId] = [];
+                    }
+                    
+                    // Check if this is a main user row or project row
+                    if ($element.hasClass('project-calendar-row')) {
+                        // It's a project row, add to group
+                        inputGroups[userId].push($element.detach());
+                    } else {
+                        // It's the main user row, add it at the beginning
+                        inputGroups[userId].unshift($element.detach());
+                    }
+                });
+            });
+            
+            console.log('Input groups collected:', Object.keys(inputGroups));
             
             // Clear containers
             $notArchivedContainer.empty();
             $archivedContainer.empty();
             
+            console.log('Team member container children AFTER CLEAR:', $('.task-list .not-archived > .team-member-row').length);
+            
             // Reorder inputs based on member order
             memberOrder.forEach(function(userId) {
-                var $matchingInput = $detachedInputs.filter('[data-user-id="' + userId + '"]');
-                if ($matchingInput.length > 0) {
+                if (inputGroups[userId] && inputGroups[userId].length > 0) {
                     // Check if the corresponding team member is in archived section
                     var $teamMember = $('.team-member-row[data-user-id="' + userId + '"]');
                     var isArchived = $teamMember.closest('.archied').length > 0;
                     
-                    if (isArchived) {
-                        $archivedContainer.append($matchingInput);
-                    } else {
-                        $notArchivedContainer.append($matchingInput);
-                    }
+                    var $targetContainer = isArchived ? $archivedContainer : $notArchivedContainer;
+                    
+                    console.log('Appending user', userId, 'to', isArchived ? 'archived' : 'not-archived', 'container. Elements:', inputGroups[userId].length);
+                    
+                    // Append all elements for this user (main row + project rows)
+                    inputGroups[userId].forEach(function($element) {
+                        $targetContainer.append($element);
+                    });
+                } else {
+                    console.warn('No input elements found for user:', userId);
                 }
             });
+            
+            console.log('Team member container children AFTER APPEND:', $('.task-list .not-archived > .team-member-row').length);
+            
+            console.log('Calendar reordering complete');
+            
+            // Debug: Check if all elements are actually in the DOM
+            setTimeout(function() {
+                console.log('POST-REORDER CHECK:');
+                var teamCount = 0;
+                var calendarCount = 0;
+                $('.not-archived > .team-member-row').each(function() {
+                    teamCount++;
+                    var userId = $(this).data('user-id');
+                    if (userId == 1) {
+                        console.log('  *** USER 1 TEAM MEMBER FOUND! Visible:', $(this).is(':visible'), 'Display:', $(this).css('display'));
+                    }
+                });
+                $('.scroll-container .not-archived > .second-input').not('.project-calendar-row').each(function() {
+                    calendarCount++;
+                    var userId = $(this).data('user-id');
+                    if (userId == 1) {
+                        console.log('  *** USER 1 CALENDAR INPUT FOUND! Visible:', $(this).is(':visible'), 'Display:', $(this).css('display'));
+                    }
+                });
+                console.log('Total team members:', teamCount, 'Total calendar inputs:', calendarCount);
+            }, 250);
             
             // Update today line height after reordering
             setTimeout(function() {

@@ -19,6 +19,12 @@ use App\Http\Controllers\StripeController;
 
 
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle'])->name('stripe.webhook');
+
+// Dashboard route - for authenticated users
+Route::get('/dashboard', function () {
+    return view('front.index');
+})->name('dashboard')->middleware('auth');
+
 Route::get('/', function () {
     // Check if user is authenticated
     if (Auth::check()) {
@@ -26,12 +32,12 @@ Route::get('/', function () {
         
         // If user has superadmin role (role_id 8), redirect to dashboard
         if ($user->role_id == 8) {
-            return redirect()->route('projects');
+            return redirect()->route('dashboard');
         }
         
         // For other authenticated users, check if their company has an active subscription
         if ($user->company && $user->company->is_subscribed) {
-            return redirect()->route('projects');
+            return redirect()->route('dashboard');
         }
         
         // If user is authenticated but no active subscription, show subscription page
@@ -74,6 +80,8 @@ Route::post('/projects/hide-user', [ProjectController::class, 'hideUser'])->name
 Route::post('/projects/change-budget', [ProjectController::class, 'change_budget'])->name('projects.change-budget');
 Route::post('/projects/check-dates', [ProjectController::class, 'check_dates'])->name('projects.check-dates');
 Route::post('/projects/save-dates', [ProjectController::class, 'save_dates'])->name('projects.save-dates');
+Route::post('/projects/update-progress', [ProjectController::class, 'update_progress'])->name('projects.update-progress');
+Route::get('/api/tasks/{id}', [ProjectController::class, 'getTaskDetails'])->name('api.tasks.details');
 
 Route::get('/estimated-time-tracking/{id}/get',[TimeSheetController::class, 'index_estimate'])->name('estimated-time-tracking.index');
 
@@ -105,6 +113,7 @@ Route::controller(ProjectController::class)->prefix('/projects')->group(function
     Route::get('/create', 'create')->name('projects.create')->middleware('permission:create_projects');
     Route::get('/edits/{id}', 'edits')->name('projects.edits')->middleware('permission:edit_projects');
     Route::get('/{id}', 'show')->name('projects.show')->middleware('permission:view_projects');
+    Route::get('/{id}/gantt', 'gantt')->name('projects.gantt')->middleware('permission:view_projects');
     Route::get('/reload-data/{id}', 'reload')->name('projects.reload')->middleware('permission:view_projects');
     Route::get('/{id}/edit', 'edit')->name('projects.edit')->middleware('permission:edit_projects');
     Route::post('/', 'store')->name('projects.store')->middleware('permission:create_projects');
@@ -141,6 +150,8 @@ Route::get('/resources', [UserController::class, 'resources'])->name('resources'
 Route::get('/settings', [SettingController::class, 'index'])->name('settings.index')->middleware('permission:view_settings');
 
 Route::post('/settings', [SettingController::class, 'update'])->name('settings.update')->middleware('permission:edit_settings');
+
+Route::post('/settings/presets', [SettingController::class, 'savePresets'])->name('settings.presets')->middleware('permission:edit_settings');
 
 // Role Management Routes  
 Route::post('/roles', [RoleController::class, 'store'])->name('roles.store')->middleware('permission:manage_roles');
@@ -224,7 +235,7 @@ Route::post('/login', function (Request $request) {
     $credentials = $request->only('email', 'password');
     if (Auth::attempt($credentials)) {
         $request->session()->regenerate();
-        return redirect()->intended('/');
+        return redirect()->intended('/dashboard');
     }
     return back()->with('error', 'Invalid credentials.');
 })->name('login');

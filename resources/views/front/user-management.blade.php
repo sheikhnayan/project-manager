@@ -207,7 +207,7 @@
                                                             {{ $item->role_id ?? 'null' }},
                                                             {{ $item->hourly_rate }},
                                                             '{{ $item->profile_image_url ? asset('storage/' . $item->profile_image_url) : '' }}'
-                                                        )">>
+                                                        )">
                                                         <i data-lucide="pencil" class="w-4 h-4"></i>
 
                                                     </button>
