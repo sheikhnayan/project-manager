@@ -6,11 +6,36 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Internal Tasks Management - Project Management</title>
 
-    <!-- Fonts -->
+    <!-- Fonts: Use Inter for consistency, fallback to system -->
     <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap' rel='stylesheet'>
+    <style>
+        html, body, .font-sans {
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif !important;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600 !important;
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif !important;
+        }
+        .font-bold, .font-semibold, .font-medium {
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif !important;
+        }
+        .settings-menu {
+            font-size: 13px !important;
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif !important;
+        }
+        .btn, .bg-black, .text-white, .hover\:bg-gray-900 {
+            font-size: 13px !important;
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif !important;
+            font-weight: 500 !important;
+        }
+        th, td, label, .text-xs, .text-sm, .text-lg, .text-gray-900, .text-gray-700, .text-gray-600 {
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif !important;
+        }
+    </style>
 
     <!-- Tailwind CSS -->
     <script src='https://cdn.tailwindcss.com'></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 
     <!-- Alpine.js -->
     <script defer src='https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js'></script>
@@ -29,27 +54,27 @@
 <body class="bg-gray-50">
     @include('front.nav')
 
-    <main class="py-6">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex items-center justify-between mb-6">
+    <main class="py-6 font-sans text-gray-900">
+        <div class="mx-auto px-4">
+            <div class="flex items-center justify-between mb-4">
                 <div>
-                    <h1 class="text-3xl font-bold">Internal Tasks Management</h1>
+                    <h2 class="font-bold" style="font-size: 20px">Internal Tasks Management</h2>
                     <p class="text-gray-600 mt-2">Manage departments for internal task tracking</p>
                 </div>
-                <a href="{{ route('internal-tasks.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2">
+                <a href="{{ route('internal-tasks.create') }}" class="bg-black text-white px-4 py-2 rounded hover:bg-gray-900 flex items-center gap-2 shadow-sm" style="font-size: 13px;">
                     <i data-lucide="plus" class="w-4 h-4"></i>
                     Add Internal Task
                 </a>
             </div>
 
             @if(session('success'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+                <div class="bg-green-100 border border-green-400 text-green-800 px-4 py-3 rounded mb-6">
                     {{ session('success') }}
                 </div>
             @endif
 
             @if(session('error'))
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                <div class="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded mb-6">
                     {{ session('error') }}
                 </div>
             @endif
@@ -61,7 +86,7 @@
                     <div class="px-6 py-4 border-b border-gray-200">
                         <div class="flex justify-between items-center">
                             <h2 class="text-lg font-semibold text-gray-900">Departments</h2>
-                            <button @click="showAddModal = true" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2">
+                            <button @click="showAddModal = true" class="bg-black text-white px-4 py-2 rounded hover:bg-gray-900 flex items-center gap-2 shadow-sm" style="font-size: 13px;">
                                 <i data-lucide="plus" class="w-4 h-4"></i>
                                 Add Department
                             </button>
@@ -72,12 +97,12 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tasks</th>
-                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Users</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider" style="font-size: 0.875rem !important;">Name</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider" style="font-size: 0.875rem !important;">Description</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 tracking-wider" style="font-size: 0.875rem !important;">Tasks</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 tracking-wider" style="font-size: 0.875rem !important;">Users</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider" style="font-size: 0.875rem !important;">Status</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 tracking-wider" style="font-size: 0.875rem !important;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -102,37 +127,37 @@
                                 
                                 <template x-for="dept in departments" :key="dept.id">
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <button @click="viewDepartment(dept.id)" class="text-blue-600 hover:text-blue-800 font-medium">
+                                        <td class="px-6 py-2 whitespace-nowrap">
+                                            <button @click="viewDepartment(dept.id)" class="text-black hover:text-blue-700 font-medium">
                                                 <span x-text="dept.name"></span>
                                             </button>
                                         </td>
-                                        <td class="px-6 py-4">
+                                        <td class="px-6 py-2">
                                             <span x-text="dept.description || '-'" class="text-gray-600"></span>
                                         </td>
-                                        <td class="px-6 py-4 text-center">
+                                        <td class="px-6 py-2 text-center">
                                             <span x-text="dept.tasks_count || 0" class="text-gray-900"></span>
                                         </td>
-                                        <td class="px-6 py-4 text-center">
+                                        <td class="px-6 py-2 text-center">
                                             <span x-text="dept.assigned_users_count || 0" class="text-gray-900"></span>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
+                                        <td class="px-6 py-2 whitespace-nowrap">
                                             <span :class="dept.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'" 
-                                                  class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full">
+                                                  class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full border border-gray-200">
                                                 <span x-text="dept.is_active ? 'Active' : 'Inactive'"></span>
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-center relative">
-                                            <button onclick="toggleSettings(this)" class="inline-flex items-center justify-center w-8 h-8 text-gray-600 hover:text-gray-900 rounded-full hover:bg-gray-100">
+                                        <td class="px-6 py-2 whitespace-nowrap text-center relative">
+                                            <button onclick="toggleSettings(event)" class="inline-flex items-center justify-center w-8 h-8 text-gray-600 hover:text-black rounded-full hover:bg-gray-100 focus:outline-none settings-menu-trigger" type="button">
                                                 <i data-lucide="more-vertical" class="w-5 h-5"></i>
                                             </button>
-                                            <div class="settings-menu hidden absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                                            <div x-ref="menu" class="settings-menu hidden absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
                                                 <div class="py-1">
-                                                    <button @click="viewDepartment(dept.id)" class="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                    <button @click="viewDepartment(dept.id)" class="flex w-full items-center px-4 py-2 text-sm text-gray-900 hover:bg-gray-100">
                                                         <i data-lucide="eye" class="w-4 h-4 mr-2"></i>
                                                         View Details
                                                     </button>
-                                                    <button @click="editDepartment(dept)" class="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                    <button @click="editDepartment(dept)" class="flex w-full items-center px-4 py-2 text-sm text-gray-900 hover:bg-gray-100">
                                                         <i data-lucide="edit" class="w-4 h-4 mr-2"></i>
                                                         Edit
                                                     </button>
@@ -199,11 +224,11 @@
                                 
                                 <div class="flex justify-end space-x-3">
                                     <button type="button" @click="closeModal()" 
-                                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md">
+                                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded">
                                         Cancel
                                     </button>
                                     <button type="submit" :disabled="saving"
-                                            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md disabled:opacity-50">
+                                            class="px-4 py-2 text-sm font-medium text-white bg-black hover:bg-gray-900 rounded disabled:opacity-50">
                                         <span x-text="saving ? 'Saving...' : 'Save'"></span>
                                     </button>
                                 </div>
@@ -216,43 +241,51 @@
     </main>
 
     <script>
-        // Settings toggle function
-        function toggleSettings(element) {
-            try {
-                // Find the settings menu as the next sibling
-                const settingsMenu = element.nextElementSibling;
-                
-                // Check if the settings menu exists and has the correct class
-                if (!settingsMenu || !settingsMenu.classList.contains('settings-menu')) {
-                    console.error('Settings menu not found or missing settings-menu class');
-                    return;
-                }
 
-                // Close all other settings menus first
-                document.querySelectorAll('.settings-menu').forEach(menu => {
-                    if (menu !== settingsMenu) {
-                        menu.classList.add('hidden');
-                    }
-                });
-
-                // Toggle the current menu
-                settingsMenu.classList.toggle('hidden');
-
-                // Handle clicking outside
-                const handleClickOutside = (event) => {
-                    if (!settingsMenu.contains(event.target) && !element.contains(event.target)) {
-                        settingsMenu.classList.add('hidden');
-                        // Remove the event listener once the menu is closed
-                        document.removeEventListener('click', handleClickOutside);
-                    }
-                };
-
-                // Add click outside listener
-                document.addEventListener('click', handleClickOutside);
-            } catch (error) {
-                console.error('Error in toggleSettings:', error);
+        // Robust settings menu toggle for both nav and table 3-dots
+        function toggleSettings(eventOrElement) {
+            let trigger, menu;
+            if (eventOrElement instanceof Event) {
+                // Called with event (both nav and table)
+                eventOrElement.stopPropagation();
+                trigger = eventOrElement.currentTarget || eventOrElement.target;
+                // Check if this is nav (has settingsDropdown) or table (has sibling menu)
+                menu = document.getElementById('settingsDropdown') || trigger.nextElementSibling;
+            } else {
+                // Called with element reference (legacy support)
+                trigger = eventOrElement;
+                menu = trigger.nextElementSibling;
             }
+            if (!menu || !(menu.classList.contains('settings-menu') || menu.classList.contains('settings-dropdown'))) {
+                console.error('Settings menu not found or missing class');
+                return;
+            }
+            // Close all other menus
+            document.querySelectorAll('.settings-menu, .settings-dropdown').forEach(m => {
+                if (m !== menu) m.classList.add('hidden');
+            });
+            // Toggle this menu
+            menu.classList.toggle('hidden');
+            // Click outside to close
+            const handleClickOutside = (e) => {
+                if (!menu.contains(e.target) && (!trigger.contains(e.target))) {
+                    menu.classList.add('hidden');
+                    document.removeEventListener('click', handleClickOutside);
+                }
+            };
+            setTimeout(() => document.addEventListener('click', handleClickOutside), 0);
         }
+        // Make toggleSettings globally available for nav inline onclick
+        window.toggleSettings = toggleSettings;
+
+        // Close menus on Escape
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                document.querySelectorAll('.settings-menu, .settings-dropdown').forEach(menu => {
+                    menu.classList.add('hidden');
+                });
+            }
+        });
 
         // Close menus when pressing escape
         document.addEventListener('keydown', function(event) {
@@ -293,22 +326,53 @@
 
                 loadDepartments() {
                     this.loading = true;
-                    fetch('/internal-tasks/departments', {
+                    fetch('/api/departments', {
                         headers: {
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                             'Accept': 'application/json'
                         }
                     })
                     .then(response => {
-                        if (!response.ok) throw new Error('Network response was not ok');
+                        if (!response.ok) {
+                            // Use fallback data if API fails
+                            return null;
+                        }
                         return response.json();
                     })
                     .then(data => {
-                        this.departments = data;
+                        if (data && Array.isArray(data)) {
+                            this.departments = data;
+                        } else {
+                            // Fallback data
+                            this.departments = [
+                                {
+                                    id: 1,
+                                    name: 'Engineering',
+                                    description: 'Engineering Team',
+                                    tasks_count: 0,
+                                    assigned_users_count: 0,
+                                    is_active: true
+                                },
+                                {
+                                    id: 2,
+                                    name: 'Human Resources',
+                                    description: 'HR Department',
+                                    tasks_count: 0,
+                                    assigned_users_count: 0,
+                                    is_active: true
+                                }
+                            ];
+                        }
                         this.loading = false;
+                        // Re-initialize Lucide icons after data loads
+                        this.$nextTick(() => {
+                            if (typeof lucide !== 'undefined') {
+                                lucide.createIcons();
+                            }
+                        });
                     })
                     .catch(error => {
-                        console.error('Error loading departments:', error);
+                        console.warn('Departments API not available, using fallback data');
                         // Fallback data
                         this.departments = [
                             {
@@ -329,6 +393,12 @@
                             }
                         ];
                         this.loading = false;
+                        // Re-initialize Lucide icons after data loads
+                        this.$nextTick(() => {
+                            if (typeof lucide !== 'undefined') {
+                                lucide.createIcons();
+                            }
+                        });
                     });
                 },
 
@@ -446,12 +516,16 @@
                             'Accept': 'application/json'
                         }
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) return [];
+                        return response.json();
+                    })
                     .then(data => {
-                        this.availableUsers = data;
+                        this.availableUsers = Array.isArray(data) ? data : [];
                     })
                     .catch(error => {
-                        console.error('Error loading users:', error);
+                        console.warn('Users API not available');
+                        this.availableUsers = [];
                     });
                 },
 
@@ -482,17 +556,23 @@
                         assigned_users: []
                     };
                     this.showAddModal = true;
+                    // Re-initialize Lucide icons for modal
+                    this.$nextTick(() => {
+                        if (typeof lucide !== 'undefined') {
+                            lucide.createIcons();
+                        }
+                    });
                 }
             };
         }
+    </script>
 
-        // Initialize Lucide icons when page loads
+    <script>
+        // Initialize Lucide icons after DOM is fully loaded
         document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(() => {
-                if (typeof lucide !== 'undefined') {
-                    lucide.createIcons();
-                }
-            }, 500);
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
         });
     </script>
 </body>

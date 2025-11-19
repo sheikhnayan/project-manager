@@ -484,6 +484,35 @@ class ProjectController extends Controller
         return view('front.projects-weekly', compact('data'));
     }
 
+    public function show_v2(string $id)
+    {
+        $user = auth()->user();
+        $query = Project::where('id', $id);
+        
+        // Filter by company for non-superadmin users
+        if ($user->role_id != 8 && $user->company_id) {
+            $query->where('company_id', $user->company_id);
+        }
+        
+        $data = $query->firstOrFail();
+
+        return view('front.projects-v2', compact('data'));
+    }
+
+    public function show_dhtmlx(string $id)
+    {
+        $user = auth()->user();
+        $query = Project::where('id', $id);
+        
+        if ($user->role_id != 8 && $user->company_id) {
+            $query->where('company_id', $user->company_id);
+        }
+        
+        $data = $query->firstOrFail();
+
+        return view('front.projects-dhtmlx', compact('data'));
+    }
+
     /**
      * Show the form for editing the specified resource.
      */
@@ -645,6 +674,83 @@ class ProjectController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error fetching task details: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function saveMemberOrder(Request $request, $projectId)
+    {
+        try {
+            $user = auth()->user();
+            $project = Project::findOrFail($projectId);
+            
+            // Check authorization
+            if ($user->role_id != 8 && $project->company_id != $user->company_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized'
+                ], 403);
+            }
+            
+            $memberOrder = $request->input('member_order', []);
+            
+            // Save the order in user preferences/settings table
+            // Using a JSON column or separate table to store user preferences
+            DB::table('user_project_preferences')->updateOrInsert(
+                [
+                    'user_id' => $user->id,
+                    'project_id' => $projectId
+                ],
+                [
+                    'member_order' => json_encode($memberOrder),
+                    'updated_at' => now()
+                ]
+            );
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Member order saved successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error saving member order: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getMemberOrder($projectId)
+    {
+        try {
+            $user = auth()->user();
+            $project = Project::findOrFail($projectId);
+            
+            // Check authorization
+            if ($user->role_id != 8 && $project->company_id != $user->company_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized'
+                ], 403);
+            }
+            
+            $preference = DB::table('user_project_preferences')
+                ->where('user_id', $user->id)
+                ->where('project_id', $projectId)
+                ->first();
+            
+            $memberOrder = [];
+            if ($preference && $preference->member_order) {
+                $memberOrder = json_decode($preference->member_order, true);
+            }
+            
+            return response()->json([
+                'success' => true,
+                'member_order' => $memberOrder
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching member order: ' . $e->getMessage()
             ], 500);
         }
     }

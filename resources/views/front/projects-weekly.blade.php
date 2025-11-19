@@ -477,6 +477,9 @@
                                         // Add your view switching logic here if needed
                                     });
                                 </script>
+                                <a href="/projects/{{ $data->id }}/v2" class="bg-green-600 text-white px-4 py-2 rounded" style="font-size: 13px; padding: 0.4rem 1rem; cursor: pointer; margin-right: 8px; background-color: #059669 !important; display: inline-flex; align-items: center; height: 34px;" title="New Clean Version">
+                                    <i class="fas fa-rocket" style="margin-right: 6px;"></i> V2
+                                </a>
                                 <a class="bg-black text-white px-4 py-2 rounded" id="addMemberButton" style="font-size: 13px; padding:0.4rem 1rem; cursor: pointer; margin-right: 8px;">+  Add Member</a>
                                 {{-- <a href="/projects/create" class="bg-black text-white px-4 py-2 rounded" style="font-size: 13px; padding:0.4rem 1rem;">+  Add Project</a> --}}
                     </div>
@@ -661,27 +664,35 @@
             const scrollContainer = $('.scroll-container');
             const st = $('#st_date').val();
             const en = $('#en_date').val();
-            const startDate = new Date(st);
-            const endDate = new Date(en);
+            
+            // Set start date to 1 year before today
+            const calendarStartDate = new Date();
+            calendarStartDate.setFullYear(calendarStartDate.getFullYear() - 1);
+            
+            // Set end date to 10 years after project end date
+            const calendarEndDate = new Date(en);
+            calendarEndDate.setFullYear(calendarEndDate.getFullYear() + 10);
+            
             const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-            const totalMonthsToShow = 480; // Show at least 12 months of weeks
+            
+            // Calculate total months to show based on the date range
+            const totalMonthsToShow = (calendarEndDate.getFullYear() - calendarStartDate.getFullYear()) * 12 + 
+                                     (calendarEndDate.getMonth() - calendarStartDate.getMonth());
 
             function renderCalendar() {
                 calendarContainer.empty(); // Clear the calendar container
 
-                // Get the project's start date
-                let projectStartDate = new Date($('#st_date').val());
-                projectStartDate.setDate(projectStartDate.getDate() - 30);
-                const projectYear = projectStartDate.getFullYear();
+                // Get the calendar start date year
+                const projectYear = calendarStartDate.getFullYear();
 
-                // Find the 1st Monday of January of the project's year
-                let firstMondayOfYear = new Date(projectYear, 0, 1); // January 1st of the project's year
+                // Find the 1st Monday of January of the calendar start year
+                let firstMondayOfYear = new Date(projectYear, 0, 1); // January 1st of the calendar start year
                 const dayOfWeek = firstMondayOfYear.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
                 const daysToMonday = (dayOfWeek === 0 ? 1 : 8 - dayOfWeek); // Calculate days to the first Monday
                 firstMondayOfYear.setDate(firstMondayOfYear.getDate() + daysToMonday);
 
-                // Set the start date to the 1st day of the month of the project's start date
-                let startDate = new Date(projectStartDate.getFullYear(), projectStartDate.getMonth(), 1);
+                // Set the start date to the 1st day of the month of the calendar start date
+                let startDate = new Date(calendarStartDate.getFullYear(), calendarStartDate.getMonth(), 1);
 
                 let currentMonth = startDate.getMonth(); // Get the starting month index (0–11)
                 let currentYear = startDate.getFullYear(); // Get the starting year
@@ -776,8 +787,8 @@
 
             function alignGanttBars() {
                 const weekWidth = $(".week-block").outerWidth(); // Width of a single week
-                let ganttStartDate = new Date($('#st_date').val()); // Gantt chart start date
-                ganttStartDate.setDate(ganttStartDate.getDate() - 30);
+                let ganttStartDate = new Date(); // Gantt chart start date (1 year before today)
+                ganttStartDate.setFullYear(ganttStartDate.getFullYear() - 1);
 
                 // Set the startDate to the 1st day of the month
                 ganttStartDate.setDate(1);
@@ -866,7 +877,8 @@
                         const initialEndDate = $task.data('initialEndDate');
 
                         const dayWidth = $(".week-block").outerWidth(); // Width of a single day
-                        const ganttStartDate = new Date($('#st_date').val()); // Gantt chart start date
+                        const ganttStartDate = new Date(); // Gantt chart start date (1 year before today)
+                        ganttStartDate.setFullYear(ganttStartDate.getFullYear() - 1);
 
                         // Set the startDate to the 1st day of the month
                         ganttStartDate.setDate(1);

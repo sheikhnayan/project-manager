@@ -254,7 +254,7 @@
         {{-- <a class="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800" href="/projects/weekly/{{ $data->id }}" style="float: right">Weekly</a> --}}
         <div class="content" style="display: block; margin-bottom: 40px;">
             <div style="float: left; margin-top: 6px;">
-                <h5 style="font-size: 20px; font-weight: 600; margin-left: 7px;">Projects</h5>
+                <h5 style="font-size: 20px; font-weight: 600; padding-left: 10px;">Projects</h5>
             </div>
             <div class="flex items-center " style="float: right;">
                         <button class="text-gray-600 hover:text-black" id="home" style="margin-right: 8px;">

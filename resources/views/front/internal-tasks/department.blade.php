@@ -122,14 +122,22 @@
 
     <main class="py-6">
         <div class="max-w-7xl mx-auto px-4">
-            <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center gap-4">
-                    <a href="{{ route('internal-tasks.index') }}" class="text-blue-600 hover:text-blue-800">
-                        <i data-lucide="arrow-left" class="w-5 h-5"></i>
-                    </a>
-                    <div>
-                        <h1 class="text-3xl font-bold">{{ $department->name }}</h1>
-                        <p class="text-gray-600 mt-2">{{ $department->description ?: 'Department tasks and team management' }}</p>
+            <div class="bg-white rounded-lg shadow" style="border: 1px solid #D1D5DB; padding: 16px; margin-bottom: 24px;">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <a href="{{ route('internal-tasks.index') }}" class="text-gray-600 hover:text-black">
+                            <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                        </a>
+                        <div>
+                            <h1 class="text-2xl font-semibold">{{ $department->name }}</h1>
+                            <p class="text-gray-600 text-sm mt-1">{{ $department->description ?: 'Department tasks and team management' }}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="showAddTaskModal()" class="bg-black text-white px-4 py-2 rounded hover:bg-gray-900 flex items-center gap-2" style="font-size: 13px; padding: 0.4rem 1rem; height: 34px;">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            Add Task
+                        </button>
                     </div>
                 </div>
             </div>
@@ -164,12 +172,8 @@
                 <!-- Tasks Section -->
                 <div class="bg-white rounded-lg shadow">
                     <div class="p-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <h2 class="text-xl font-semibold">Department Tasks</h2>
-                            <button @click="showAddTaskModal = true" class="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 flex items-center gap-2">
-                                <i data-lucide="plus" class="w-4 h-4"></i>
-                                Add Task
-                            </button>
+                        <div class="mb-4">
+                            <h2 class="text-lg font-semibold text-gray-900">Department Tasks</h2>
                         </div>
                         
                         <div class="overflow-x-auto">
@@ -204,7 +208,7 @@
                                             {{ number_format($task->timeEntries->sum('hours'), 1) }}h
                                         </td>
                                         <td class="py-3 px-4">
-                                            <span class="px-2 py-1 {{ $task->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }} rounded-full text-sm">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full border {{ $task->is_active ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200' }}">
                                                 {{ $task->is_active ? 'Active' : 'Inactive' }}
                                             </span>
                                         </td>
@@ -244,16 +248,56 @@
                 <!-- Team Members Section -->
                 <div class="bg-white rounded-lg shadow">
                     <div class="p-6">
-                        <h2 class="text-xl font-semibold mb-4">Team Members</h2>
-                        <div class="space-y-4">
-                            <select class="w-full rounded-md border-gray-300 focus:border-black focus:ring-black team">
-                                <option value="" selected disabled>Add team member</option>
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg font-semibold text-gray-900">Team Members</h2>
+                            <button onclick="toggleUserSelector()" class="bg-black text-white px-4 py-2 rounded hover:bg-gray-900 flex items-center gap-2" style="font-size: 13px; padding: 0.4rem 1rem; height: 34px;">
+                                <i data-lucide="user-plus" class="w-4 h-4"></i>
+                                Add Members
+                            </button>
+                        </div>
+                        
+                        <!-- User Selector (hidden by default) -->
+                        <div id="userSelector" class="hidden mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-sm font-medium text-gray-900">Select team members to add:</h3>
+                                <button onclick="toggleSelectAll()" class="text-xs text-blue-600 hover:text-blue-800 font-medium">
+                                    Select All
+                                </button>
+                            </div>
+                            <div class="max-h-60 overflow-y-auto space-y-2">
                                 @foreach (\App\Models\User::where('company_id', auth()->user()->company_id)->where('is_archived', 0)->orderBy('name')->get() as $availableUser)
-                                    @unless($department->assignedUsers->contains($availableUser->id))
-                                        <option value="{{ $availableUser->id }}">{{ $availableUser->name }}</option>
-                                    @endunless
+                                    <label class="flex items-center gap-3 p-2 hover:bg-white rounded cursor-pointer transition-colors">
+                                        <input type="checkbox" 
+                                               value="{{ $availableUser->id }}" 
+                                               class="user-checkbox rounded border-gray-300 text-black focus:ring-black"
+                                               {{ $department->assignedUsers->contains($availableUser->id) ? 'checked disabled' : '' }}
+                                               onchange="toggleUserSelection({{ $availableUser->id }}, '{{ addslashes($availableUser->name) }}', '{{ addslashes($availableUser->email) }}')">
+                                        <div class='w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0'>
+                                            <span class="text-xs font-medium text-gray-600">
+                                                {{ strtoupper(substr($availableUser->name, 0, 2)) }}
+                                            </span>
+                                        </div>
+                                        <div class='flex flex-col min-w-0 flex-1'>
+                                            <span class='text-sm font-medium text-gray-900'>{{ $availableUser->name }}</span>
+                                            <span class='text-xs text-gray-500'>{{ $availableUser->email }}</span>
+                                        </div>
+                                        @if($department->assignedUsers->contains($availableUser->id))
+                                            <span class="text-xs text-green-600 font-medium">Already added</span>
+                                        @endif
+                                    </label>
                                 @endforeach
-                            </select>
+                            </div>
+                            <div class="mt-4 flex gap-2">
+                                <button onclick="addSelectedUsers()" class="bg-black text-white px-4 py-2 rounded text-sm hover:bg-gray-900">
+                                    Add Selected
+                                </button>
+                                <button onclick="toggleUserSelector()" class="bg-gray-200 text-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-300">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
 
                             <div class="space-y-2 mt-4" id="team-members">
                                 @foreach ($department->assignedUsers as $user)
@@ -407,6 +451,95 @@
                 });
             }
         });
+
+        // Show/hide add task modal
+        function showAddTaskModal() {
+            // Use Alpine.js to trigger the modal
+            const alpineData = Alpine.$data(document.querySelector('[x-data]'));
+            if (alpineData) {
+                alpineData.showAddTaskModal = true;
+            }
+        }
+
+        // Toggle user selector panel
+        function toggleUserSelector() {
+            const selector = document.getElementById('userSelector');
+            selector.classList.toggle('hidden');
+        }
+
+        // Track selected users for batch add
+        let selectedUsersToAdd = [];
+
+        function toggleSelectAll() {
+            const checkboxes = document.querySelectorAll('.user-checkbox:not(:disabled)');
+            const selectAllBtn = event.target;
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = !allChecked;
+                const userId = parseInt(checkbox.value);
+                const label = checkbox.closest('label');
+                const userName = label.querySelector('.text-sm.font-medium').textContent;
+                const userEmail = label.querySelector('.text-xs.text-gray-500').textContent;
+                
+                if (!allChecked) {
+                    // Select all
+                    if (!selectedUsersToAdd.find(u => u.id === userId)) {
+                        selectedUsersToAdd.push({ id: userId, name: userName, email: userEmail });
+                    }
+                } else {
+                    // Deselect all
+                    selectedUsersToAdd = selectedUsersToAdd.filter(u => u.id !== userId);
+                }
+            });
+            
+            // Update button text
+            selectAllBtn.textContent = allChecked ? 'Select All' : 'Deselect All';
+        }
+
+        function toggleUserSelection(userId, userName, userEmail) {
+            const checkbox = event.target;
+            if (checkbox.checked && !checkbox.disabled) {
+                selectedUsersToAdd.push({ id: userId, name: userName, email: userEmail });
+            } else {
+                selectedUsersToAdd = selectedUsersToAdd.filter(u => u.id !== userId);
+            }
+        }
+
+        // Add all selected users
+        async function addSelectedUsers() {
+            if (selectedUsersToAdd.length === 0) {
+                alert('Please select at least one user to add');
+                return;
+            }
+
+            for (const user of selectedUsersToAdd) {
+                await addTeamMemberToDepartment(user.id);
+            }
+
+            // Reload to show updated list
+            location.reload();
+        }
+
+        // Add team member to department via API
+        async function addTeamMemberToDepartment(userId) {
+            try {
+                const response = await fetch('/internal-tasks/departments/{{ $department->id }}/assign-user', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ user_id: userId })
+                });
+
+                if (!response.ok) {
+                    console.error('Failed to add user:', userId);
+                }
+            } catch (error) {
+                console.error('Error adding user:', error);
+            }
+        }
 
         // Save new task
         async function saveTask() {

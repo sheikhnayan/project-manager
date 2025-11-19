@@ -597,6 +597,14 @@
                                     // Add your view switching logic here if needed
                                 });
                             </script>
+                            <a href="/projects/{{ $data->id }}/v2" class="bg-green-600 text-white px-4 py-2 rounded" style="font-size: 13px; padding: 0.4rem 1rem; cursor: pointer; margin-right: 8px; background-color: #059669 !important; display: inline-flex; align-items: center; height: 34px;" title="New Clean Version">
+                                <i class="fas fa-rocket" style="margin-right: 6px;"></i> V2
+                            </a>
+                            
+                            <a href="/projects/{{ $data->id }}/dhtmlx" class="bg-blue-600 text-white px-4 py-2 rounded" style="font-size: 13px; padding: 0.4rem 1rem; cursor: pointer; margin-right: 8px; background-color: #2563eb !important; display: inline-flex; align-items: center; height: 34px;" title="Open DHTMLX Gantt">
+                                <i class="fas fa-crown" style="margin-right: 6px;"></i> DHTMLX Gantt
+                            </a>
+                            
                             <a class="bg-black text-white px-4 py-2 rounded" id="addMemberButton" style="font-size: 13px; padding:0.4rem 1rem; cursor: pointer; margin-right: 8px;">+  Add Member</a>
                             {{-- <a href="/projects/create" class="bg-black text-white px-4 py-2 rounded" style="font-size: 13px; padding:0.4rem 1rem;">+  Add Project</a> --}}
                 </div>
@@ -990,8 +998,8 @@
                     
                     // Recalculate dates based on the restored position (using gantt logic)
                     const dayWidth = $(".calendar-day").outerWidth();
-                    let ganttStartDate = new Date($('#st_date').val());
-                    ganttStartDate.setDate(ganttStartDate.getDate() - 30); // Apply the 30-day offset
+                    let ganttStartDate = new Date();
+                    ganttStartDate.setFullYear(ganttStartDate.getFullYear() - 1);
                     
                     const startOffset = $task.position().left;
                     const endOffset = startOffset + $task.outerWidth();
@@ -1230,22 +1238,16 @@
             const scrollContainer = $('.scroll-container');
             const st = $('#st_date').val();
             const en = $('#en_date').val();
-            let startDate = new Date(st);
-            startDate.setDate(startDate.getDate() - 30); // Add this line to go 30 days before
             
-            // Calculate project duration in days
+            // Set start date to 1 year before today
+            let startDate = new Date();
+            startDate.setFullYear(startDate.getFullYear() - 1);
+            
+            // Set end date to 10 years after project end date
             let endDate = new Date(en);
+            endDate.setFullYear(endDate.getFullYear() + 10);
+            
             const projectDurationDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-            
-            // For very long projects (more than 2 years), extend the end date to ensure full coverage
-            // This allows for projects of any length
-            if (projectDurationDays > 730) {
-                console.log('Long project detected:', projectDurationDays, 'days. Extending calendar range.');
-            }
-            
-            // Always use the project's actual end date, no matter how far in the future
-            // Add a small buffer (30 days) after the end date
-            endDate.setDate(endDate.getDate() + 30);
             
             console.log('Calendar range:', startDate, 'to', endDate, '(' + Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + ' days)');
             
@@ -1387,8 +1389,8 @@
             // Align Gantt bars with the calendar
             function alignGanttBars() {
                 const dayWidth = $(".calendar-day").outerWidth(); // Width of a single day or week
-                let ganttStartDate = new Date($('#st_date').val()); // Gantt chart start date
-                ganttStartDate.setDate(ganttStartDate.getDate() - 30);
+                let ganttStartDate = new Date(); // Gantt chart start date (1 year before today)
+                ganttStartDate.setFullYear(ganttStartDate.getFullYear() - 1);
 
                 $('.draggable').each(function (index) {
                     const $task = $(this);
@@ -1467,8 +1469,8 @@
                         const initialEndDate = $task.data('initialEndDate');
 
                         const dayWidth = $(".calendar-day").outerWidth(); // Width of a single day
-                        let ganttStartDate = new Date($('#st_date').val()); // Gantt chart start date
-                        ganttStartDate.setDate(ganttStartDate.getDate() - 30);
+                        let ganttStartDate = new Date(); // Gantt chart start date (1 year before today)
+                        ganttStartDate.setFullYear(ganttStartDate.getFullYear() - 1);
 
                         // Calculate the start and end offsets
                         const startOffset = ui.position.left;
@@ -1517,8 +1519,8 @@
                     resize: function(event, ui) {
                         const $task = $(this);
                         const dayWidth = $(".calendar-day").outerWidth();
-                        let ganttStartDate = new Date($('#st_date').val());
-                        ganttStartDate.setDate(ganttStartDate.getDate() - 30);
+                        let ganttStartDate = new Date();
+                        ganttStartDate.setFullYear(ganttStartDate.getFullYear() - 1);
 
                         // Snap the start and end offsets to the nearest day boundary
                         const startOffset = Math.round(ui.position.left / dayWidth) * dayWidth;
@@ -1544,8 +1546,8 @@
                         const initialEndDate = $task.data("initialEndDate");
 
                         const dayWidth = $(".calendar-day").outerWidth(); // Width of a single day
-                        let ganttStartDate = new Date($('#st_date').val()); // Gantt chart start date
-                        ganttStartDate.setDate(ganttStartDate.getDate() - 30);
+                        let ganttStartDate = new Date(); // Gantt chart start date (1 year before today)
+                        ganttStartDate.setFullYear(ganttStartDate.getFullYear() - 1);
                         // Snap the start and end offsets to the nearest day boundary
                         const startOffset = Math.round(ui.position.left / dayWidth) * dayWidth;
                         const endOffset = Math.round((ui.position.left + ui.size.width) / dayWidth) * dayWidth;
@@ -2157,6 +2159,81 @@
             });
         }
 
+        // Function to save member order to server
+        function saveMemberOrder(memberOrder) {
+            const projectId = $('#project_id').val();
+            
+            $.ajax({
+                url: '/projects/' + projectId + '/save-member-order',
+                type: 'POST',
+                data: {
+                    member_order: memberOrder,
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    console.log('Member order saved successfully');
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error saving member order:', error);
+                }
+            });
+        }
+
+        // Function to load and apply saved member order
+        function loadSavedMemberOrder() {
+            const projectId = $('#project_id').val();
+            
+            $.ajax({
+                url: '/projects/' + projectId + '/get-member-order',
+                type: 'GET',
+                success: function(response) {
+                    if (response.member_order && response.member_order.length > 0) {
+                        applyMemberOrder(response.member_order);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading member order:', error);
+                }
+            });
+        }
+
+        // Function to apply member order to the DOM
+        function applyMemberOrder(memberOrder) {
+            const $membersList = $('#team-members-list');
+            const $timeInputContainer = $('#team-time-inputs');
+            
+            // Detach all member rows and time inputs
+            const $memberRows = $membersList.find('.team-member-row').detach();
+            const $timeInputs = $timeInputContainer.find('.time-input-row').detach();
+            
+            // Reorder based on saved order
+            memberOrder.forEach(function(memberId) {
+                const $matchingMember = $memberRows.filter('[data-member-id="' + memberId + '"]');
+                const $matchingInput = $timeInputs.filter('[data-member-id="' + memberId + '"]');
+                
+                if ($matchingMember.length > 0) {
+                    $membersList.append($matchingMember);
+                }
+                if ($matchingInput.length > 0) {
+                    $timeInputContainer.append($matchingInput);
+                }
+            });
+            
+            // Append any members not in the saved order (in case new members were added)
+            $memberRows.each(function() {
+                if (!$(this).parent().length) {
+                    $membersList.append($(this));
+                }
+            });
+            $timeInputs.each(function() {
+                if (!$(this).parent().length) {
+                    $timeInputContainer.append($(this));
+                }
+            });
+            
+            refreshInputFieldAttributes();
+        }
+
         // Make the team member list sortable
         $('#team-members-list').sortable({
             handle: '.drag-handle',
@@ -2187,9 +2264,15 @@
                 // Refresh input field attributes after reordering
                 refreshInputFieldAttributes();
                 
+                // Save the new order to the server
+                saveMemberOrder(memberOrder);
+                
                 console.log('Team members reordered:', memberOrder);
             }
         });
+
+        // Load saved member order on page load
+        loadSavedMemberOrder();
         
         // Optional: Add visual feedback when hovering over sortable items
         $('#team-members-list').on('mouseenter', '.team-member-row', function() {

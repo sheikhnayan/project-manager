@@ -81,6 +81,8 @@ Route::post('/projects/change-budget', [ProjectController::class, 'change_budget
 Route::post('/projects/check-dates', [ProjectController::class, 'check_dates'])->name('projects.check-dates');
 Route::post('/projects/save-dates', [ProjectController::class, 'save_dates'])->name('projects.save-dates');
 Route::post('/projects/update-progress', [ProjectController::class, 'update_progress'])->name('projects.update-progress');
+Route::post('/projects/{project}/save-member-order', [ProjectController::class, 'saveMemberOrder'])->name('projects.save-member-order');
+Route::get('/projects/{project}/get-member-order', [ProjectController::class, 'getMemberOrder'])->name('projects.get-member-order');
 Route::get('/api/tasks/{id}', [ProjectController::class, 'getTaskDetails'])->name('api.tasks.details');
 
 Route::get('/estimated-time-tracking/{id}/get',[TimeSheetController::class, 'index_estimate'])->name('estimated-time-tracking.index');
@@ -113,6 +115,8 @@ Route::controller(ProjectController::class)->prefix('/projects')->group(function
     Route::get('/create', 'create')->name('projects.create')->middleware('permission:create_projects');
     Route::get('/edits/{id}', 'edits')->name('projects.edits')->middleware('permission:edit_projects');
     Route::get('/{id}', 'show')->name('projects.show')->middleware('permission:view_projects');
+    Route::get('/{id}/v2', 'show_v2')->name('projects.v2')->middleware('permission:view_projects');
+    Route::get('/{id}/dhtmlx', 'show_dhtmlx')->name('projects.dhtmlx')->middleware('permission:view_projects');
     Route::get('/{id}/gantt', 'gantt')->name('projects.gantt')->middleware('permission:view_projects');
     Route::get('/reload-data/{id}', 'reload')->name('projects.reload')->middleware('permission:view_projects');
     Route::get('/{id}/edit', 'edit')->name('projects.edit')->middleware('permission:edit_projects');

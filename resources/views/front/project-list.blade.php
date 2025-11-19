@@ -247,7 +247,7 @@
         {{-- <a class="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800" href="/projects/weekly/{{ $data->id }}" style="float: right">Weekly</a> --}}
         <div class="content" style="display: block; margin-bottom: 40px;">
             <div style="float: left; margin-top: 6px;">
-                <h5 style="font-size: 20px; font-weight: 600; margin-left: 7px;">Projects</h5>
+                <h5 style="font-size: 20px; font-weight: 600;">Projects</h5>
             </div>
             <div class="flex items-center " style="float: right;">
                         <button class="text-gray-600 hover:text-black" id="home" style="margin-right: 8px;">
@@ -301,7 +301,7 @@
         <div class="content" style="border: 1px solid #D1D5DB; border-radius: 4px;">
             <div class="task-list" style="padding: 0px; margin-top: 0px;">
                 <div class="task-header" style="margin-bottom: 0px; border-top-left-radius: 4px;">
-                    <span style="width: 40%; font-size: 12px; cursor:pointer; display: inherit; padding-left: 10px; border-right: 1px solid #eee; padding-top: 17px; padding-bottom: 17px;" id="sortProject">
+                    <span style="width: 40%; font-size: 12px; cursor:pointer; display: inherit; border-right: 1px solid #eee; padding-top: 17px; padding-bottom: 17px;" id="sortProject">
                         Project
                         <img style="margin-left: 5px;" src="{{ asset('sort.svg') }}" id="sortProjectIcon" alt="">
                     </span>

@@ -518,7 +518,7 @@
     <div class="mx-auto p-4 shadow rounded-lg border" style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15);">
         <div class="content" style="display: block; margin-bottom: 40px;">
             <div style="float: left; margin-top: 6px;">
-                <h5 style="font-size: 20px; font-weight: 600; margin-left: 7px;">Team Members</h5>
+                <h5 style="font-size: 20px; font-weight: 600; padding-left: 10px;">Team Members</h5>
             </div>
             <div class="flex items-center " style="float: right;">
                         <button class="text-gray-600 hover:text-black" id="home" style="margin-right: 8px;">
@@ -573,7 +573,7 @@
         </div>
         <div class="content" style="margin-top: 10px !important; border: 1px solid #D1D5DB; border-radius: 4px;">
                 <div class="task-list" style="border-right: 0px; padding-right: 0px; padding-top: 0px">
-                    <div class="task-header" style="margin-bottom: 0px; padding: 10px; padding-right: 0px;">
+                    <div class="task-header" style="margin-bottom: 0px; padding: 10px; padding-right: 0px; border-top-left-radius: 4px;">
                         <span id="sortProject" style="width: 40%; font-size: 12px; cursor: pointer; display: inherit; padding-left: 10px; border-right: 1px solid #eee; padding-top: 17px; padding-bottom: 17px;" id="sortProject">
                             Team Member
                             <img style="margin-left: 5px;" src="{{ asset('sort.svg') }}" id="sortProjectIcon" alt="">
@@ -745,7 +745,7 @@
                         @endforeach
                     </div>
                 </div>
-                <div class="scroll-container sss">
+                <div class="scroll-container sss" style="border-bottom-right-radius: 4px;">
                     <div class="relative mt-4">
                         <div class="calendar-container second-calender">
                             <!-- JavaScript will populate the months and dates here -->

@@ -32,20 +32,15 @@
         }
 
         table th{
-            background: #fff !important;
+            background: #f9fafb !important;
             border: 1px solid #eee;
-            border-top: 1px solid #eee !important; /* Explicit border-top for Edge compatibility */
-        }
-
-        /* Project and Task headers with black background and white text */
-        table th:first-child,
-        table th:nth-child(2) {
-            background: #000 !important;
-            color: #fff !important;
+            border-top: 1px solid #eee !important;
+            padding: 17px 10px;
         }
 
         table td{
             border: 1px solid #eee;
+            padding: 6px 10px;
         }
 
         table th{
@@ -53,33 +48,34 @@
         }
 
         table {
-            border: 1px solid #eee !important;
-            border-radius: 4px !important; /* Consistent rounded border for the entire table */
-            border-collapse: separate; /* Ensures border radius is applied properly */
-            width: 100%; /* Ensure the table spans the container */
-            overflow: hidden; /* Prevents content from overflowing the rounded corners */
+            border: 1px solid #D1D5DB !important;
+            border-radius: 4px !important;
+            border-collapse: separate;
+            width: 100%;
+            overflow: hidden;
         }
 
-        table th:first-child, /* Target the "Project" column */
+        table th:first-child,
         table td:first-child {
-            width: 20%; /* Adjust width for "Project" column */
+            width: 20%;
         }
 
         table th:nth-child(2) {
-            width: 20%; /* Adjust width for "Task" column */
+            width: 20%;
         }
 
         .input-field {
-        width: 100%; /* Make the input field span the full width of the <td> */
-        height: 40px; /* Make the input field span the full height of the <td> */
-        border: 1px solid #ddd; /* Add a border to the input field */
-        box-sizing: border-box; /* Ensure padding is included in the width/height */
-        background: transparent; /* Keep the background transparent */
-        text-align: center; /* Center the text */
-        padding: 0; /* Remove padding */
-        margin: 0; /* Remove margin */
-        border-radius: 4px;
-    }
+            width: 100%;
+            height: 40px;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
+            background: transparent;
+            text-align: center;
+            padding: 0;
+            margin: 0;
+            border-radius: 4px;
+            font-size: 12px;
+        }
 
         .editable {
                 cursor: pointer;
@@ -115,19 +111,19 @@
             text-align: center;
             margin-top: 13px;
         }
+
+        .input-field{
+            height: 35px;
+        }
     </style>
 </head>
-<body class="bg-white text-gray-800">
+<body class="bg-gray-50">
     @include('front.nav')
-    <div class="contain mx-auto p-4" style="border: 1px solid #D1D5DB;
-  margin: 16px;
-  padding: 0.3rem;
-  border-radius: 8px;
-  box-shadow:#000;
-  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15);">
-        <div class="bg-white rounded-sm overflow-hidden">
-            <div class="p-4 flex items-center justify-between">
-                <h2 class="text-xl font-semibold">Track</h2>
+    <div class="mx-auto shadow border rounded-lg overflow-hidden">
+        <div class="p-4 rounded-lg" style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15);">
+            <div class="bg-white rounded-sm overflow-hidden">
+                <div class="p-2 flex items-center justify-between" style="padding-left: 0px;"> 
+                    <h2 style="font-size: 20px; font-weight: 600;">Track</h2>
                 <div class="flex items-center space-x-2">
                     <button id="prev-week" class="text-gray-600 hover:text-black"><i class="fas fa-chevron-left" style="border: 1px solid #000; padding:0.6rem 0.8rem; border-radius:4px; border-color:#eee; font-size: 0.8rem; color: #000;"></i></button>
                     <span id="date-range" class="text-gray-600" style="width: 185px; font-size: 0.875rem; line-height: 1.25rem; color: #000;">Mon, 24 Mar - Sun, 30 Mar</span>
@@ -162,38 +158,38 @@
                     </div>
                 </div>
             </div>
-            <div class="overflow-x-auto border-b border-gray-200 ">
-                <table id="time-table" class="min-w-full bg-white border border-gray-400">
-                    <thead style="height: 65px;">
-                        <tr class="w-full bg-gray-100 text-left text-gray-600 text-sm leading-normal">
-                            <th class="py-1" style="padding-left: 1rem;">Project</th>
-                            <th class="py-1" style="padding-left: 1rem;">Task</th>
-                            <th class="py-1" style="width: 70px; text-align: center;">Monday</th>
-                            <th class="py-1" style="width: 70px; text-align: center;">Tuesday</th>
-                            <th class="py-1" style="width: 70px; text-align: center;">Wednesday</th>
-                            <th class="py-1" style="width: 70px; text-align: center;">Thursday</th>
-                            <th class="py-1" style="width: 70px; text-align: center;">Friday</th>
-                            <th class="py-1 holiday" style="width: 70px; text-align: center;">Saturday</th>
-                            <th class="py-1 holiday" style="width: 70px; text-align: center;">Sunday</th>
-                            <th class="py-1" style="width: 80px; text-align: center;">Total</th>
-                            <th class="py-1" style="width: 100px; text-align: center;">Actions</th>
+            <div class="overflow-x-auto border-b border-gray-200">
+                <table id="time-table" class="min-w-full bg-white" style="border: 1px solid #D1D5DB; border-radius: 4px;">
+                    <thead style="height: 52px;">
+                        <tr class="w-full bg-gray-100 text-left text-gray-600 leading-normal" style="font-size: 12px;">
+                            <th class="py-1" style="background: #000 !important; color: #fff;padding-left: 1rem; font-size: 12px; font-weight: 600;">Type</th>
+                            <th class="py-1" style="background: #000 !important; color: #fff;padding-left: 1rem; font-size: 12px; font-weight: 600;">Project/Task</th>
+                            <th class="py-1" style="width: 70px; text-align: center; font-size: 12px; font-weight: 600; color: #000">Monday</th>
+                            <th class="py-1" style="width: 70px; text-align: center; font-size: 12px; font-weight: 600; color: #000">Tuesday</th>
+                            <th class="py-1" style="width: 70px; text-align: center; font-size: 12px; font-weight: 600; color: #000">Wednesday</th>
+                            <th class="py-1" style="width: 70px; text-align: center; font-size: 12px; font-weight: 600; color: #000">Thursday</th>
+                            <th class="py-1" style="width: 70px; text-align: center; font-size: 12px; font-weight: 600; color: #000">Friday</th>
+                            <th class="py-1 holiday" style="width: 70px; text-align: center; font-size: 12px; font-weight: 600;">Saturday</th>
+                            <th class="py-1 holiday" style="width: 70px; text-align: center; font-size: 12px; font-weight: 600;">Sunday</th>
+                            <th class="py-1" style="width: 80px; text-align: center; font-size: 12px; font-weight: 600; color: #000">Total</th>
+                            <th class="py-1" style="width: 100px; text-align: center; font-size: 12px; font-weight: 600; color: #000">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="text-gray-600 text-sm font-light">
+                    <tbody class="text-gray-600 font-light" style="font-size: 12px;">
                         <!-- Dynamic rows will be added here -->
                     </tbody>
                     <tfoot>
                         <tr class="bg-gray-50">
-                            <td class="py-3 px-4 font-semibold" colspan="2">Daily Total:</td>
-                            <td class="py-3 px-4 daily-total" data-day="mon" style="width: 118px; text-align: center;"></td>
-                            <td class="py-3 px-4 daily-total" data-day="tue" style="width: 118px; text-align: center;"></td>
-                            <td class="py-3 px-4 daily-total" data-day="wed" style="width: 118px; text-align: center;"></td>
-                            <td class="py-3 px-4 daily-total" data-day="thu" style="width: 118px; text-align: center;"></td>
-                            <td class="py-3 px-4 daily-total" data-day="fri" style="width: 118px; text-align: center;"></td>
-                            <td class="py-3 px-4 daily-total holiday" data-day="sat" style="width: 118px; text-align: center;"></td>
-                            <td class="py-3 px-4 daily-total holiday" data-day="sun" style="width: 118px; text-align: center;"></td>
-                            <td class="py-3 px-4 font-semibold total-total" style="width: 80px; text-align: center;">0:00</td>
-                            <td class="py-3 px-4"></td>
+                            <td class="px-4 font-semibold" colspan="2" style="font-size: 12px; padding: 10px 16px;">Daily Total:</td>
+                            <td class="px-4 daily-total" data-day="mon" style="width: 118px; text-align: center; font-size: 12px; padding: 10px;"></td>
+                            <td class="px-4 daily-total" data-day="tue" style="width: 118px; text-align: center; font-size: 12px; padding: 10px;"></td>
+                            <td class="px-4 daily-total" data-day="wed" style="width: 118px; text-align: center; font-size: 12px; padding: 10px;"></td>
+                            <td class="px-4 daily-total" data-day="thu" style="width: 118px; text-align: center; font-size: 12px; padding: 10px;"></td>
+                            <td class="px-4 daily-total" data-day="fri" style="width: 118px; text-align: center; font-size: 12px; padding: 10px;"></td>
+                            <td class="px-4 daily-total holiday" data-day="sat" style="width: 118px; text-align: center; font-size: 12px; padding: 10px;"></td>
+                            <td class="px-4 daily-total holiday" data-day="sun" style="width: 118px; text-align: center; font-size: 12px; padding: 10px;"></td>
+                            <td class="px-4 font-semibold total-total" style="width: 80px; text-align: center; font-size: 12px; padding: 10px;">0:00</td>
+                            <td class="px-4" style="padding: 10px;"></td>
                         </tr>
                     </tfoot>
                 </table>
@@ -657,39 +653,39 @@
                 }
 
                 newRow.innerHTML = `
-                    <td class="py-3 px-4">
+                    <td class="px-4">
                         <select class="block appearance-none w-full bg-white border border-gray-300 px-4 py-2 rounded project-select">
                             <option value="">Select Project</option>
                         </select>
                     </td>
-                    <td class="py-3 px-4">
+                    <td class="px-4">
                         <select class="block appearance-none w-full bg-white border border-gray-300 px-4 py-2 rounded task-select">
                             <option value="">Select Task</option>
                         </select>
                     </td>
-                    <td class="py-3 px-4 editable" data-day="mon">
+                    <td class="px-4 editable" data-day="mon">
                         <input type="text" class="input-field" value="${mon ? formatTime(mon) : ''}" placeholder="0:00">
                     </td>
-                    <td class="py-3 px-4 editable" data-day="tue">
+                    <td class="px-4 editable" data-day="tue">
                         <input type="text" class="input-field" value="${tue ? formatTime(tue) : ''}" placeholder="0:00">
                     </td>
-                    <td class="py-3 px-4 editable" data-day="wed">
+                    <td class="px-4 editable" data-day="wed">
                         <input type="text" class="input-field" value="${wed ? formatTime(wed) : ''}" placeholder="0:00">
                     </td>
-                    <td class="py-3 px-4 editable" data-day="thu">
+                    <td class="px-4 editable" data-day="thu">
                         <input type="text" class="input-field" value="${thu ? formatTime(thu) : ''}" placeholder="0:00">
                     </td>
-                    <td class="py-3 px-4 editable" data-day="fri">
+                    <td class="px-4 editable" data-day="fri">
                         <input type="text" class="input-field" value="${fri ? formatTime(fri) : ''}" placeholder="0:00">
                     </td>
-                    <td class="py-3 px-4 editable holiday" data-day="sat">
+                    <td class="px-4 editable holiday" data-day="sat">
                         <input type="text" class="input-field" value="${sat ? formatTime(sat) : ''}" placeholder="0:00">
                     </td>
-                    <td class="py-3 px-4 editable holiday" data-day="sun">
+                    <td class="px-4 editable holiday" data-day="sun">
                         <input type="text" class="input-field" value="${sun ? formatTime(sun) : ''}" placeholder="0:00">
                     </td>
-                    <td class="py-3 px-4 total" style="text-align: center;">0:00</td>
-                    <td class="py-3 px-4 delete-row"><i class="fas fa-trash-alt"></i></td>
+                    <td class="px-4 total" style="text-align: center;">0:00</td>
+                    <td class="px-4 delete-row"><i class="fas fa-trash-alt"></i></td>
                 `;
 
                 tbody.appendChild(newRow);
@@ -830,6 +826,33 @@
                     .then(([projects, departmentsData]) => {
                         projectSelect.innerHTML = '<option value="">Select Project</option>';
 
+                        // Add Internal Tasks / Departments FIRST
+                        if (departmentsData.departments && departmentsData.departments.length > 0) {
+                            const internalOptgroup = document.createElement('optgroup');
+                            internalOptgroup.label = '🏢 Internal Tasks (Departments)';
+                            internalOptgroup.style.fontWeight = '600';
+                            internalOptgroup.style.backgroundColor = '#f3f4f6';
+                            
+                            // Sort departments alphabetically
+                            const sortedDepartments = departmentsData.departments.sort((a, b) => 
+                                a.name.localeCompare(b.name)
+                            );
+                            
+                            sortedDepartments.forEach(dept => {
+                                const option = document.createElement('option');
+                                option.value = `internal_dept_${dept.id}`;
+                                option.textContent = `📁 ${dept.name}`;
+                                option.setAttribute('data-type', 'internal');
+                                option.setAttribute('data-department-id', dept.id);
+                                if (option.value === selectedProject) {
+                                    option.selected = true;
+                                }
+                                internalOptgroup.appendChild(option);
+                            });
+                            
+                            projectSelect.appendChild(internalOptgroup);
+                        }
+
                         // Add projects grouped by client
                         if (projects && projects.length > 0) {
                             // Group projects by client
@@ -848,80 +871,13 @@
                             // Add projects grouped by client
                             sortedClients.forEach(clientName => {
                                 const optgroup = document.createElement('optgroup');
-                                optgroup.label = clientName;
+                                optgroup.label = `👥 ${clientName}`;
                                 
                                 // Sort projects within each client
                                 const clientProjects = projectsByClient[clientName].sort((a, b) => 
                                     a.project_number.localeCompare(b.project_number)
                                 );
                                 
-                                clientProjects.forEach(project => {
-                                    const option = document.createElement('option');
-                                    option.value = project.id;
-                                    option.textContent = project.project_number + '_' + project.name;
-                                    option.setAttribute('data-type', 'project');
-                                    if (project.id == selectedProject) {
-                                        option.selected = true;
-                                    }
-                                    optgroup.appendChild(option);
-                                });
-                                
-                                projectSelect.appendChild(optgroup);
-                            });
-                        }
-                        
-                        // Add Internal Tasks section with departments
-                        if (departmentsData.departments && departmentsData.departments.length > 0) {
-                            const internalOptgroup = document.createElement('optgroup');
-                            internalOptgroup.label = 'Internal Tasks';
-                            
-                            // Sort departments alphabetically
-                            const sortedDepartments = departmentsData.departments.sort((a, b) => 
-                                a.name.localeCompare(b.name)
-                            );
-                            
-                            sortedDepartments.forEach(dept => {
-                                const option = document.createElement('option');
-                                option.value = `internal_dept_${dept.id}`;
-                                option.textContent = dept.name;
-                                option.setAttribute('data-type', 'internal');
-                                option.setAttribute('data-department-id', dept.id);
-                                if (option.value === selectedProject) {
-                                    option.selected = true;
-                                }
-                                internalOptgroup.appendChild(option);
-                            });
-                            
-                            projectSelect.appendChild(internalOptgroup);
-                        }
-                        
-                        // Add Regular Projects section
-                        if (projects && projects.length > 0) {
-                            // Group projects by client
-                            const projectsByClient = {};
-                            projects.forEach(project => {
-                                const clientName = project.client ? project.client.name : 'No Client';
-                                if (!projectsByClient[clientName]) {
-                                    projectsByClient[clientName] = [];
-                                }
-                                projectsByClient[clientName].push(project);
-                            });
-
-                            // Sort clients alphabetically
-                            const sortedClients = Object.keys(projectsByClient).sort();
-
-                            // Add projects grouped by client
-                            sortedClients.forEach(clientName => {
-                                // Add client header as optgroup
-                                const optgroup = document.createElement('optgroup');
-                                optgroup.label = clientName;
-                                
-                                // Sort projects within each client alphabetically
-                                const clientProjects = projectsByClient[clientName].sort((a, b) => 
-                                    a.name.localeCompare(b.name)
-                                );
-                                
-                                // Add projects under this client
                                 clientProjects.forEach(project => {
                                     const option = document.createElement('option');
                                     option.value = project.id;

@@ -38,10 +38,10 @@
     showAddUserModal: false
 }">
     @include('front.nav')
-    <div class="mx-auto p-6 shadow rounded-lg border" style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15);">
-        <div class="mb-6">
-            <h1 class="text-2xl font-bold text-gray-900">Settings</h1>
-            <p class="text-gray-600 mt-1">Configure your application settings</p>
+    <div class="mx-auto p-4 shadow rounded-lg border" style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15);">
+        <div class="mb-4">
+            <h2 class=" font-bold text-gray-900" style="font-size: 20px;">Settings</h2>
+            <p class="text-gray-600 mt-1">Configure your application settings, remember to save for these to take effect.</p>
         </div>
 
         <form method="POST" action="/settings" enctype="multipart/form-data" class="space-y-6">
@@ -109,12 +109,57 @@
                             <option value="EUR" {{ old('currency', $data->currency ?? 'USD') == 'EUR' ? 'selected' : '' }}>EUR - Euro (€)</option>
                             <option value="GBP" {{ old('currency', $data->currency ?? 'USD') == 'GBP' ? 'selected' : '' }}>GBP - British Pound (£)</option>
                             <option value="JPY" {{ old('currency', $data->currency ?? 'USD') == 'JPY' ? 'selected' : '' }}>JPY - Japanese Yen (¥)</option>
-                            <option value="CAD" {{ old('currency', $data->currency ?? 'USD') == 'CAD' ? 'selected' : '' }}>CAD - Canadian Dollar (C$)</option>
                             <option value="AUD" {{ old('currency', $data->currency ?? 'USD') == 'AUD' ? 'selected' : '' }}>AUD - Australian Dollar (A$)</option>
-                            <option value="CHF" {{ old('currency', $data->currency ?? 'USD') == 'CHF' ? 'selected' : '' }}>CHF - Swiss Franc</option>
+                            <option value="CAD" {{ old('currency', $data->currency ?? 'USD') == 'CAD' ? 'selected' : '' }}>CAD - Canadian Dollar (C$)</option>
+                            <option value="CHF" {{ old('currency', $data->currency ?? 'USD') == 'CHF' ? 'selected' : '' }}>CHF - Swiss Franc (Fr)</option>
                             <option value="CNY" {{ old('currency', $data->currency ?? 'USD') == 'CNY' ? 'selected' : '' }}>CNY - Chinese Yuan (¥)</option>
                             <option value="INR" {{ old('currency', $data->currency ?? 'USD') == 'INR' ? 'selected' : '' }}>INR - Indian Rupee (₹)</option>
+                            <option value="NZD" {{ old('currency', $data->currency ?? 'USD') == 'NZD' ? 'selected' : '' }}>NZD - New Zealand Dollar (NZ$)</option>
+                            <option value="SGD" {{ old('currency', $data->currency ?? 'USD') == 'SGD' ? 'selected' : '' }}>SGD - Singapore Dollar (S$)</option>
+                            <option value="HKD" {{ old('currency', $data->currency ?? 'USD') == 'HKD' ? 'selected' : '' }}>HKD - Hong Kong Dollar (HK$)</option>
+                            <option value="SEK" {{ old('currency', $data->currency ?? 'USD') == 'SEK' ? 'selected' : '' }}>SEK - Swedish Krona (kr)</option>
+                            <option value="NOK" {{ old('currency', $data->currency ?? 'USD') == 'NOK' ? 'selected' : '' }}>NOK - Norwegian Krone (kr)</option>
                             <option value="DKK" {{ old('currency', $data->currency ?? 'USD') == 'DKK' ? 'selected' : '' }}>DKK - Danish Krone (kr)</option>
+                            <option value="KRW" {{ old('currency', $data->currency ?? 'USD') == 'KRW' ? 'selected' : '' }}>KRW - South Korean Won (₩)</option>
+                            <option value="ZAR" {{ old('currency', $data->currency ?? 'USD') == 'ZAR' ? 'selected' : '' }}>ZAR - South African Rand (R)</option>
+                            <option value="BRL" {{ old('currency', $data->currency ?? 'USD') == 'BRL' ? 'selected' : '' }}>BRL - Brazilian Real (R$)</option>
+                            <option value="MXN" {{ old('currency', $data->currency ?? 'USD') == 'MXN' ? 'selected' : '' }}>MXN - Mexican Peso ($)</option>
+                            <option value="AED" {{ old('currency', $data->currency ?? 'USD') == 'AED' ? 'selected' : '' }}>AED - UAE Dirham (د.إ)</option>
+                            <option value="SAR" {{ old('currency', $data->currency ?? 'USD') == 'SAR' ? 'selected' : '' }}>SAR - Saudi Riyal (﷼)</option>
+                            <option value="TRY" {{ old('currency', $data->currency ?? 'USD') == 'TRY' ? 'selected' : '' }}>TRY - Turkish Lira (₺)</option>
+                            <option value="RUB" {{ old('currency', $data->currency ?? 'USD') == 'RUB' ? 'selected' : '' }}>RUB - Russian Ruble (₽)</option>
+                            <option value="PLN" {{ old('currency', $data->currency ?? 'USD') == 'PLN' ? 'selected' : '' }}>PLN - Polish Zloty (zł)</option>
+                            <option value="THB" {{ old('currency', $data->currency ?? 'USD') == 'THB' ? 'selected' : '' }}>THB - Thai Baht (฿)</option>
+                            <option value="IDR" {{ old('currency', $data->currency ?? 'USD') == 'IDR' ? 'selected' : '' }}>IDR - Indonesian Rupiah (Rp)</option>
+                            <option value="MYR" {{ old('currency', $data->currency ?? 'USD') == 'MYR' ? 'selected' : '' }}>MYR - Malaysian Ringgit (RM)</option>
+                            <option value="PHP" {{ old('currency', $data->currency ?? 'USD') == 'PHP' ? 'selected' : '' }}>PHP - Philippine Peso (₱)</option>
+                            <option value="VND" {{ old('currency', $data->currency ?? 'USD') == 'VND' ? 'selected' : '' }}>VND - Vietnamese Dong (₫)</option>
+                            <option value="CZK" {{ old('currency', $data->currency ?? 'USD') == 'CZK' ? 'selected' : '' }}>CZK - Czech Koruna (Kč)</option>
+                            <option value="HUF" {{ old('currency', $data->currency ?? 'USD') == 'HUF' ? 'selected' : '' }}>HUF - Hungarian Forint (Ft)</option>
+                            <option value="ILS" {{ old('currency', $data->currency ?? 'USD') == 'ILS' ? 'selected' : '' }}>ILS - Israeli Shekel (₪)</option>
+                            <option value="CLP" {{ old('currency', $data->currency ?? 'USD') == 'CLP' ? 'selected' : '' }}>CLP - Chilean Peso ($)</option>
+                            <option value="COP" {{ old('currency', $data->currency ?? 'USD') == 'COP' ? 'selected' : '' }}>COP - Colombian Peso ($)</option>
+                            <option value="ARS" {{ old('currency', $data->currency ?? 'USD') == 'ARS' ? 'selected' : '' }}>ARS - Argentine Peso ($)</option>
+                            <option value="EGP" {{ old('currency', $data->currency ?? 'USD') == 'EGP' ? 'selected' : '' }}>EGP - Egyptian Pound (£)</option>
+                            <option value="PKR" {{ old('currency', $data->currency ?? 'USD') == 'PKR' ? 'selected' : '' }}>PKR - Pakistani Rupee (₨)</option>
+                            <option value="BDT" {{ old('currency', $data->currency ?? 'USD') == 'BDT' ? 'selected' : '' }}>BDT - Bangladeshi Taka (৳)</option>
+                            <option value="NGN" {{ old('currency', $data->currency ?? 'USD') == 'NGN' ? 'selected' : '' }}>NGN - Nigerian Naira (₦)</option>
+                            <option value="KES" {{ old('currency', $data->currency ?? 'USD') == 'KES' ? 'selected' : '' }}>KES - Kenyan Shilling (KSh)</option>
+                            <option value="UAH" {{ old('currency', $data->currency ?? 'USD') == 'UAH' ? 'selected' : '' }}>UAH - Ukrainian Hryvnia (₴)</option>
+                            <option value="RON" {{ old('currency', $data->currency ?? 'USD') == 'RON' ? 'selected' : '' }}>RON - Romanian Leu (lei)</option>
+                            <option value="BGN" {{ old('currency', $data->currency ?? 'USD') == 'BGN' ? 'selected' : '' }}>BGN - Bulgarian Lev (лв)</option>
+                            <option value="HRK" {{ old('currency', $data->currency ?? 'USD') == 'HRK' ? 'selected' : '' }}>HRK - Croatian Kuna (kn)</option>
+                            <option value="ISK" {{ old('currency', $data->currency ?? 'USD') == 'ISK' ? 'selected' : '' }}>ISK - Icelandic Krona (kr)</option>
+                            <option value="QAR" {{ old('currency', $data->currency ?? 'USD') == 'QAR' ? 'selected' : '' }}>QAR - Qatari Riyal (﷼)</option>
+                            <option value="KWD" {{ old('currency', $data->currency ?? 'USD') == 'KWD' ? 'selected' : '' }}>KWD - Kuwaiti Dinar (د.ك)</option>
+                            <option value="BHD" {{ old('currency', $data->currency ?? 'USD') == 'BHD' ? 'selected' : '' }}>BHD - Bahraini Dinar (د.ب)</option>
+                            <option value="OMR" {{ old('currency', $data->currency ?? 'USD') == 'OMR' ? 'selected' : '' }}>OMR - Omani Rial (﷼)</option>
+                            <option value="JOD" {{ old('currency', $data->currency ?? 'USD') == 'JOD' ? 'selected' : '' }}>JOD - Jordanian Dinar (د.ا)</option>
+                            <option value="LBP" {{ old('currency', $data->currency ?? 'USD') == 'LBP' ? 'selected' : '' }}>LBP - Lebanese Pound (ل.ل)</option>
+                            <option value="TWD" {{ old('currency', $data->currency ?? 'USD') == 'TWD' ? 'selected' : '' }}>TWD - Taiwan Dollar (NT$)</option>
+                            <option value="PEN" {{ old('currency', $data->currency ?? 'USD') == 'PEN' ? 'selected' : '' }}>PEN - Peruvian Sol (S/)</option>
+                            <option value="UYU" {{ old('currency', $data->currency ?? 'USD') == 'UYU' ? 'selected' : '' }}>UYU - Uruguayan Peso ($U)</option>
+                            <option value="VES" {{ old('currency', $data->currency ?? 'USD') == 'VES' ? 'selected' : '' }}>VES - Venezuelan Bolivar (Bs.)</option>
                         </select>
                     </div>
 
@@ -136,7 +181,7 @@
                                    placeholder="8">
                             <span class="absolute right-3 top-2 text-gray-500 text-sm">hours</span>
                         </div>
-                        <p class="text-xs text-gray-500 mt-1">Standard working hours per day (1-24 hours)</p>
+                        <p class="text-xs text-gray-500 mt-1">Standard working hours per day</p>
                     </div>
                 </div>
             </div>
@@ -489,26 +534,43 @@
                     });
                 },
                 initRoleSortable() {
-                    const tbody = document.querySelector('.roles-sortable');
-                    if (tbody) {
-                        if (tbody.sortableInstance) {
-                            tbody.sortableInstance.destroy();
-                        }
-                        
-                        tbody.sortableInstance = Sortable.create(tbody, {
-                            animation: 150,
-                            handle: '.drag-handle',
-                            ghostClass: 'bg-blue-50',
-                            chosenClass: 'bg-gray-50',
-                            dragClass: 'opacity-50',
-                            onEnd: (evt) => {
-                                // Reorder the roles array
-                                const movedRole = this.roles[evt.oldIndex];
-                                this.roles.splice(evt.oldIndex, 1);
-                                this.roles.splice(evt.newIndex, 0, movedRole);
-                            }
-                        });
+                    const $tbody = $('.roles-sortable');
+                    
+                    // Destroy existing sortable if it exists
+                    if ($tbody.hasClass('ui-sortable')) {
+                        $tbody.sortable('destroy');
                     }
+                    
+                    // Initialize jQuery UI sortable
+                    $tbody.sortable({
+                        handle: '.drag-handle',
+                        axis: 'y',
+                        cursor: 'move',
+                        opacity: 0.7,
+                        placeholder: 'bg-blue-50',
+                        helper: function(e, tr) {
+                            var $originals = tr.children();
+                            var $helper = tr.clone();
+                            $helper.children().each(function(index) {
+                                $(this).width($originals.eq(index).width());
+                            });
+                            return $helper;
+                        },
+                        update: (event, ui) => {
+                            // Get the new order from DOM
+                            const newRoles = [];
+                            $tbody.find('tr').each((index, row) => {
+                                const roleId = $(row).data('role-id');
+                                const role = this.roles.find(r => r.id == roleId);
+                                if (role) {
+                                    newRoles.push(role);
+                                }
+                            });
+                            
+                            // Update Alpine data
+                            this.roles = newRoles;
+                        }
+                    });
                 }
             }" x-init="window.roleManager = window.roleManager || {};">
             <div class="flex items-center justify-between mb-6">
@@ -527,17 +589,17 @@
                     <table class="min-w-full border border-gray-300">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b w-12"></th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Role Name</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Description</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Permissions</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">Actions</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 text-sm tracking-wider border-b w-12"></th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 text-sm tracking-wider border-b" style="color: #000; font-size: 0.85rem">Role Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 text-sm tracking-wider border-b" style="color: #000; font-size: 0.85rem">Description</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 text-sm tracking-wider border-b" style="color: #000; font-size: 0.85rem">Permissions</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 text-sm tracking-wider border-b" style="color: #000; font-size: 0.85rem">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 text-sm tracking-wider border-b" style="color: #000; font-size: 0.85rem">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200 roles-sortable">
-                            <template x-for="role in roles" :key="role.id">
-                                <tr class="hover:bg-gray-50 transition-colors">
+                            <template x-for="(role, index) in roles" :key="'role-' + role.id + '-' + index">
+                                <tr class="hover:bg-gray-50 transition-colors" :data-role-id="role.id">
                                     <td class="px-3 py-4 border-b">
                                         <div class="drag-handle cursor-move text-gray-400 hover:text-gray-600 transition-colors">
                                             <i class="fas fa-grip-vertical"></i>

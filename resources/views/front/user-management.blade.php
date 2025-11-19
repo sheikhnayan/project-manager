@@ -464,18 +464,49 @@
         // Initialize Lucide icons
         lucide.createIcons();
 
-        // Settings dropdown functionality
-        function toggleSettings(event) {
-            event.stopPropagation();
-            const dropdown = document.getElementById('settingsDropdown');
-            dropdown.classList.toggle('show');
-        }
 
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(event) {
-            const dropdown = document.getElementById('settingsDropdown');
-            if (dropdown.classList.contains('show')) {
-                dropdown.classList.remove('show');
+        // Robust settings menu toggle for both nav and table 3-dots
+        function toggleSettings(eventOrElement) {
+            let trigger, menu;
+            if (eventOrElement instanceof Event) {
+                // Called from nav: event
+                eventOrElement.stopPropagation();
+                trigger = eventOrElement.currentTarget;
+                menu = document.getElementById('settingsDropdown');
+            } else {
+                // Called from table: element
+                eventOrElement.stopPropagation && eventOrElement.stopPropagation();
+                trigger = eventOrElement;
+                menu = trigger.nextElementSibling;
+            }
+            if (!menu || !(menu.classList.contains('settings-menu') || menu.classList.contains('settings-dropdown'))) {
+                console.error('Settings menu not found or missing class');
+                return;
+            }
+            // Close all other menus
+            document.querySelectorAll('.settings-menu, .settings-dropdown').forEach(m => {
+                if (m !== menu) m.classList.add('hidden');
+            });
+            // Toggle this menu
+            menu.classList.toggle('hidden');
+            // Click outside to close
+            const handleClickOutside = (e) => {
+                if (!menu.contains(e.target) && (!trigger.contains(e.target))) {
+                    menu.classList.add('hidden');
+                    document.removeEventListener('click', handleClickOutside);
+                }
+            };
+            setTimeout(() => document.addEventListener('click', handleClickOutside), 0);
+        }
+        // Make toggleSettings globally available for nav inline onclick
+        window.toggleSettings = toggleSettings;
+
+        // Close menus on Escape
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                document.querySelectorAll('.settings-menu, .settings-dropdown').forEach(menu => {
+                    menu.classList.add('hidden');
+                });
             }
         });
 
