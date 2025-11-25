@@ -65,7 +65,7 @@
         }
 
         .calendar-day{
-            width: 24px !important;
+            width: 32px !important;
             height: 20px !important;
             text-align: center;
             border: 1px solid #ccc;
@@ -76,7 +76,7 @@
             height: 30px !important;
             font-size: 10px;
             padding: 0px !important;
-            width: 24px !important;
+            width: 32px !important;
             border-right: 1px solid #eee;
             border-top: 1px solid #eee;
             border-bottom: unset;
@@ -118,7 +118,7 @@
             box-sizing: border-box;
             margin: 0; /* Remove any margin that could cause a gap */
             border-top: unset;
-            width: 24px !important;
+            width: 32px !important;
             height: 20px !important;
             text-align: center;
         }
@@ -504,7 +504,7 @@
             box-sizing: border-box;
             margin: 0;
             border-top: unset;
-            width: 24px !important;
+            width: 32px !important;
             height: 20px !important;
             text-align: center;
         }
@@ -648,13 +648,13 @@
                                     // Add your view switching logic here if needed
                                 });
                             </script>
-                            {{-- <a href="/projects/{{ $data->id }}/v2" class="bg-green-600 text-white px-4 py-2 rounded" style="font-size: 13px; padding: 0.4rem 1rem; cursor: pointer; margin-right: 8px; background-color: #059669 !important; display: inline-flex; align-items: center; height: 34px;" title="New Clean Version">
+                            <a href="/projects/{{ $data->id }}/v2" class="bg-green-600 text-white px-4 py-2 rounded" style="font-size: 13px; padding: 0.4rem 1rem; cursor: pointer; margin-right: 8px; background-color: #059669 !important; display: inline-flex; align-items: center; height: 34px;" title="New Clean Version">
                                 <i class="fas fa-rocket" style="margin-right: 6px;"></i> V2
                             </a>
                             
                             <a href="/projects/{{ $data->id }}/dhtmlx" class="bg-blue-600 text-white px-4 py-2 rounded" style="font-size: 13px; padding: 0.4rem 1rem; cursor: pointer; margin-right: 8px; background-color: #2563eb !important; display: inline-flex; align-items: center; height: 34px;" title="Open DHTMLX Gantt">
                                 <i class="fas fa-crown" style="margin-right: 6px;"></i> DHTMLX Gantt
-                            </a> --}}
+                            </a>
                             
                             <a class="bg-black text-white px-4 py-2 rounded" id="addMemberButton" style="font-size: 13px; padding:0.4rem 1rem; cursor: pointer; margin-right: 8px;">+  Add Member</a>
                             {{-- <a href="/projects/create" class="bg-black text-white px-4 py-2 rounded" style="font-size: 13px; padding:0.4rem 1rem;">+  Add Project</a> --}}
@@ -999,7 +999,7 @@
 
                     monthContainer.append(`<div class="calendar-day ${dayClass}" data-date="${year}-${month}-${day}">${dateString}</div>`);
 
-                    inn = `<input type="number" min="1" max="8" step="1" class="${dayClass} calendar-day inputss" style="min-width: 24px;" onchange="convertTimeInput(this)" oninput="restrictToInteger(this)" data-date="${year}-${month}-${day}">`;
+                    inn = `<input type="number" min="1" max="8" step="1" class="${dayClass} calendar-day inputss" style="min-width: 32px;" onchange="convertTimeInput(this)" oninput="restrictToInteger(this)" data-date="${year}-${month}-${day}">`;
 
                     inp += inn;
                     
@@ -1066,7 +1066,7 @@
                                              max="8" 
                                              step="1" 
                                              class="${dayClass} inputsss member-time-input" 
-                                             style="min-width: 24px;" 
+                                             style="min-width: 32px;" 
                                              data-user-id="${userId}" 
                                              data-project-id="${projectId}" 
                                              data-date="${dateString}"
@@ -1127,16 +1127,15 @@
                 
                 // Calculate days from calendar start (which is 1 year before today) to target date
                 const daysFromStart = Math.floor((oneWeekBefore - startDate) / (1000 * 60 * 60 * 24));
-                const scrollPosition = daysFromStart * 24; // 24px per day
+                const scrollPosition = daysFromStart * 32; // 32px per day
                 
-                console.log('[Auto-scroll] Calendar starts at:', startDate.toDateString());
-                console.log('[Auto-scroll] Scrolling to 1 week before today:', oneWeekBefore.toDateString());
-                console.log('[Auto-scroll] Days from calendar start:', daysFromStart);
-                console.log('[Auto-scroll] Scroll position:', scrollPosition + 'px');
+                console.log('Calendar starts at:', startDate.toDateString());
+                console.log('Scrolling to 1 week before today:', oneWeekBefore.toDateString());
+                console.log('Days from calendar start:', daysFromStart);
+                console.log('Scroll position:', scrollPosition + 'px');
                 
                 $('.scroll-container').scrollLeft(scrollPosition);
-                gantt.scrollTo(scrollPosition, null); // Sync gantt chart too
-                console.log('[Auto-scroll] Both calendars scrolled to position:', scrollPosition);
+                console.log('Bottom calendar scrolled to position:', scrollPosition);
             }
         });
     </script>
@@ -1838,7 +1837,7 @@ $(document).ready(function() {
         
         // Calculate scroll position based on days from calendar start
         const daysFromStart = Math.floor((oneWeekBefore - calendarStart) / (1000 * 60 * 60 * 24));
-        const scrollPosition = daysFromStart * 24; // 24px per day
+        const scrollPosition = daysFromStart * 32; // 32px per day
         
         // Scroll bottom calendar
         $('.scroll-container').animate({
@@ -1948,27 +1947,14 @@ $(document).on('input change', '.member-time-input', function() {
         // DHTMLX Gantt Configuration
         const EXACT_DAY_WIDTH = 24;
         
-        // Find earliest task start date for DHTMLX Gantt
-        const ganttTaskDates = [
-            @foreach ($data->tasks as $item)
-                @if ($item->start_date != null)
-                    "{{ \Carbon\Carbon::parse($item->start_date)->format('Y-m-d') }}",
-                @endif
-            @endforeach
-        ].filter(date => date).map(date => new Date(date));
-        
-        const ganttEarliestTaskDate = ganttTaskDates.length > 0 ? new Date(Math.min(...ganttTaskDates)) : new Date('{{ $data->start_date }}');
-        
-        // Set calendar start date to 1 year before earliest task date
-        const calendarStartDate = new Date(ganttEarliestTaskDate);
+        // Set calendar start date to 1 year before today
+        const calendarStartDate = new Date();
         calendarStartDate.setFullYear(calendarStartDate.getFullYear() - 1);
         
         // Set end date to 10 years after project end
         const projectEndDate = new Date('{{ $data->end_date }}');
         const calendarEndDate = new Date(projectEndDate);
         calendarEndDate.setFullYear(calendarEndDate.getFullYear() + 10);
-        
-        console.log('DHTMLX Gantt - Earliest task:', ganttEarliestTaskDate.toDateString(), '| Calendar start:', calendarStartDate.toDateString());
         
         // Configure date format
         gantt.config.date_format = "%Y-%m-%d";
@@ -1992,8 +1978,8 @@ gantt.config.scales = [
 ];
 
 gantt.config.scale_height = 52;  // Enough height for two rows
-gantt.config.min_column_width = 24;
-gantt.config.max_column_width = 24;
+gantt.config.min_column_width = 32;
+gantt.config.max_column_width = 32;
         
         // Hide the grid completely
         gantt.config.grid_width = 0;
@@ -2277,110 +2263,33 @@ gantt.config.max_column_width = 24;
         });
         
         // Synchronize gantt and bottom calendar scrolling
-        let syncInProgress = false;
-        let syncTimeout;
+        let isGanttScrolling = false;
+        let isBottomScrolling = false;
         
         // When gantt scrolls, scroll bottom calendar to match
         gantt.attachEvent("onGanttScroll", function(left, top) {
-            if (syncInProgress) return true;
-            clearTimeout(syncTimeout);
-            syncInProgress = true;
-            console.log('[Gantt Scroll] Position:', left);
-            setTimeout(() => {
+            if (!isBottomScrolling) {
+                isGanttScrolling = true;
                 $('.scroll-container').scrollLeft(left);
-                console.log('[Gantt Scroll] Synced bottom calendar to:', left);
-                syncTimeout = setTimeout(() => { syncInProgress = false; }, 50);
-            }, 0);
+                setTimeout(() => { isGanttScrolling = false; }, 50);
+            }
+            
             return true;
         });
         
         // When bottom calendar scrolls, scroll gantt to match
         $('.scroll-container').on('scroll', function() {
-            if (syncInProgress) return;
-            clearTimeout(syncTimeout);
-            syncInProgress = true;
-            const scrollLeft = $(this).scrollLeft();
-            console.log('[Bottom Scroll] Position:', scrollLeft);
-            setTimeout(() => {
+            if (!isGanttScrolling) {
+                isBottomScrolling = true;
+                const scrollLeft = $(this).scrollLeft();
                 gantt.scrollTo(scrollLeft, null);
-                console.log('[Bottom Scroll] Synced gantt to:', scrollLeft);
-                syncTimeout = setTimeout(() => { syncInProgress = false; }, 50);
-            }, 0);
-        });
-        
-        // Recalibration mechanism - syncs scroll positions when scrolling stops
-        let bottomScrollStopTimeout;
-        let ganttScrollStopTimeout;
-        
-        function recalibrateScrollPosition() {
-            const bottomScrollPos = $('.scroll-container').scrollLeft();
-            const ganttScrollPos = gantt.getScrollState().x;
-            console.log('[Recalibrate] Checking positions - Bottom:', bottomScrollPos, 'Gantt:', ganttScrollPos);
-            if (Math.abs(bottomScrollPos - ganttScrollPos) > 1) {
-                console.log('[Recalibrate] ⚠️ Desync detected! Correcting...');
-                syncInProgress = true;
-                $('.scroll-container').scrollLeft(ganttScrollPos);
-                console.log('[Recalibrate] ✓ Synced bottom calendar to gantt position:', ganttScrollPos);
-                setTimeout(() => { syncInProgress = false; }, 100);
-            } else {
-                console.log('[Recalibrate] ✓ Positions already aligned');
-            }
-        }
-        
-        // Mouse wheel scroll handlers with recalibration - DAILY VIEW (0.4x speed)
-        $('.scroll-container').on('wheel', function(e) {
-            const deltaY = e.originalEvent.deltaY;
-            const deltaX = e.originalEvent.deltaX;
-            
-            console.log('[Bottom Wheel] deltaY:', deltaY, 'deltaX:', deltaX);
-            
-            // If vertical scrolling is dominant, convert to horizontal
-            if (Math.abs(deltaY) > Math.abs(deltaX)) {
-                e.preventDefault();
-                const scrollAmount = deltaY * 0.8; // 0.4x scroll speed
-                const currentScroll = $(this).scrollLeft();
-                const newScroll = currentScroll + scrollAmount;
-                $(this).scrollLeft(newScroll);
-                console.log('[Bottom Wheel] Scrolled from', currentScroll, 'to', newScroll);
-                
-                // Schedule recalibration after scroll stops (300ms)
-                clearTimeout(bottomScrollStopTimeout);
-                bottomScrollStopTimeout = setTimeout(function() {
-                    console.log('[Bottom Wheel] Scroll stopped, recalibrating...');
-                    recalibrateScrollPosition();
-                }, 300);
+                setTimeout(() => { isBottomScrolling = false; }, 50);
             }
         });
         
-        // Gantt container - used for both wheel handler and MutationObserver
+        // Use MutationObserver to detect when gantt re-renders the scale
         const ganttContainer = document.getElementById('gantt_here');
         if (ganttContainer) {
-            // Wheel handler for mouse scroll
-            ganttContainer.addEventListener('wheel', function(e) {
-                const deltaY = e.deltaY;
-                const deltaX = e.deltaX;
-                
-                console.log('[Gantt Wheel] deltaY:', deltaY, 'deltaX:', deltaX);
-                
-                // If vertical scrolling is dominant, convert to horizontal
-                if (Math.abs(deltaY) > Math.abs(deltaX)) {
-                    e.preventDefault();
-                    const scrollAmount = deltaY * 0.8; // 0.4x scroll speed
-                    const currentScroll = gantt.getScrollState().x;
-                    const newScroll = currentScroll + scrollAmount;
-                    gantt.scrollTo(newScroll, null);
-                    console.log('[Gantt Wheel] Scrolled from', currentScroll, 'to', newScroll);
-                    
-                    // Schedule recalibration after scroll stops (300ms)
-                    clearTimeout(ganttScrollStopTimeout);
-                    ganttScrollStopTimeout = setTimeout(function() {
-                        console.log('[Gantt Wheel] Scroll stopped, recalibrating...');
-                        recalibrateScrollPosition();
-                    }, 300);
-                }
-            }, { passive: false });
-            
-            // MutationObserver to detect when gantt re-renders the scale
             const observer = new MutationObserver(function(mutations) {
                 mutations.forEach(function(mutation) {
                     if (mutation.target.classList.contains('gantt_scale_line')) {

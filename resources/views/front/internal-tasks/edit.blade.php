@@ -25,7 +25,7 @@
     @include('front.nav')
 
     <main class="py-6">
-        <div class="max-w-7xl mx-auto px-4">
+        <div class="mx-auto px-4">
             <div class="flex items-center justify-between mb-6">
                 <div>
                     <h1 class="text-3xl font-bold">Edit Internal Task</h1>
@@ -206,23 +206,20 @@
 
     <!-- Initialize Lucide icons -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            lucide.createIcons();
-        });
+        // Initialize Lucide icons
+        lucide.createIcons();
 
-        // Settings dropdown functionality (for nav bar)
+        // Settings dropdown functionality
         function toggleSettings(event) {
             event.stopPropagation();
             const dropdown = document.getElementById('settingsDropdown');
-            if (dropdown) {
-                dropdown.classList.toggle('show');
-            }
+            dropdown.classList.toggle('show');
         }
 
         // Close dropdown when clicking outside
         document.addEventListener('click', function(event) {
             const dropdown = document.getElementById('settingsDropdown');
-            if (dropdown && dropdown.classList.contains('show')) {
+            if (dropdown.classList.contains('show')) {
                 dropdown.classList.remove('show');
             }
         });

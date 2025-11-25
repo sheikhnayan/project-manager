@@ -1,0 +1,52 @@
+/* CSS ADDITIONS FOR TWO-ROW CALENDAR STRUCTURE */
+
+.calendar-container {
+    display: block; /* Changed from flex to block for row stacking */
+    white-space: nowrap;
+    position: relative;
+}
+
+.month-header-row {
+    display: flex;
+    white-space: nowrap;
+    width: fit-content;
+}
+
+.week-cell-row {
+    display: flex;
+    white-space: nowrap;
+    width: fit-content;
+}
+
+.month-header {
+    display: inline-block;
+    vertical-align: top;
+    margin: 0;
+    padding: 5px 0;
+    font-size: 14px;
+    background-color: #000 !important;
+    border-right: 1px solid #fff;
+    color: white;
+    text-align: center;
+    border-bottom: 1px solid #e5e7eb;
+    height: 32px;
+    line-height: 22px;
+    box-sizing: border-box;
+}
+
+.calendar-day {
+    display: inline-block;
+    vertical-align: top;
+    border: 1px solid #ccc;
+    padding-top: 1px;
+    font-size: 10px;
+    box-sizing: border-box;
+    margin: 0;
+    border-top: unset;
+    width: 32px !important;
+    min-width: 32px !important;
+    max-width: 32px !important;
+    height: 20px !important;
+    text-align: center;
+    flex-shrink: 0;
+}

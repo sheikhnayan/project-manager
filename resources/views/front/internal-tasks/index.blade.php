@@ -567,11 +567,22 @@
         }
     </script>
 
-    <script>
-        // Initialize Lucide icons after DOM is fully loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
+   <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Settings dropdown functionality
+        function toggleSettings(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('settingsDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('settingsDropdown');
+            if (dropdown.classList.contains('show')) {
+                dropdown.classList.remove('show');
             }
         });
     </script>

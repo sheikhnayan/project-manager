@@ -121,7 +121,7 @@
     @include('front.nav')
 
     <main class="py-6">
-        <div class="max-w-7xl mx-auto px-4">
+        <div class="mx-auto px-4">
             <div class="bg-white rounded-lg shadow" style="border: 1px solid #D1D5DB; padding: 16px; margin-bottom: 24px;">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-4">
@@ -202,7 +202,7 @@
                                             {{ $task->max_hours_per_day ? $task->max_hours_per_day . 'h' : 'No limit' }}
                                         </td>
                                         <td class="py-3 px-4 text-center">
-                                            {{ $task->hourly_rate ? '$' . number_format($task->hourly_rate, 2) : '-' }}
+                                            {{ $task->hourly_rate ? formatCurrency($task->hourly_rate) : '-' }}
                                         </td>
                                         <td class="py-3 px-4 text-center">
                                             {{ number_format($task->timeEntries->sum('hours'), 1) }}h
@@ -405,50 +405,18 @@
         // Initialize Lucide icons
         lucide.createIcons();
 
-        // Settings toggle function
-        function toggleSettings(element) {
-            try {
-                // Find the settings menu as the next sibling
-                const settingsMenu = element.nextElementSibling;
-                
-                // Check if the settings menu exists and has the correct class
-                if (!settingsMenu || !settingsMenu.classList.contains('settings-menu')) {
-                    console.error('Settings menu not found or missing settings-menu class');
-                    return;
-                }
-
-                // Close all other settings menus first
-                document.querySelectorAll('.settings-menu').forEach(menu => {
-                    if (menu !== settingsMenu) {
-                        menu.classList.add('hidden');
-                    }
-                });
-
-                // Toggle the current menu
-                settingsMenu.classList.toggle('hidden');
-
-                // Handle clicking outside
-                const handleClickOutside = (event) => {
-                    if (!settingsMenu.contains(event.target) && !element.contains(event.target)) {
-                        settingsMenu.classList.add('hidden');
-                        // Remove the event listener once the menu is closed
-                        document.removeEventListener('click', handleClickOutside);
-                    }
-                };
-
-                // Add click outside listener
-                document.addEventListener('click', handleClickOutside);
-            } catch (error) {
-                console.error('Error in toggleSettings:', error);
-            }
+       // Settings dropdown functionality
+        function toggleSettings(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('settingsDropdown');
+            dropdown.classList.toggle('show');
         }
 
-        // Close menus when pressing escape
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                document.querySelectorAll('.settings-menu').forEach(menu => {
-                    menu.classList.add('hidden');
-                });
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('settingsDropdown');
+            if (dropdown.classList.contains('show')) {
+                dropdown.classList.remove('show');
             }
         });
 

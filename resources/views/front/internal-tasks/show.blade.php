@@ -25,7 +25,7 @@
     @include('front.nav')
 
     <main class="py-6">
-        <div class="max-w-7xl mx-auto px-4">
+        <div class="mx-auto px-4">
             <div class="flex items-center justify-between mb-6">
                 <div>
                     <h1 class="text-3xl font-bold">{{ $internalTask->name }}</h1>
@@ -236,11 +236,28 @@
         </div>
     </main>
 
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Settings dropdown functionality
+        function toggleSettings(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('settingsDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('settingsDropdown');
+            if (dropdown.classList.contains('show')) {
+                dropdown.classList.remove('show');
+            }
+        });
+    </script>
+
     <!-- Initialize Lucide icons -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            lucide.createIcons();
-        });
 
         function toggleTaskStatus(taskId) {
             if (!confirm('Are you sure you want to change the task status?')) {
@@ -267,23 +284,6 @@
                 alert('An error occurred while updating the task status');
             });
         }
-
-        // Settings dropdown functionality (for nav bar)
-        function toggleSettings(event) {
-            event.stopPropagation();
-            const dropdown = document.getElementById('settingsDropdown');
-            if (dropdown) {
-                dropdown.classList.toggle('show');
-            }
-        }
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(event) {
-            const dropdown = document.getElementById('settingsDropdown');
-            if (dropdown && dropdown.classList.contains('show')) {
-                dropdown.classList.remove('show');
-            }
-        });
     </script>
 </body>
 </html>

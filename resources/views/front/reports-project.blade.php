@@ -140,9 +140,24 @@ table tr:last-child td:last-child {
     </main>
 
 <script>
-// Initialize Lucide icons
-lucide.createIcons();
-</script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Settings dropdown functionality
+        function toggleSettings(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('settingsDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('settingsDropdown');
+            if (dropdown.classList.contains('show')) {
+                dropdown.classList.remove('show');
+            }
+        });
+    </script>
 
 <script>
 // Sort direction tracking (global scope)

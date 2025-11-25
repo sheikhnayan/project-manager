@@ -24,7 +24,7 @@
     @include('front.nav')
 
     <main class="py-6">
-        <div class="max-w-7xl mx-auto px-4">
+        <div class="mx-auto px-4">
             <div class="mb-6">
                 <div class="flex items-center space-x-2 text-sm text-gray-500 mb-2">
                     <a href="{{ route('internal-tasks.index') }}" class="hover:text-gray-700">Internal Tasks</a>
@@ -195,23 +195,21 @@
         </div>
     </main>
 
-    <script>
+   <script>
         // Initialize Lucide icons
         lucide.createIcons();
 
-        // Settings dropdown functionality (for nav bar)
+        // Settings dropdown functionality
         function toggleSettings(event) {
             event.stopPropagation();
             const dropdown = document.getElementById('settingsDropdown');
-            if (dropdown) {
-                dropdown.classList.toggle('show');
-            }
+            dropdown.classList.toggle('show');
         }
 
         // Close dropdown when clicking outside
         document.addEventListener('click', function(event) {
             const dropdown = document.getElementById('settingsDropdown');
-            if (dropdown && dropdown.classList.contains('show')) {
+            if (dropdown.classList.contains('show')) {
                 dropdown.classList.remove('show');
             }
         });

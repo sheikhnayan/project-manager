@@ -115,6 +115,7 @@ Route::controller(ProjectController::class)->prefix('/projects')->group(function
     Route::get('/create', 'create')->name('projects.create')->middleware('permission:create_projects');
     Route::get('/edits/{id}', 'edits')->name('projects.edits')->middleware('permission:edit_projects');
     Route::get('/{id}', 'show')->name('projects.show')->middleware('permission:view_projects');
+    Route::get('/try/{id}', 'show_weekly')->name('projects.try')->middleware('permission:view_projects');
     Route::get('/{id}/v2', 'show_v2')->name('projects.v2')->middleware('permission:view_projects');
     Route::get('/{id}/dhtmlx', 'show_dhtmlx')->name('projects.dhtmlx')->middleware('permission:view_projects');
     Route::get('/{id}/gantt', 'gantt')->name('projects.gantt')->middleware('permission:view_projects');

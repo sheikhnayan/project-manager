@@ -65,7 +65,10 @@
         }
 
         .calendar-day{
-            width: 24px !important;
+            width: 32px !important;
+            min-width: 32px !important;
+            max-width: 32px !important;
+            flex: 0 0 32px !important; /* Prevent flexbox shrink/stretch */
             height: 20px !important;
             text-align: center;
             border: 1px solid #ccc;
@@ -76,7 +79,10 @@
             height: 30px !important;
             font-size: 10px;
             padding: 0px !important;
-            width: 24px !important;
+            width: 32px !important;
+            min-width: 32px !important;
+            max-width: 32px !important;
+            flex: 0 0 32px !important; /* Lock width inside flex rows */
             border-right: 1px solid #eee;
             border-top: 1px solid #eee;
             border-bottom: unset;
@@ -89,16 +95,23 @@
         }
 
         .calendar-container {
-            display: flex;
+            display: block;
             white-space: nowrap;
             position: relative;
         }
-        .month-container {
-            display: inline-block;
+        .month-header-row {
+            display: flex;
+            white-space: nowrap;
+            width: fit-content;
+        }
+        .week-cell-row {
+            display: flex;
+            white-space: nowrap;
+            width: fit-content;
         }
         .month-header {
-            display: block;
-            width: 100%;
+            display: inline-block;
+            vertical-align: top;
             margin: 0;
             padding: 5px 0;
             font-size: 14px;
@@ -107,7 +120,9 @@
             color: white;
             text-align: center;
             border-bottom: 1px solid #e5e7eb;
-            /* Remove any margin-bottom or padding-bottom if present */
+            height: 32px;
+            line-height: 22px;
+            box-sizing: border-box;
         }
         .calendar-day {
             display: inline-block;
@@ -116,11 +131,14 @@
             padding-top: 1px;
             font-size: 10px;
             box-sizing: border-box;
-            margin: 0; /* Remove any margin that could cause a gap */
+            margin: 0;
             border-top: unset;
-            width: 24px !important;
+            width: 32px !important;
+            min-width: 32px !important;
+            max-width: 32px !important;
             height: 20px !important;
             text-align: center;
+            flex-shrink: 0;
         }
         .scroll-container {
             overflow-x: scroll;
@@ -128,10 +146,43 @@
             cursor: grab;
             border-top-right-radius: 4px;
             border-bottom-right-radius: 4px;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
         }
 
         .scroll-container::-webkit-scrollbar {
-            display: none; /* For Chrome, Safari, and Opera */
+            display: none !important; /* Chrome, Safari, and Opera */
+            width: 0 !important;
+            height: 0 !important;
+        }
+        
+        /* Hide ALL scrollbars in gantt chart area - global rule */
+        #gantt_here *::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+        }
+        
+        /* Hide gantt scrollbars */
+        #gantt_here,
+        .gantt_container,
+        .gantt_task,
+        .gantt_task_scroll,
+        .gantt_layout_cell,
+        .gantt_data_area {
+            scrollbar-width: none !important; /* Firefox */
+            -ms-overflow-style: none !important; /* IE and Edge */
+        }
+        
+        #gantt_here::-webkit-scrollbar,
+        .gantt_container::-webkit-scrollbar,
+        .gantt_task::-webkit-scrollbar,
+        .gantt_task_scroll::-webkit-scrollbar,
+        .gantt_layout_cell::-webkit-scrollbar,
+        .gantt_data_area::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
         }
         .header {
             position: fixed;
@@ -504,7 +555,7 @@
             box-sizing: border-box;
             margin: 0;
             border-top: unset;
-            width: 24px !important;
+            width: 32px !important;
             height: 20px !important;
             text-align: center;
         }
@@ -572,8 +623,8 @@
                                 <img src="{{ asset('house.png') }}" style="border: 1px solid #000;padding: 10px 12px;border-radius: 4px;border-color: #eee; ">
                             </button>
                             <div style="border: 1px solid #eee; border-radius: 4px;  margin-right: 8px; height: 34px;width: 170px; display:flex;justify-content: center;">
-                                <a href="/projects" class="toggle-btn active" style="border-top-left-radius: 4px;border-bottom-left-radius: 4px;">Daily</a>
-                                <a href="/projects/weekly/{{ $data->id }}" class="toggle-btn" style="border-top-right-radius: 4px;border-bottom-right-radius: 4px;">Weekly</a>
+                                <a href="/projects/{{ $data->id }}" class="toggle-btn" style="border-top-left-radius: 4px;border-bottom-left-radius: 4px;">Daily</a>
+                                <a href="/projects/weekly/{{ $data->id }}" class="toggle-btn active" style="border-top-right-radius: 4px;border-bottom-right-radius: 4px;">Weekly</a>
                             </div>
                             <style>
                                 .toggle-btn {
@@ -648,13 +699,13 @@
                                     // Add your view switching logic here if needed
                                 });
                             </script>
-                            {{-- <a href="/projects/{{ $data->id }}/v2" class="bg-green-600 text-white px-4 py-2 rounded" style="font-size: 13px; padding: 0.4rem 1rem; cursor: pointer; margin-right: 8px; background-color: #059669 !important; display: inline-flex; align-items: center; height: 34px;" title="New Clean Version">
+                            <a href="/projects/{{ $data->id }}/v2" class="bg-green-600 text-white px-4 py-2 rounded" style="font-size: 13px; padding: 0.4rem 1rem; cursor: pointer; margin-right: 8px; background-color: #059669 !important; display: inline-flex; align-items: center; height: 34px;" title="New Clean Version">
                                 <i class="fas fa-rocket" style="margin-right: 6px;"></i> V2
                             </a>
                             
                             <a href="/projects/{{ $data->id }}/dhtmlx" class="bg-blue-600 text-white px-4 py-2 rounded" style="font-size: 13px; padding: 0.4rem 1rem; cursor: pointer; margin-right: 8px; background-color: #2563eb !important; display: inline-flex; align-items: center; height: 34px;" title="Open DHTMLX Gantt">
                                 <i class="fas fa-crown" style="margin-right: 6px;"></i> DHTMLX Gantt
-                            </a> --}}
+                            </a>
                             
                             <a class="bg-black text-white px-4 py-2 rounded" id="addMemberButton" style="font-size: 13px; padding:0.4rem 1rem; cursor: pointer; margin-right: 8px;">+  Add Member</a>
                             {{-- <a href="/projects/create" class="bg-black text-white px-4 py-2 rounded" style="font-size: 13px; padding:0.4rem 1rem;">+  Add Project</a> --}}
@@ -951,68 +1002,156 @@
             
             console.log('Earliest task date:', earliestTaskDate.toDateString());
             
-            const projectDurationDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+            const projectDurationDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 32));
             
-            console.log('Calendar range:', startDate, 'to', endDate, '(' + Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + ' days)');
+            console.log('Calendar range:', startDate, 'to', endDate, '(' + Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 32)) + ' days)');
             
             const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-            let isWeeklyView = false; // Default to daily view
+            let isWeeklyView = true; // Weekly view
 
             function renderCalendar() {
                 calendarContainer.empty(); // Clear the calendar container
-                let currentMonth = startDate.getMonth(); // Get the starting month index (0–11)
-                let monthContainer = $('<div class="month-container"></div>');
-                monthContainer.append(`<div class="month-header">${monthNames[currentMonth]}</div>`); // Use monthNames[currentMonth]
+                
+                // Align start date to Monday to match DHTMLX
+                const alignedStartDate = new Date(startDate);
+                const startDayOfWeek = alignedStartDate.getDay();
+                const daysToMonday = (startDayOfWeek === 0 ? -6 : 1 - startDayOfWeek);
+                alignedStartDate.setDate(alignedStartDate.getDate() + daysToMonday);
 
                 inp = ``;
 
-                // Base color for the fade effect
-                const baseColor = [74, 85, 104]; // RGB for #4a5568 (dark gray-blue)
-                const fadeStep = 2; // Amount to lighten the color for each month
-
-                let fadeIndex = 0; // Initialize fade index
-
-                // Use safer date iteration to prevent date calculation issues
-                const currentDate = new Date(startDate);
-                while (currentDate <= endDate) {
-                    const day = currentDate.getDate().toString().padStart(2, '0'); // Pad day with leading zero
-                    const month = (currentDate.getMonth() + 1).toString().padStart(2, '0'); // Pad month with leading zero
-                    const year = currentDate.getFullYear();
-                    const dayOfWeek = currentDate.getDay();
-                    const dateString = `${day}`;
-                    const dayClass = (dayOfWeek === 0 || dayOfWeek === 6) ? 'calendar-day holiday' : 'calendar-day';
-
-                    if (currentDate.getMonth() !== currentMonth) {
-                        // Apply fading color to the current month header
-                        const fadeColor = `rgb(${Math.min(baseColor[0] + fadeIndex * fadeStep, 255)},
-                                            ${Math.min(baseColor[1] + fadeIndex * fadeStep, 255)},
-                                            ${Math.min(baseColor[2] + fadeIndex * fadeStep, 255)})`;
-                        monthContainer.find('.month-header').css('background-color', fadeColor);
-
-                        calendarContainer.append(monthContainer);
-                        currentMonth = currentDate.getMonth(); // Update currentMonth to the new month
-                        monthContainer = $('<div class="month-container"></div>');
-                        monthContainer.append(`<div class="month-header">${monthNames[currentMonth]}</div>`); // Use monthNames[currentMonth]
-
-                        fadeIndex++; // Increment fade index for the next month
+                // Calculate continuous week number from epoch (matches DHTMLX %W format)
+                const currentDate = new Date(alignedStartDate);
+                
+                // Helper function to calculate ISO week number
+                function getISOWeekNumber(date) {
+                    const tempDate = new Date(date.getTime());
+                    tempDate.setHours(0, 0, 0, 0);
+                    // Thursday in current week decides the year
+                    tempDate.setDate(tempDate.getDate() + 3 - (tempDate.getDay() + 6) % 7);
+                    // January 4 is always in week 1
+                    const week1 = new Date(tempDate.getFullYear(), 0, 4);
+                    // Adjust to Thursday in week 1 and count number of weeks from date to week1
+                    return 1 + Math.round(((tempDate.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+                }
+                
+                // Track month segments as they appear in timeline (month headers can split across weeks)
+                let monthSegments = []; // Array of {month, year, width} segments in order
+                let currentMonthKey = null;
+                let currentMonthDays = 0;
+                
+                // Only render weeks where Monday falls before the end date (matches DHTMLX behavior)
+                while (currentDate < endDate) {
+                    // Get the Monday of this week for the data-date attribute
+                    const weekStartDate = new Date(currentDate);
+                    const weekStartDay = weekStartDate.getDate().toString().padStart(2, '0');
+                    const weekStartMonth = (weekStartDate.getMonth() + 1).toString().padStart(2, '0');
+                    const weekStartYear = weekStartDate.getFullYear();
+                    
+                    // Calculate ISO week number (continuous, never resets)
+                    const weekNumber = getISOWeekNumber(currentDate);
+                    
+                    // For this week, calculate how days are distributed across months
+                    let weekMonthDistribution = {}; // {monthKey: dayCount}
+                    
+                    for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+                        const dayInWeek = new Date(currentDate);
+                        dayInWeek.setDate(dayInWeek.getDate() + dayOffset);
+                        
+                        // Only count days that are before the end date
+                        if (dayInWeek >= endDate) break;
+                        
+                        const dayMonth = dayInWeek.getMonth();
+                        const dayYear = dayInWeek.getFullYear();
+                        const monthKey = `${dayYear}-${String(dayMonth).padStart(2, '0')}`;
+                        
+                        weekMonthDistribution[monthKey] = (weekMonthDistribution[monthKey] || 0) + 1;
                     }
+                    
+                    // Create month segments based on how this week is distributed
+                    Object.keys(weekMonthDistribution).forEach(monthKey => {
+                        const [year, month] = monthKey.split('-').map(Number);
+                        const dayCount = weekMonthDistribution[monthKey];
+                        const width = Math.round((dayCount / 7) * 32);
+                        
+                        // If same month as previous segment, merge widths
+                        if (monthSegments.length > 0 && 
+                            monthSegments[monthSegments.length - 1].monthKey === monthKey) {
+                            monthSegments[monthSegments.length - 1].width += width;
+                        } else {
+                            // New month segment
+                            monthSegments.push({
+                                monthKey: monthKey,
+                                year: year,
+                                month: month,
+                                width: width
+                            });
+                        }
+                    });
 
-                    monthContainer.append(`<div class="calendar-day ${dayClass}" data-date="${year}-${month}-${day}">${dateString}</div>`);
-
-                    inn = `<input type="number" min="1" max="8" step="1" class="${dayClass} calendar-day inputss" style="min-width: 24px;" onchange="convertTimeInput(this)" oninput="restrictToInteger(this)" data-date="${year}-${month}-${day}">`;
+                    // Create input for this week
+                    inn = `<input type="number" min="1" max="56" step="1" class="calendar-day inputss" style="min-width: 32px;" onchange="convertTimeInput(this)" oninput="restrictToInteger(this)" data-date="${weekStartYear}-${weekStartMonth}-${weekStartDay}" data-week="${weekNumber}">`;
 
                     inp += inn;
                     
-                    currentDate.setDate(currentDate.getDate() + 1);
+                    currentDate.setDate(currentDate.getDate() + 7); // Move to next week
                 }
-
-                // Apply fading color to the last month header
-                const fadeColor = `rgb(${Math.min(baseColor[0] + fadeIndex * fadeStep, 255)},
-                                    ${Math.min(baseColor[1] + fadeIndex * fadeStep, 255)},
-                                    ${Math.min(baseColor[2] + fadeIndex * fadeStep, 255)})`;
-                monthContainer.find('.month-header').css('background-color', fadeColor);
-
-                calendarContainer.append(monthContainer);
+                
+                // Build TWO SEPARATE ROWS: month headers row + week cells row
+                const monthHeaderRow = $('<div class="month-header-row"></div>');
+                const weekCellRow = $('<div class="week-cell-row"></div>');
+                
+                // Count total weeks for width calculation
+                const currentDate2 = new Date(alignedStartDate);
+                let totalWeeks = 0;
+                while (currentDate2 < endDate) {
+                    totalWeeks++;
+                    currentDate2.setDate(currentDate2.getDate() + 7);
+                }
+                const totalExpectedWidth = totalWeeks * 32;
+                
+                // First row: Month header segments in timeline order with partial widths
+                let accumulatedWidth = 0;
+                monthSegments.forEach(function(segment, index) {
+                    let monthWidth = segment.width;
+                    
+                    // For the last segment, use remaining width to avoid rounding errors
+                    if (index === monthSegments.length - 1) {
+                        monthWidth = totalExpectedWidth - accumulatedWidth;
+                    }
+                    
+                    console.log(`[Month Segment: ${monthNames[segment.month]} ${segment.year}] width = ${monthWidth}px`);
+                    
+                    const monthHeader = $('<div class="month-header"></div>');
+                    monthHeader.text(monthNames[segment.month] + ' ' + segment.year);
+                    monthHeader.css({
+                        'width': monthWidth + 'px',
+                        'display': 'inline-block',
+                        'vertical-align': 'top'
+                    });
+                    monthHeaderRow.append(monthHeader);
+                    
+                    accumulatedWidth += monthWidth;
+                });
+                
+                // Second row: ALL week cells continuously (no breaks) - only before end date
+                const currentDate3 = new Date(alignedStartDate);
+                while (currentDate3 < endDate) {
+                    const weekStartDate = new Date(currentDate3);
+                    const weekStartDay = weekStartDate.getDate().toString().padStart(2, '0');
+                    const weekStartMonth = (weekStartDate.getMonth() + 1).toString().padStart(2, '0');
+                    const weekStartYear = weekStartDate.getFullYear();
+                    const weekNumber = getISOWeekNumber(currentDate3);
+                    
+                    const weekCell = $(`<div class="calendar-day" data-date="${weekStartYear}-${weekStartMonth}-${weekStartDay}" data-week="${weekNumber}">W${weekNumber}</div>`);
+                    weekCellRow.append(weekCell);
+                    
+                    currentDate3.setDate(currentDate3.getDate() + 7);
+                }
+                
+                // Append both rows to calendar container
+                calendarContainer.append(monthHeaderRow);
+                calendarContainer.append(weekCellRow);
 
                 // Only append to regular second-input elements, not member-time-calendar-row
                 $('.second-input:not(.member-time-calendar-row)').append(inp);
@@ -1021,6 +1160,7 @@
                 $('.second-input:not(.member-time-calendar-row)').each(function() {
                     const userId = $(this).data('user-id');
                     const taskId = $(this).data('task-id');
+                    console.log('[renderCalendar] Setting attributes for second-input:', { userId, taskId });
                     $(this).find('.inputss').attr('data-user-id', userId);
                     $(this).find('.inputss').attr('data-task-id', taskId);
                 });
@@ -1031,7 +1171,7 @@
                 populateMemberTimeCalendarRows();
             }
 
-            // Function to populate member calendar rows with time entry data
+            // Function to populate member calendar rows with time entry data - WEEKLY VERSION
             function populateMemberTimeCalendarRows() {
                 $('.member-time-calendar-row').each(function() {
                     const userId = $(this).data('user-id');
@@ -1047,34 +1187,59 @@
                     // Create the same calendar structure but for member time entries
                     let memberInp = '';
                     
-                    // Use the same date iteration as the main calendar
-                    const currentDate = new Date(startDate);
+                    // Align start date to Monday to match DHTMLX
+                    const alignedStartDate = new Date(startDate);
+                    const startDayOfWeek = alignedStartDate.getDay();
+                    const daysToMonday = (startDayOfWeek === 0 ? -6 : 1 - startDayOfWeek);
+                    alignedStartDate.setDate(alignedStartDate.getDate() + daysToMonday);
+                    
+                    // Iterate through weeks (same as main calendar)
+                    const currentDate = new Date(alignedStartDate);
+                    
+                    // Helper function to calculate ISO week number
+                    function getISOWeekNumber(date) {
+                        const tempDate = new Date(date.getTime());
+                        tempDate.setHours(0, 0, 0, 0);
+                        tempDate.setDate(tempDate.getDate() + 3 - (tempDate.getDay() + 6) % 7);
+                        const week1 = new Date(tempDate.getFullYear(), 0, 4);
+                        return 1 + Math.round(((tempDate.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+                    }
+                    
                     while (currentDate <= endDate) {
-                        const day = currentDate.getDate().toString().padStart(2, '0');
-                        const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
-                        const year = currentDate.getFullYear();
-                        const dayOfWeek = currentDate.getDay();
-                        const dateString = `${year}-${month}-${day}`;
-                        const dayClass = (dayOfWeek === 0 || dayOfWeek === 6) ? 'calendar-day holiday' : 'calendar-day';
+                        // Get the Monday of this week for the data-date attribute
+                        const weekStartDay = currentDate.getDate().toString().padStart(2, '0');
+                        const weekStartMonth = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+                        const weekStartYear = currentDate.getFullYear();
+                        const dateString = `${weekStartYear}-${weekStartMonth}-${weekStartDay}`;
                         
-                        // Get existing hours for this date (handle undefined gracefully)
-                        const existingHours = userTimeEntries[dateString] || '';
+                        // Calculate ISO week number
+                        const weekNumber = getISOWeekNumber(currentDate);
                         
-                        // Create input field for member time entry
+                        // Aggregate hours for this entire week (Mon-Sun)
+                        let weekTotalHours = 0;
+                        for (let d = 0; d < 7; d++) {
+                            const checkDate = new Date(currentDate);
+                            checkDate.setDate(currentDate.getDate() + d);
+                            const checkDateStr = `${checkDate.getFullYear()}-${(checkDate.getMonth() + 1).toString().padStart(2, '0')}-${checkDate.getDate().toString().padStart(2, '0')}`;
+                            weekTotalHours += parseFloat(userTimeEntries[checkDateStr]) || 0;
+                        }
+                        
+                        // Create input field for member time entry (one per week)
                         memberInp += `<input type="number" 
                                              min="1" 
-                                             max="8" 
+                                             max="56" 
                                              step="1" 
-                                             class="${dayClass} inputsss member-time-input" 
-                                             style="min-width: 24px;" 
+                                             class="inputsss member-time-input" 
+                                             style="min-width: 32px;" 
                                              data-user-id="${userId}" 
                                              data-project-id="${projectId}" 
                                              data-date="${dateString}"
-                                             value="${existingHours}"
+                                             data-week="${weekNumber}"
+                                             value="${weekTotalHours > 0 ? weekTotalHours : ''}"
                                              disabled
                                              >`;
                         
-                        currentDate.setDate(currentDate.getDate() + 1);
+                        currentDate.setDate(currentDate.getDate() + 7); // Move to next week
                     }
                     
                     memberRow.append(memberInp);
@@ -1119,24 +1284,32 @@
                 populateTimeTrackingData();
             }, 200);
             
-            // Function to scroll to 1 week before today
+            // Function to scroll to 1 week before today - WEEKLY VERSION
             function scrollToOneWeekBefore() {
                 const today = new Date();
                 const oneWeekBefore = new Date(today);
                 oneWeekBefore.setDate(today.getDate() - 7);
                 
-                // Calculate days from calendar start (which is 1 year before today) to target date
-                const daysFromStart = Math.floor((oneWeekBefore - startDate) / (1000 * 60 * 60 * 24));
-                const scrollPosition = daysFromStart * 24; // 24px per day
+                // Align calendar start to Monday
+                const alignedStart = new Date(startDate);
+                const dayOfWeek = alignedStart.getDay();
+                const daysToMonday = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek);
+                alignedStart.setDate(alignedStart.getDate() + daysToMonday);
                 
-                console.log('[Auto-scroll] Calendar starts at:', startDate.toDateString());
-                console.log('[Auto-scroll] Scrolling to 1 week before today:', oneWeekBefore.toDateString());
-                console.log('[Auto-scroll] Days from calendar start:', daysFromStart);
-                console.log('[Auto-scroll] Scroll position:', scrollPosition + 'px');
+                // Calculate weeks from calendar start to target date
+                const msPerWeek = 1000 * 60 * 60 * 24 * 7; // milliseconds per week
+                const weeksFromStart = Math.floor((oneWeekBefore - alignedStart) / msPerWeek);
+                const scrollPosition = weeksFromStart * 32; // 32px per week
                 
+                console.log('Calendar starts at:', alignedStart.toDateString());
+                console.log('Scrolling to 1 week before today:', oneWeekBefore.toDateString());
+                console.log('Weeks from calendar start:', weeksFromStart);
+                console.log('Scroll position:', scrollPosition + 'px');
+                
+                // Scroll both calendars to the same position
                 $('.scroll-container').scrollLeft(scrollPosition);
-                gantt.scrollTo(scrollPosition, null); // Sync gantt chart too
-                console.log('[Auto-scroll] Both calendars scrolled to position:', scrollPosition);
+                gantt.scrollTo(scrollPosition, null);
+                console.log('Both calendars scrolled to position:', scrollPosition);
             }
         });
     </script>
@@ -1258,8 +1431,9 @@
         
         // Also check the range
         const value = parseInt(inputElement.value);
-        if (value > 8) {
-            inputElement.value = '8';
+        // Weekly view: allow up to 56 (7 * 8) hours
+        if (value > 56) {
+            inputElement.value = '56';
         } else if (value < 1 && inputElement.value !== '') {
             inputElement.value = '1';
         }
@@ -1387,44 +1561,65 @@
             console.log('Fetched time tracking data:', data); // Debug log to see the data structure
             console.log('Data length:', data.length); // Debug log
 
-            // Iterate over the data and populate the input fields
+            // ---------------- WEEKLY AGGREGATION ----------------
+            // Build a map keyed by user_id|task_id|weekStartDate (Monday) summing daily hours
+            const weeklyMap = {};
+
+            function getMonday(dateStr){
+                const d = new Date(dateStr + 'T00:00:00');
+                const day = d.getDay(); // 0 = Sun, 1 = Mon
+                const diff = day === 0 ? -6 : 1 - day; // days to Monday
+                d.setDate(d.getDate() + diff);
+                const y = d.getFullYear();
+                const m = String(d.getMonth()+1).padStart(2,'0');
+                const da = String(d.getDate()).padStart(2,'0');
+                return `${y}-${m}-${da}`;
+            }
+
             data.forEach(item => {
                 const { task_id, user_id, date, time } = item;
-                
-                console.log('Processing item:', { task_id, user_id, date, time }); // Debug log
-
-                // Find the input field with the matching user_id and date
-                const inputFields = document.querySelectorAll('.inputss');
-
-                inputFields.forEach(inputField => {
-                    const inputDate = inputField.getAttribute('data-date');
-                    const userId = inputField.getAttribute('data-user-id');
-                    // Match the user_id and date
-                    if (inputDate === date && userId == user_id) {
-                        console.log('Found matching input field for:', { inputDate, userId, time }); // Debug log
-                        
-                        // Convert time format to integer (e.g., "5:00" -> 5, "8:00" -> 8)
-                        let integerTime;
-                        if (typeof time === 'string' && time.includes(':')) {
-                            // Parse time format like "5:00" or "08:00"
-                            integerTime = parseInt(time.split(':')[0]);
-                        } else {
-                            // Already in integer format
-                            integerTime = parseInt(time);
-                        }
-                        
-                        console.log('Converted time to integer:', integerTime); // Debug log
-                        
-                        // Only set if it's a valid integer between 1-8
-                        if (!isNaN(integerTime) && integerTime >= 1 && integerTime <= 8) {
-                            inputField.value = integerTime;
-                            console.log('Successfully populated input field with:', integerTime); // Debug log
-                        } else {
-                            console.log('Invalid time value, skipping:', integerTime); // Debug log
-                        }
-                    }
-                });
+                console.log('[WeeklyAggregation] Processing:', { task_id, user_id, date, time });
+                if(!date || !user_id) return;
+                let hours;
+                if (typeof time === 'string' && time.includes(':')) {
+                    hours = parseInt(time.split(':')[0]);
+                } else {
+                    hours = parseInt(time);
+                }
+                if (isNaN(hours) || hours <= 0) return;
+                const monday = getMonday(date);
+                const key = `${user_id}|${task_id}|${monday}`;
+                weeklyMap[key] = (weeklyMap[key] || 0) + hours;
+                console.log('[WeeklyAggregation] Added to key:', key, 'Total now:', weeklyMap[key]);
             });
+
+            console.log('[WeeklyAggregation] Map:', weeklyMap);
+
+            // Apply aggregated weekly hours to inputs (capped at 56)
+            const inputs = document.querySelectorAll('.inputss');
+            console.log('[WeeklyPopulation] Found', inputs.length, 'input fields');
+            inputs.forEach(input => {
+                const mondayDate = input.getAttribute('data-date'); // already Monday in weekly view
+                const userId = input.getAttribute('data-user-id');
+                const taskId = input.getAttribute('data-task-id');
+                
+                if (!userId || !mondayDate) {
+                    console.log('[WeeklyPopulation] Skipping input - missing userId or date');
+                    return;
+                }
+                
+                const key = `${userId}|${taskId}|${mondayDate}`;
+                console.log('[WeeklyPopulation] Looking for key:', key, 'Value:', weeklyMap[key]);
+                
+                if (weeklyMap[key]) {
+                    const total = Math.min(weeklyMap[key], 56); // defensive cap
+                    input.value = total;
+                    console.log('[WeeklyPopulation] Set input to:', total, 'for', key);
+                }
+            });
+            // ---------------- END WEEKLY AGGREGATION ----------------
+
+            console.log('Weekly inputs populated from aggregated daily entries.');
         } catch (error) {
             console.error('Error fetching time tracking data:', error);
         }
@@ -1825,28 +2020,24 @@ $(document).ready(function() {
 
 <script>
     $(document).ready(function() {
-    // Home button - scroll both calendars to 1 week before today
+    // Home button - scroll both calendars to 1 week before today - WEEKLY VERSION
     $('#home').on('click', function() {
         const today = new Date();
         const oneWeekBefore = new Date(today);
         oneWeekBefore.setDate(oneWeekBefore.getDate() - 7);
         
-        // Get the calendar start date from the main calendar function scope
-        // We need to calculate from 1 year before today
-        const calendarStart = new Date();
-        calendarStart.setFullYear(calendarStart.getFullYear() - 1);
-        
-        // Calculate scroll position based on days from calendar start
-        const daysFromStart = Math.floor((oneWeekBefore - calendarStart) / (1000 * 60 * 60 * 24));
-        const scrollPosition = daysFromStart * 24; // 24px per day
+        // Calculate scroll position based on weeks from calendar start (using same start as DHTMLX)
+        const msPerWeek = 1000 * 60 * 60 * 24 * 7; // milliseconds per week
+        const weeksFromStart = Math.floor((oneWeekBefore - calendarStartDate) / msPerWeek);
+        const scrollPosition = weeksFromStart * 32; // 32px per week
         
         // Scroll bottom calendar
         $('.scroll-container').animate({
             scrollLeft: scrollPosition
         }, 400);
         
-        // Scroll gantt to 1 week before (gantt uses calendarStartDate variable)
-        gantt.scrollTo(Math.max(0, scrollPosition), null);
+        // Use gantt.showDate() for reliable scrolling to a specific date
+        gantt.showDate(oneWeekBefore);
         
         console.log('Both calendars scrolled to 1 week before today:', oneWeekBefore.toDateString());
     });
@@ -1945,8 +2136,8 @@ $(document).on('input change', '.member-time-input', function() {
 </script>
 
 <script type="text/javascript">
-        // DHTMLX Gantt Configuration
-        const EXACT_DAY_WIDTH = 24;
+        // DHTMLX Gantt Configuration - WEEKLY VIEW (Months + Week numbers at 32px each)
+        const EXACT_WEEK_WIDTH = 32; // 32px per week cell
         
         // Find earliest task start date for DHTMLX Gantt
         const ganttTaskDates = [
@@ -1973,27 +2164,22 @@ $(document).on('input change', '.member-time-input', function() {
         // Configure date format
         gantt.config.date_format = "%Y-%m-%d";
         
-        // Timeline configuration - FORCE 24px per day
+        // Timeline configuration - WEEKLY VIEW (Month + Week numbers at 24px each)
 gantt.config.scales = [
-    { unit: "month", step: 1, format: "%F", height: 32 }, // Top row: Month
+    { unit: "month", step: 1, format: "%F %Y", height: 32 }, // Top row: Month Year
     { 
-        unit: "day", 
+        unit: "week", 
         step: 1, 
-        format: "%d", 
-        height: 20,
-        css: function(date) {
-            const dayOfWeek = date.getDay();
-            if (dayOfWeek === 0 || dayOfWeek === 6) {
-                return "gantt-weekend-cell";
-            }
-            return "gantt-weekday-cell";
-        }
+        format: function(date) {
+            return "W" + gantt.date.date_to_str("%W")(date);
+        }, 
+        height: 20
     }
 ];
 
 gantt.config.scale_height = 52;  // Enough height for two rows
-gantt.config.min_column_width = 24;
-gantt.config.max_column_width = 24;
+gantt.config.min_column_width = 32; // 32px per week cell
+gantt.config.max_column_width = 32;
         
         // Hide the grid completely
         gantt.config.grid_width = 0;
@@ -2016,16 +2202,21 @@ gantt.config.max_column_width = 24;
         gantt.config.start_date = calendarStartDate;
         gantt.config.end_date = calendarEndDate;
         
-        // Override task positioning template
+        // Override task positioning template for WEEKLY VIEW (24px per week cell)
         gantt.templates.task_position = function(start, end, task) {
             const startDate = new Date(start);
             const endDate = new Date(end);
             
-            const daysFromCalendarStart = Math.floor((startDate - calendarStartDate) / (1000 * 60 * 60 * 24)) + 1;
-            const taskDurationDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+            // Calculate weeks from calendar start
+            const msFromStart = startDate - calendarStartDate;
+            const weeksFromStart = Math.floor(msFromStart / (1000 * 60 * 60 * 32 * 7));
             
-            const left = daysFromCalendarStart * EXACT_DAY_WIDTH;
-            const width = taskDurationDays * EXACT_DAY_WIDTH;
+            // Calculate task duration in weeks (rounded up)
+            const taskDurationMs = endDate - startDate;
+            const taskDurationWeeks = Math.ceil(taskDurationMs / (1000 * 60 * 60 * 32 * 7));
+            
+            const left = weeksFromStart * 32; // 32px per week
+            const width = Math.max(taskDurationWeeks * 32, 32); // Min width = 1 week (32px)
             
             return {
                 left: left,
@@ -2136,7 +2327,7 @@ gantt.config.max_column_width = 24;
                     const task = gantt.getTask(item.id);
                     task.start_date = strToDate(item.start_date);
                     task.end_date = strToDate(item.end_date);
-                    task.duration = Math.ceil((task.end_date - task.start_date) / (1000 * 60 * 60 * 24));
+                    task.duration = Math.ceil((task.end_date - task.start_date) / (1000 * 60 * 60 * 32));
                     gantt.updateTask(task.id);
                 }
             });
@@ -2204,20 +2395,21 @@ gantt.config.max_column_width = 24;
         });
         // ---------------- End Undo / Redo Implementation ----------------
         
-        // Scroll gantt to 1 week before today on load
+        // Scroll gantt to 1 week before today on load - WEEKLY VIEW (32px per week)
         setTimeout(function() {
             const today = new Date();
             const oneWeekBefore = new Date(today);
             oneWeekBefore.setDate(oneWeekBefore.getDate() - 7);
-            const daysFromStart = Math.floor((oneWeekBefore - calendarStartDate) / (1000 * 60 * 60 * 24));
-            const scrollPosition = daysFromStart * EXACT_DAY_WIDTH;
+            const msPerWeek = 1000 * 60 * 60 * 24 * 7; // milliseconds per week
+            const weeksFromStart = Math.floor((oneWeekBefore - calendarStartDate) / msPerWeek);
+            const scrollPosition = weeksFromStart * 32; // 32px per week
             
             gantt.scrollTo(Math.max(0, scrollPosition), null);
-            console.log('Gantt scrolled to 1 week before today:', oneWeekBefore.toDateString());
+            console.log('Gantt (weekly view) scrolled to 1 week before today:', oneWeekBefore.toDateString());
             
-            // Add red vertical line for today's date using CSS
-            const todayDaysFromStart = Math.floor((today - calendarStartDate) / (1000 * 60 * 60 * 24));
-            const todayPosition = todayDaysFromStart * EXACT_DAY_WIDTH;
+            // Add red vertical line for today's date using CSS - WEEKLY VIEW
+            const todayWeeksFromStart = Math.floor((today - calendarStartDate) / msPerWeek);
+            const todayPosition = todayWeeksFromStart * 32; // 32px per week
             
             const ganttTask = document.querySelector('.gantt_task');
             if (ganttTask) {
@@ -2248,11 +2440,12 @@ gantt.config.max_column_width = 24;
                 initialRenderHandled = true;
             }
             
-            // Re-add today line after render
+            // Re-add today line after render - WEEKLY VIEW (32px per week)
             setTimeout(function() {
                 const today = new Date();
-                const todayDaysFromStart = Math.floor((today - calendarStartDate) / (1000 * 60 * 60 * 24));
-                const todayPosition = todayDaysFromStart * EXACT_DAY_WIDTH;
+                const msPerWeek = 1000 * 60 * 60 * 24 * 7; // milliseconds per week
+                const todayWeeksFromStart = Math.floor((today - calendarStartDate) / msPerWeek);
+                const todayPosition = todayWeeksFromStart * 32; // 32px per week
                 
                 const ganttTask = document.querySelector('.gantt_task');
                 if (ganttTask) {
@@ -2276,111 +2469,111 @@ gantt.config.max_column_width = 24;
             return true;
         });
         
-        // Synchronize gantt and bottom calendar scrolling
+        // Synchronize gantt and bottom calendar scrolling - FIXED VERSION
         let syncInProgress = false;
         let syncTimeout;
         
         // When gantt scrolls, scroll bottom calendar to match
         gantt.attachEvent("onGanttScroll", function(left, top) {
-            if (syncInProgress) return true;
+            if (syncInProgress) {
+                return true;
+            }
+            
             clearTimeout(syncTimeout);
             syncInProgress = true;
-            console.log('[Gantt Scroll] Position:', left);
+            
+            // Use setTimeout to ensure it runs after current execution
             setTimeout(() => {
                 $('.scroll-container').scrollLeft(left);
-                console.log('[Gantt Scroll] Synced bottom calendar to:', left);
-                syncTimeout = setTimeout(() => { syncInProgress = false; }, 50);
+                
+                syncTimeout = setTimeout(() => {
+                    syncInProgress = false;
+                }, 50);
             }, 0);
+            
             return true;
         });
         
         // When bottom calendar scrolls, scroll gantt to match
         $('.scroll-container').on('scroll', function() {
-            if (syncInProgress) return;
+            if (syncInProgress) {
+                return;
+            }
+            
             clearTimeout(syncTimeout);
             syncInProgress = true;
             const scrollLeft = $(this).scrollLeft();
-            console.log('[Bottom Scroll] Position:', scrollLeft);
+            
+            // Use setTimeout to ensure it runs after current execution
             setTimeout(() => {
                 gantt.scrollTo(scrollLeft, null);
-                console.log('[Bottom Scroll] Synced gantt to:', scrollLeft);
-                syncTimeout = setTimeout(() => { syncInProgress = false; }, 50);
+                
+                syncTimeout = setTimeout(() => {
+                    syncInProgress = false;
+                }, 50);
             }, 0);
         });
         
-        // Recalibration mechanism - syncs scroll positions when scrolling stops
+        // Recalibration timers for when scroll stops
         let bottomScrollStopTimeout;
         let ganttScrollStopTimeout;
         
+        // Recalibrate both calendars when scroll stops
         function recalibrateScrollPosition() {
             const bottomScrollPos = $('.scroll-container').scrollLeft();
             const ganttScrollPos = gantt.getScrollState().x;
-            console.log('[Recalibrate] Checking positions - Bottom:', bottomScrollPos, 'Gantt:', ganttScrollPos);
+            
+            // If positions differ by more than 1px, sync them
             if (Math.abs(bottomScrollPos - ganttScrollPos) > 1) {
-                console.log('[Recalibrate] ⚠️ Desync detected! Correcting...');
+                console.log('Recalibrating scroll positions - Bottom:', bottomScrollPos, 'Gantt:', ganttScrollPos);
+                // Use the gantt position as the source of truth
                 syncInProgress = true;
                 $('.scroll-container').scrollLeft(ganttScrollPos);
-                console.log('[Recalibrate] ✓ Synced bottom calendar to gantt position:', ganttScrollPos);
-                setTimeout(() => { syncInProgress = false; }, 100);
-            } else {
-                console.log('[Recalibrate] ✓ Positions already aligned');
+                setTimeout(() => {
+                    syncInProgress = false;
+                }, 100);
             }
         }
         
-        // Mouse wheel scroll handlers with recalibration - DAILY VIEW (0.4x speed)
+        // Mouse wheel horizontal scroll for custom calendar (bottom time inputs area)
         $('.scroll-container').on('wheel', function(e) {
             const deltaY = e.originalEvent.deltaY;
             const deltaX = e.originalEvent.deltaX;
             
-            console.log('[Bottom Wheel] deltaY:', deltaY, 'deltaX:', deltaX);
-            
-            // If vertical scrolling is dominant, convert to horizontal
+            // Only convert vertical scroll to horizontal if it's primarily vertical movement
             if (Math.abs(deltaY) > Math.abs(deltaX)) {
                 e.preventDefault();
-                const scrollAmount = deltaY * 0.8; // 0.4x scroll speed
+                const scrollAmount = deltaY * 0.4; // Slowed down scroll speed
                 const currentScroll = $(this).scrollLeft();
-                const newScroll = currentScroll + scrollAmount;
-                $(this).scrollLeft(newScroll);
-                console.log('[Bottom Wheel] Scrolled from', currentScroll, 'to', newScroll);
+                $(this).scrollLeft(currentScroll + scrollAmount);
                 
-                // Schedule recalibration after scroll stops (300ms)
+                // Recalibrate when scroll stops (after 300ms of no scrolling)
                 clearTimeout(bottomScrollStopTimeout);
-                bottomScrollStopTimeout = setTimeout(function() {
-                    console.log('[Bottom Wheel] Scroll stopped, recalibrating...');
-                    recalibrateScrollPosition();
-                }, 300);
+                bottomScrollStopTimeout = setTimeout(recalibrateScrollPosition, 300);
             }
         });
         
-        // Gantt container - used for both wheel handler and MutationObserver
+        // Mouse wheel horizontal scroll for gantt chart
         const ganttContainer = document.getElementById('gantt_here');
         if (ganttContainer) {
-            // Wheel handler for mouse scroll
             ganttContainer.addEventListener('wheel', function(e) {
                 const deltaY = e.deltaY;
                 const deltaX = e.deltaX;
                 
-                console.log('[Gantt Wheel] deltaY:', deltaY, 'deltaX:', deltaX);
-                
-                // If vertical scrolling is dominant, convert to horizontal
+                // Only convert vertical scroll to horizontal if it's primarily vertical movement
                 if (Math.abs(deltaY) > Math.abs(deltaX)) {
                     e.preventDefault();
-                    const scrollAmount = deltaY * 0.8; // 0.4x scroll speed
+                    const scrollAmount = deltaY * 0.4; // Slowed down scroll speed (match custom calendar)
                     const currentScroll = gantt.getScrollState().x;
-                    const newScroll = currentScroll + scrollAmount;
-                    gantt.scrollTo(newScroll, null);
-                    console.log('[Gantt Wheel] Scrolled from', currentScroll, 'to', newScroll);
+                    gantt.scrollTo(currentScroll + scrollAmount, null);
                     
-                    // Schedule recalibration after scroll stops (300ms)
+                    // Recalibrate when scroll stops (after 300ms of no scrolling)
                     clearTimeout(ganttScrollStopTimeout);
-                    ganttScrollStopTimeout = setTimeout(function() {
-                        console.log('[Gantt Wheel] Scroll stopped, recalibrating...');
-                        recalibrateScrollPosition();
-                    }, 300);
+                    ganttScrollStopTimeout = setTimeout(recalibrateScrollPosition, 300);
                 }
             }, { passive: false });
             
-            // MutationObserver to detect when gantt re-renders the scale
+            // Use MutationObserver to detect when gantt re-renders the scale
             const observer = new MutationObserver(function(mutations) {
                 mutations.forEach(function(mutation) {
                     if (mutation.target.classList.contains('gantt_scale_line')) {

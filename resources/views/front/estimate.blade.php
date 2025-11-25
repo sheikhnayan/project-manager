@@ -105,7 +105,7 @@
     <div style="">
         <div style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15); padding-top: 0px; border-radius: 8px; margin-right: 16px; padding: 12px; padding-bottom: 20px; height: fit-content;">
           <div class="p-4" style="padding-top: 1rem; padding-bottom: 0px;">
-              <h6 style="font-size: 20px; font-weight: bold;">Estimated Project Costing</h6>
+              <h6 style="font-size: 20px; font-weight: bold;">Estimated Costing</h6>
               {{-- <p>Includes all billable and non-billable works</p> --}}
               <div style="display: flex">
                   @php
@@ -257,7 +257,7 @@
     <div class="">
         <div style="border: 1px solid #D1D5DB; padding-top: 0; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15); padding-top: 0px; border-radius: 8px; margin-right: 0px; padding: 12px; padding-bottom: 20px;">
             <div class="p-4" style="padding-top: 1rem; padding-bottom: 0px;">
-                <h6 style="font-size: 20px; font-weight: bold;;">Actual Project Costing</h6>
+                <h6 style="font-size: 20px; font-weight: bold;;">Actual Costing</h6>
                 {{-- <p>Includes all billable and non-billable works</p> --}}
                 <div style="display: flex">
                     @php

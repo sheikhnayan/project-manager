@@ -38,7 +38,7 @@
     @include('front.nav')
 
     <main class="py-6">
-        <div class="max-w-7xl mx-auto px-4">
+        <div class="mx-auto px-4">
             <div class="flex items-center justify-between">
                 <h1 class="text-3xl font-bold">User Management</h1>
                 <button class="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 flex items-center gap-2" @click="showAddUserModal = true">
@@ -464,51 +464,23 @@
         // Initialize Lucide icons
         lucide.createIcons();
 
-
-        // Robust settings menu toggle for both nav and table 3-dots
-        function toggleSettings(eventOrElement) {
-            let trigger, menu;
-            if (eventOrElement instanceof Event) {
-                // Called from nav: event
-                eventOrElement.stopPropagation();
-                trigger = eventOrElement.currentTarget;
-                menu = document.getElementById('settingsDropdown');
-            } else {
-                // Called from table: element
-                eventOrElement.stopPropagation && eventOrElement.stopPropagation();
-                trigger = eventOrElement;
-                menu = trigger.nextElementSibling;
-            }
-            if (!menu || !(menu.classList.contains('settings-menu') || menu.classList.contains('settings-dropdown'))) {
-                console.error('Settings menu not found or missing class');
-                return;
-            }
-            // Close all other menus
-            document.querySelectorAll('.settings-menu, .settings-dropdown').forEach(m => {
-                if (m !== menu) m.classList.add('hidden');
-            });
-            // Toggle this menu
-            menu.classList.toggle('hidden');
-            // Click outside to close
-            const handleClickOutside = (e) => {
-                if (!menu.contains(e.target) && (!trigger.contains(e.target))) {
-                    menu.classList.add('hidden');
-                    document.removeEventListener('click', handleClickOutside);
-                }
-            };
-            setTimeout(() => document.addEventListener('click', handleClickOutside), 0);
+        // Settings dropdown functionality
+        function toggleSettings(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('settingsDropdown');
+            dropdown.classList.toggle('show');
         }
-        // Make toggleSettings globally available for nav inline onclick
-        window.toggleSettings = toggleSettings;
 
-        // Close menus on Escape
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                document.querySelectorAll('.settings-menu, .settings-dropdown').forEach(menu => {
-                    menu.classList.add('hidden');
-                });
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('settingsDropdown');
+            if (dropdown.classList.contains('show')) {
+                dropdown.classList.remove('show');
             }
         });
+    </script>
+
+    <script>
 
         // Sort table functionality
         let sortDirection = {}; // Track sort direction for each column

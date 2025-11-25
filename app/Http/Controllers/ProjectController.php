@@ -452,6 +452,21 @@ class ProjectController extends Controller
         return view('front.projects', compact('data'));
     }
 
+    public function try(string $id)
+    {
+        $user = auth()->user();
+        $query = Project::where('id', $id);
+        
+        // Filter by company for non-superadmin users
+        if ($user->role_id != 8 && $user->company_id) {
+            $query->where('company_id', $user->company_id);
+        }
+        
+        $data = $query->firstOrFail();
+
+        return view('front.try-weekly', compact('data'));
+    }
+
     public function gantt(string $id)
     {
         $user = auth()->user();
@@ -481,7 +496,8 @@ class ProjectController extends Controller
         
         $data = $query->firstOrFail();
 
-        return view('front.projects-weekly', compact('data'));
+        // return view('front.projects-weekly', compact('data'));
+        return view('front.try-weekly', compact('data'));
     }
 
     public function show_v2(string $id)

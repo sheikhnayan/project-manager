@@ -39,7 +39,7 @@
     @include('front.nav')
 
     <main class="py-6">
-        <div class="max-w-7xl mx-auto px-4">
+        <div class="mx-auto px-4">
             <div class="flex items-center justify-between">
                 <h1 class="text-3xl font-bold">Client Management</h1>
                 <button @click="showModal = true" class="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 flex items-center gap-2">

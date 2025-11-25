@@ -7,6 +7,44 @@
         font-optical-sizing: auto;
         font-style: normal;
     }
+    /* Sitewide skeleton loader */
+    .app-skeleton-overlay {
+        position: fixed;
+        inset: 0;
+        background: #fff;
+        z-index: 9999;
+        display: none; /* shown via JS */
+        overflow: hidden;
+    }
+    .app-skeleton {
+        height: 100%;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        animation: fadeIn 0.15s ease-in;
+    }
+    .skeleton-shimmer {
+        background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 37%, #f3f4f6 63%);
+        background-size: 400% 100%;
+        animation: shimmer 1.25s infinite linear;
+        border-radius: 6px;
+    }
+    .skeleton-header { height: 64px; margin-bottom: 8px; }
+    .skeleton-body {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        gap: 12px;
+        padding: 12px;
+    }
+    .skeleton-panel { border-radius: 8px; padding: 12px; }
+    .skeleton-row { height: 16px; margin-bottom: 12px; }
+    .skeleton-row.sm { width: 60%; }
+    .skeleton-row.md { width: 75%; }
+    .skeleton-row.lg { width: 90%; }
+    .skeleton-block { height: 200px; border-radius: 8px; }
+    @keyframes shimmer { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
+    @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
 </style>
 @php
     $setting = \App\Models\Setting::first();
@@ -81,3 +119,56 @@
         </div>
     </div>
 </nav>
+
+<!-- Sitewide Skeleton Overlay -->
+<div id="app-skeleton" class="app-skeleton-overlay" aria-hidden="true">
+        <div class="app-skeleton">
+                <div class="skeleton-header skeleton-shimmer"></div>
+                <div class="skeleton-body">
+                        <div class="skeleton-panel">
+                                <div class="skeleton-row skeleton-shimmer lg"></div>
+                                <div class="skeleton-row skeleton-shimmer md"></div>
+                                <div class="skeleton-row skeleton-shimmer sm"></div>
+                                <div class="skeleton-row skeleton-shimmer lg"></div>
+                                <div class="skeleton-row skeleton-shimmer md"></div>
+                                <div class="skeleton-row skeleton-shimmer sm"></div>
+                        </div>
+                        <div class="skeleton-panel">
+                                <div class="skeleton-block skeleton-shimmer"></div>
+                        </div>
+                </div>
+        </div>
+    </div>
+
+<script>
+    // Sitewide loader controller
+    (function(){
+        const overlay = document.getElementById('app-skeleton');
+        function show(){
+            if(!overlay) return;
+            overlay.style.display = 'block';
+        }
+        function hide(){
+            if(!overlay) return;
+            overlay.style.opacity = '1';
+            // smooth fade
+            overlay.style.transition = 'opacity 140ms ease-out';
+            overlay.style.opacity = '0';
+            setTimeout(()=>{ overlay.style.display = 'none'; overlay.style.opacity = '1'; overlay.style.transition = ''; }, 160);
+        }
+        // expose globally
+        window.AppLoader = { show, hide };
+        // Immediately show when nav is included
+        show();
+        // Hide on full load
+        window.addEventListener('load', function(){
+            // Defer slightly to allow JS-driven views (e.g., gantt) to settle
+            setTimeout(hide, 120);
+        });
+        // jQuery ajax hooks (if present)
+        if(window.jQuery){
+            jQuery(document).ajaxStart(function(){ show(); });
+            jQuery(document).ajaxStop(function(){ setTimeout(hide, 60); });
+        }
+    })();
+</script>

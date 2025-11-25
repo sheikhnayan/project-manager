@@ -57,7 +57,7 @@
                             $percentage = $total_cost > 0 ? ($costs / $total_cost) * 100 : 0;
                         @endphp
                         @if($costs > 0)
-                        <li  data-percent="{{ $percentage }}">{{ $item->project_number }}_{{ $item->name }} - {{ $costs }} ({{ round($percentage, 1) }}%)</li>
+                        <li  data-percent="{{ $percentage }}">{{ $item->project_number }}_{{ $item->name }} - {{ formatCurrency($costs) }} ({{ round($percentage, 1) }}%)</li>
                         @endif
                         @endif
                     @endforeach
@@ -149,7 +149,7 @@
                                             $cost += $user->hourly_rate * $h->hours;
                                         }
                                     @endphp
-                                    €{{ $cost }}
+                                    {{ formatCurrency($cost) }}
                                 </td>
                             </tr>
                             @endif
