@@ -724,7 +724,7 @@
                             }
 
                         @endphp
-                        <div id="gantt_here" data-check-height="{{ ($data->tasks->count() * 32) + 52 }}" style='width:100% !important; height:{{ ($data->tasks->count() * 32) + 52 }}px;'></div>
+                        <div id="gantt_here" data-check-height="{{ ($data->tasks->count() * 32) + 52 }}" style='width:100% !important; height:{{ ($data->tasks->count() * 32) + 52 +15}}px;'></div>
                     </div>
                 </div>
             </div>
