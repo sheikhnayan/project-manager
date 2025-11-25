@@ -1982,6 +1982,20 @@ $(document).on('input change', '.member-time-input', function() {
         // Configure date format
         gantt.config.date_format = "%Y-%m-%d";
         
+        // Move scrollbar outside the chart
+        gantt.config.layout = {
+            css: "gantt_container",
+            rows: [
+                {
+                    cols: [
+                        {view: "timeline", scrollX: "scrollHor", scrollY: "scrollVer"},
+                        {view: "scrollbar", id: "scrollVer", group:"vertical"}
+                    ]
+                },
+                {view: "scrollbar", id: "scrollHor", group:"horizontal"}
+            ]
+        };
+        
         // Timeline configuration - FORCE 24px per day
 gantt.config.scales = [
     { unit: "month", step: 1, format: "%F", height: 32 }, // Top row: Month
@@ -2300,6 +2314,14 @@ gantt.config.max_column_width = 24;
                 console.log('[Gantt Scroll] Synced bottom calendar to:', left);
                 syncTimeout = setTimeout(() => { syncInProgress = false; }, 50);
             }, 0);
+            
+            // Trigger recalibration after gantt scrollbar drag stops (300ms)
+            clearTimeout(ganttScrollStopTimeout);
+            ganttScrollStopTimeout = setTimeout(function() {
+                console.log('[Gantt Scrollbar] Scrollbar drag stopped, recalibrating...');
+                recalibrateScrollPosition();
+            }, 300);
+            
             return true;
         });
         
@@ -2315,6 +2337,13 @@ gantt.config.max_column_width = 24;
                 console.log('[Bottom Scroll] Synced gantt to:', scrollLeft);
                 syncTimeout = setTimeout(() => { syncInProgress = false; }, 50);
             }, 0);
+            
+            // Trigger recalibration after scrollbar drag stops (300ms)
+            clearTimeout(bottomScrollStopTimeout);
+            bottomScrollStopTimeout = setTimeout(function() {
+                console.log('[Bottom Scrollbar] Scrollbar drag stopped, recalibrating...');
+                recalibrateScrollPosition();
+            }, 300);
         });
         
         // Recalibration mechanism - syncs scroll positions when scrolling stops
