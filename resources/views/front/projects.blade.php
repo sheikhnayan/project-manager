@@ -532,39 +532,13 @@
     color: #000 !important;
 }
 
-/* Hide horizontal scrollbar completely */
-.gantt_hor_scroll {
-    display: none !important;
-}
-
-.gantt_layout_cell.scrollHor_cell {
-    display: none !important;
-}
-
-/* Move vertical scrollbar outside and style it */
+/* Make vertical scrollbar background transparent */
 .gantt_ver_scroll {
     background-color: transparent !important;
-    position: absolute !important;
-    right: -17px !important;
-    z-index: 100 !important;
 }
 
 .gantt_layout_cell.scrollVer_cell {
     background-color: transparent !important;
-    position: relative !important;
-}
-
-/* Ensure gantt container doesn't show any overflow scrollbars */
-#gantt_here {
-    overflow: hidden !important;
-}
-
-.gantt_task {
-    overflow: hidden !important;
-}
-
-.gantt_task_bg {
-    overflow: hidden !important;
 }
     </style>
 
@@ -2046,20 +2020,6 @@ gantt.config.max_column_width = 24;
         // Disable task linking/connections
         gantt.config.drag_links = false;
         gantt.config.show_links = false;
-        
-        // CRITICAL: Disable horizontal scrollbar completely
-        gantt.config.scroll_size = 0; // Hide scrollbars visually
-        gantt.config.layout = {
-            css: "gantt_container",
-            rows: [
-                {
-                    cols: [
-                        { view: "timeline", scrollX: "scrollHor", scrollY: "scrollVer" },
-                        { view: "scrollbar", id: "scrollVer", scroll: "y" }
-                    ]
-                }
-            ]
-        };
         
         // Set start date to match calendar
         gantt.config.start_date = calendarStartDate;
