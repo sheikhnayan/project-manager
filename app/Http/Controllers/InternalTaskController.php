@@ -33,19 +33,18 @@ class InternalTaskController extends Controller
     /**
      * Show the form for creating a new internal task
      */
-    public function create()
+    public function create(Request $request)
     {
         $user = auth()->user();
         $departments = \App\Models\Department::where('company_id', $user->company_id)
                                           ->where('is_active', true)
                                           ->orderBy('name')
                                           ->get();
-        $categories = \App\Models\Category::where('company_id', $user->company_id)
-                                        ->where('is_active', true)
-                                        ->orderBy('name')
-                                        ->get();
         
-        return view('front.internal-tasks.create', compact('departments', 'categories'));
+        // Pre-fill department if provided in query parameter
+        $selectedDepartment = $request->query('department');
+        
+        return view('front.internal-tasks.create', compact('departments', 'selectedDepartment'));
     }
 
     /**
@@ -67,12 +66,10 @@ class InternalTaskController extends Controller
 
         $user = auth()->user();
         
-        InternalTask::create([
+        $task = InternalTask::create([
             'name' => $request->name,
             'description' => $request->description,
-            'department' => $request->department,
-            'category' => $request->category,
-            'hourly_rate' => $request->hourly_rate,
+            'department' => $request->department_id,
             'max_hours_per_day' => $request->max_hours_per_day,
             'requires_approval' => $request->boolean('requires_approval', false),
             'is_active' => $request->boolean('is_active', true),
@@ -80,7 +77,20 @@ class InternalTaskController extends Controller
             'created_by' => $user->id,
         ]);
 
-        return redirect()->route('internal-tasks.index')
+        // Handle user assignments
+        if ($request->filled('assigned_users')) {
+            $userIds = array_filter(explode(',', $request->assigned_users));
+            // Verify all users belong to the same company (unless super admin)
+            if ($user->role_id != 8) {
+                $userIds = \App\Models\User::where('company_id', $user->company_id)
+                    ->whereIn('id', $userIds)
+                    ->pluck('id')
+                    ->toArray();
+            }
+            $task->assignedUsers()->sync($userIds);
+        }
+
+        return redirect()->route('internal-tasks.show', $task->id)
             ->with('success', 'Internal task created successfully.');
     }
 
@@ -89,16 +99,16 @@ class InternalTaskController extends Controller
      */
     public function show(string $id)
     {
-        $internalTask = InternalTask::with(['timeEntries.user', 'creator'])
+        $task = InternalTask::with(['timeEntries.user', 'creator', 'assignedUsers'])
             ->findOrFail($id);
             
         // Check access permissions
         $user = auth()->user();
-        if ($user->role_id != 8 && $internalTask->company_id !== $user->company_id) {
+        if ($user->role_id != 8 && $task->company_id !== $user->company_id) {
             abort(403);
         }
 
-        return view('front.internal-tasks.show', compact('internalTask'));
+        return view('front.internal-tasks.task-details', compact('task'));
     }
 
     /**
@@ -131,6 +141,7 @@ class InternalTaskController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        // dd($request->all());
         $internalTask = InternalTask::findOrFail($id);
         
         // Check access permissions
@@ -139,29 +150,43 @@ class InternalTaskController extends Controller
             abort(403);
         }
 
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
-            'department' => 'required|string|max:100',
-            'category' => 'required|string|max:100',
-            'hourly_rate' => 'nullable|numeric|min:0|max:9999.99',
-            'max_hours_per_day' => 'nullable|integer|min:1|max:24',
-            'requires_approval' => 'boolean',
-            'is_active' => 'boolean',
-        ]);
-
         $internalTask->update([
             'name' => $request->name,
             'description' => $request->description,
-            'department' => $request->department,
-            'category' => $request->category,
-            'hourly_rate' => $request->hourly_rate,
+            'department' => $request->department_id,
             'max_hours_per_day' => $request->max_hours_per_day,
             'requires_approval' => $request->boolean('requires_approval'),
             'is_active' => $request->boolean('is_active'),
         ]);
 
-        return redirect()->route('internal-tasks.index')
+        // Handle user assignments
+        \Log::info('Update internal task - assigned_users received:', [
+            'task_id' => $id,
+            'assigned_users_raw' => $request->input('assigned_users'),
+            'is_filled' => $request->filled('assigned_users'),
+            'all_request_data' => $request->all()
+        ]);
+
+        if ($request->filled('assigned_users')) {
+            $userIds = array_filter(explode(',', $request->assigned_users));
+            \Log::info('Parsed user IDs:', ['user_ids' => $userIds]);
+            
+            // Verify all users belong to the same company (unless super admin)
+            if ($user->role_id != 8) {
+                $userIds = \App\Models\User::where('company_id', $user->company_id)
+                    ->whereIn('id', $userIds)
+                    ->pluck('id')
+                    ->toArray();
+                \Log::info('Filtered user IDs by company:', ['filtered_ids' => $userIds]);
+            }
+            $internalTask->assignedUsers()->sync($userIds);
+            \Log::info('Synced assigned users');
+        } else {
+            $internalTask->assignedUsers()->sync([]);
+            \Log::info('Cleared all assigned users');
+        }
+
+        return redirect()->route('internal-tasks.show', $internalTask->id)
             ->with('success', 'Internal task updated successfully.');
     }
 
@@ -309,7 +334,7 @@ class InternalTaskController extends Controller
     {
         $user = auth()->user();
         
-        $query = \App\Models\Department::with(['internalTasks', 'assignedUsers']);
+        $query = \App\Models\Department::with(['assignedUsers']);
         
         // Filter by company for non-superadmin users
         if ($user->role_id != 8 && $user->company_id) {
@@ -317,6 +342,21 @@ class InternalTaskController extends Controller
         }
         
         $department = $query->findOrFail($id);
+        
+        // Load internal tasks - show all for superadmin, filter by assigned user for others
+        if ($user->role_id == 8) {
+            // Superadmin sees all tasks in the department
+            $department->load(['internalTasks' => function($query) {
+                $query->with(['timeEntries', 'assignedUsers']);
+            }]);
+        } else {
+            // Regular users only see tasks assigned to them
+            $department->load(['internalTasks' => function($query) use ($user) {
+                $query->whereHas('assignedUsers', function($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                })->with(['timeEntries', 'assignedUsers']);
+            }]);
+        }
         
         return view('front.internal-tasks.department', compact('department'));
     }

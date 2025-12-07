@@ -134,10 +134,10 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button onclick="showAddTaskModal()" class="bg-black text-white px-4 py-2 rounded hover:bg-gray-900 flex items-center gap-2" style="font-size: 13px; padding: 0.4rem 1rem; height: 34px;">
+                        <a href="{{ route('internal-tasks.create', ['department' => $department->name]) }}" class="bg-black text-white px-4 py-2 rounded hover:bg-gray-900 flex items-center gap-2" style="font-size: 13px; padding: 0.4rem 1rem; height: 34px;">
                             <i data-lucide="plus" class="w-4 h-4"></i>
                             Add Task
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -186,14 +186,16 @@
                                         <th class="py-3 px-4 text-center">Hourly Rate</th>
                                         <th class="py-3 px-4 text-center">Total Hours</th>
                                         <th class="py-3 px-4 text-left">Status</th>
-                                        <th class="py-3 px-4 text-left">Actions</th>
+                                        <th class="py-3 px-4 text-center">Assigned Users</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse ($department->internalTasks as $task)
                                     <tr class="border-b hover:bg-gray-50">
                                         <td class="py-3 px-4">
-                                            <div class="font-medium">{{ $task->name }}</div>
+                                            <a href="{{ route('internal-tasks.show', $task->id) }}" class="font-medium text-black hover:text-blue-600">
+                                                {{ $task->name }}
+                                            </a>
                                         </td>
                                         <td class="py-3 px-4 text-gray-600">
                                             {{ $task->description ? Str::limit($task->description, 50) : '-' }}
@@ -212,30 +214,16 @@
                                                 {{ $task->is_active ? 'Active' : 'Inactive' }}
                                             </span>
                                         </td>
-                                        <td class="py-3 px-4">
-                                            <div class="flex gap-2 relative">
-                                                <button onclick="toggleSettings(this)" class="inline-flex items-center justify-center w-8 h-8 text-gray-600 hover:text-gray-900 rounded-full hover:bg-gray-100">
-                                                    <i data-lucide="more-vertical" class="w-5 h-5"></i>
-                                                </button>
-                                                <div class="settings-menu hidden absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
-                                                    <div class="py-1">
-                                                        <a href="{{ route('internal-tasks.edit', $task->id) }}" class="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                                            <i data-lucide="edit" class="w-4 h-4 mr-2"></i>
-                                                            Edit
-                                                        </a>
-                                                        <button onclick="toggleTaskStatus({{ $task->id }}, {{ $task->is_active ? 'false' : 'true' }})" class="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                                            <i data-lucide="{{ $task->is_active ? 'archive' : 'archive-restore' }}" class="w-4 h-4 mr-2"></i>
-                                                            {{ $task->is_active ? 'Archive' : 'Restore' }}
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                        <td class="py-3 px-4 text-center">
+                                            <span class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">
+                                                {{ $task->assignedUsers->count() }} {{ Str::plural('user', $task->assignedUsers->count()) }}
+                                            </span>
                                         </td>
                                     </tr>
                                     @empty
                                     <tr>
                                         <td colspan="7" class="py-8 px-4 text-center text-gray-500">
-                                            No tasks found for this department.
+                                            No tasks assigned to you in this department.
                                         </td>
                                     </tr>
                                     @endforelse
@@ -246,7 +234,7 @@
                 </div>
 
                 <!-- Team Members Section -->
-                <div class="bg-white rounded-lg shadow">
+                {{-- <div class="bg-white rounded-lg shadow">
                     <div class="p-6">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-lg font-semibold text-gray-900">Team Members</h2>
@@ -326,7 +314,7 @@
                             <input type="hidden" name="team_members" id="teamMembers" value="{{ $department->assignedUsers->pluck('id')->join(',') }}">
                         </div>
                     </div>
-                </div>
+                </div> --}}
 
                 <!-- Add Task Modal -->
                 <div x-show="showAddTaskModal" x-cloak class="fixed inset-0 bg-gray-600 bg-opacity-50 z-50">

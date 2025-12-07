@@ -257,25 +257,17 @@ class TimeSheetController extends Controller
 
     /**
      * Get internal tasks for time tracking
+     * Returns only tasks that are assigned to the current logged-in user
      */
     public function getInternalTasks()
     {
         $user = auth()->user();
         
-        // Get tasks from departments that the user is assigned to
+        // Get active tasks that are assigned to the current user
         $query = \App\Models\InternalTask::where('is_active', true)
             ->select('id', 'name', 'department', 'max_hours_per_day')
-            ->whereIn('department', function($subQuery) use ($user) {
-                $subQuery->select('departments.name')
-                    ->from('departments')
-                    ->join('department_user_assignments', 'departments.id', '=', 'department_user_assignments.department_id')
-                    ->where('department_user_assignments.user_id', $user->id)
-                    ->where('departments.is_active', true);
-                    
-                // Filter by company for non-superadmin users
-                if ($user->role_id != 8 && $user->company_id) {
-                    $subQuery->where('departments.company_id', $user->company_id);
-                }
+            ->whereHas('assignedUsers', function($q) use ($user) {
+                $q->where('user_id', $user->id);
             });
         
         // Filter by company for non-superadmin users

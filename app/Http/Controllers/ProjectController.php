@@ -98,6 +98,52 @@ class ProjectController extends Controller
         return view('front.estimate', ['data' => $data]);
     }
 
+    public function getTotals($id)
+    {
+        $user = auth()->user();
+        $query = Project::where('id', $id);
+        
+        // Filter by company for non-superadmin users
+        if ($user->role_id != 8 && $user->company_id) {
+            $query->where('company_id', $user->company_id);
+        }
+        
+        $project = $query->firstOrFail();
+
+        // Calculate estimated hours and budget
+        $estimatedHours = $project->estimatedtimeEntries->sum('hours');
+        $estimatedBudget = $project->estimatedtimeEntries->sum(function($entry) {
+            return $entry->hours * ($entry->user->hourly_rate ?? 0);
+        });
+
+        // Calculate actual hours and spent budget
+        $actualHours = $project->timeEntries->sum('hours');
+        $actualSpent = $project->timeEntries->sum(function($entry) {
+            return $entry->hours * ($entry->user->hourly_rate ?? 0);
+        });
+
+        // Calculate task progress
+        $totalTasks = $project->tasks->count();
+        $completedTasks = $project->tasks->where('status', 'completed')->count();
+
+        // Calculate percentages
+        $budgetProgress = $estimatedBudget > 0 ? ($actualSpent / $estimatedBudget) * 100 : 0;
+        $hourProgress = $estimatedHours > 0 ? ($actualHours / $estimatedHours) * 100 : 0;
+        $taskProgress = $totalTasks > 0 ? ($completedTasks / $totalTasks) * 100 : 0;
+
+        return response()->json([
+            'budget_progress' => min(100, round($budgetProgress, 2)),
+            'budget_total' => $estimatedBudget,
+            'budget_spent' => $actualSpent,
+            'hour_progress' => min(100, round($hourProgress, 2)),
+            'hour_total' => $estimatedHours,
+            'hour_spent' => $actualHours,
+            'task_progress' => min(100, round($taskProgress, 2)),
+            'task_total' => $totalTasks,
+            'task_completed' => $completedTasks
+        ]);
+    }
+
     public function index_manage()
     {
         $user = auth()->user();

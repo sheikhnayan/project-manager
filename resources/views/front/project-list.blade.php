@@ -12,7 +12,72 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <!-- DHTMLX Gantt -->
+    <script src="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.js"></script>
+    <link href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css" rel="stylesheet">
     <style>
+        /* DHTMLX Gantt Custom Styling to match calendar */
+        .gantt_container {
+            font-family: Arial, sans-serif;
+        }
+        
+        .gantt_scale_cell {
+            border-right: 1px solid #ccc;
+        }
+        
+        .gantt_task_scale .gantt_scale_cell {
+            border-bottom: 1px solid #ccc;
+        }
+        
+        /* Month header styling */
+        .gantt_scale_line:first-child .gantt_scale_cell {
+            background-color: #000 !important;
+            color: white !important;
+            font-size: 14px;
+            font-weight: normal;
+            border-right: 1px solid #fff;
+        }
+        
+        /* Day number styling */
+        .gantt_scale_line:last-child .gantt_scale_cell {
+            background-color: #ffffff;
+            font-size: 10px;
+            border-left: unset;
+        }
+        
+        /* Weekend styling */
+        .gantt-weekend-cell {
+            background-color: #EBEBEB !important;
+            color: #D9534F !important;
+        }
+        
+        /* Task row styling */
+        .gantt_task_row {
+            border-bottom: 1px solid #ebebeb;
+        }
+        
+        /* Task bar styling */
+        .gantt_task_line {
+            background-color: #4A5568 !important;
+            border: 1px solid #fff !important;
+            border-radius: 5px;
+        }
+        
+        .gantt_task_content {
+            color: white;
+            font-size: 12px;
+            text-align: center;
+        }
+        
+        /* Remove default task bar borders/shadows */
+        .gantt_task_line.gantt_selected {
+            box-shadow: none;
+        }
+        
+        /* Grid column lines */
+        .gantt_task_cell {
+            border-right: 1px solid #ebebeb;
+        }
 
         .sss .task-header{
             padding: 14px;
@@ -396,29 +461,7 @@
             </div>
 
             <div class="scroll-container" style="border-top-right-radius: 4px;">
-                <div class="relative">
-                    <div class="calendar-container">
-                        <!-- JavaScript will populate the months and dates here -->
-                    </div>
-                    @php
-
-                        $height = 0;
-
-                        foreach ($data as $key => $value) {
-                                $height +=1;
-                        }
-
-                    @endphp
-                    <div class="gantt-bar-container" style="height: {{ (30*$height)}}px; margin-top: -5px;">
-                        @foreach ($data as $key => $item)
-                            @foreach ($item->tasks as $k => $it)
-                                <div class="draggable bg-blue-600 text-white text-center" data-project-id="{{ $item->id }}" data-task-id="{{ $it->id }}" data-task="task{{$key + 1}}" style="left: calc(3.225% * 5); position: absolute; top: {{ 32*$key }}px; padding: 0px; padding-top: 1px;" data-start-date="{{ \Carbon\Carbon::parse($it->start_date)->format('Y-m-d') }}" data-end-date="{{ \Carbon\Carbon::parse($it->end_date)->format('Y-m-d') }}">
-                                    <span>T0{{ $k+1 }}</span>
-                                </div>
-                            @endforeach
-                        @endforeach
-                    </div>
-                </div>
+                <div id="gantt_here" data-check-height="{{ (count($data) * 32) + 52 }}" style="width: 100% !important; height: {{ (count($data) * 32) + 52 + 15 }}px;"></div>
             </div>
         </div>
     </div>
@@ -429,148 +472,143 @@
 
     <script>
         $(function () {
-            const calendarContainer = $('.calendar-container');
-            const ganttBarContainer = $('.gantt-bar-container');
-            const scrollContainer = $('.scroll-container');
-            const st = $('#st_date').val();
-            const en = $('#en_date').val();
-            const startDate = new Date(st);
-            const endDate = new Date(en);
-            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-            let isWeeklyView = false; // Default to daily view
-
-            function renderCalendar() {
-                calendarContainer.empty(); // Clear the calendar container
-                let currentMonth = startDate.getMonth(); // Get the starting month index (0–11)
-                let monthContainer = $('<div class="month-container"></div>');
-                monthContainer.append(`<div class="month-header">${monthNames[currentMonth]}</div>`); // Use monthNames[currentMonth]
-
-                inp = ``;
-
-                for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-                    const day = d.getDate().toString().padStart(2, '0'); // Pad day with leading zero
-                    const month = (d.getMonth() + 1).toString().padStart(2, '0'); // Pad month with leading zero
-                    const year = d.getFullYear();
-                    const dayOfWeek = d.getDay();
-                    const dateString = `${day}`;
-                    const dayClass = (dayOfWeek === 0 || dayOfWeek === 6) ? 'calendar-day holiday' : 'calendar-day';
-
-                    if (d.getMonth() !== currentMonth) {
-
-                        calendarContainer.append(monthContainer);
-                        currentMonth = d.getMonth(); // Update currentMonth to the new month
-                        monthContainer = $('<div class="month-container"></div>');
-                        monthContainer.append(`<div class="month-header">${monthNames[currentMonth]}</div>`); // Use monthNames[currentMonth]
+            const EXACT_DAY_WIDTH = 24;
+            const calendarStartDate = new Date("{{ \Carbon\Carbon::parse('2025-05-01')->format('Y-m-d') }}");
+            const calendarEndDate = new Date("{{ \Carbon\Carbon::parse('2025-05-01')->addDays(1000)->format('Y-m-d') }}");
+            
+            // Configure date format
+            gantt.config.date_format = "%Y-%m-%d";
+            
+            // Move scrollbar outside the chart
+            gantt.config.layout = {
+                css: "gantt_container",
+                rows: [
+                    {
+                        cols: [
+                            {view: "timeline", scrollX: "scrollHor", scrollY: "scrollVer"},
+                            {view: "scrollbar", id: "scrollVer", group:"vertical"}
+                        ]
+                    },
+                    {view: "scrollbar", id: "scrollHor", group:"horizontal"}
+                ]
+            };
+            
+            // Timeline configuration - FORCE 24px per day to match custom calendar
+            gantt.config.scales = [
+                { unit: "month", step: 1, format: "%F", height: 32 },
+                { 
+                    unit: "day", 
+                    step: 1, 
+                    format: "%d", 
+                    height: 20,
+                    css: function(date) {
+                        const dayOfWeek = date.getDay();
+                        if (dayOfWeek === 0 || dayOfWeek === 6) {
+                            return "gantt-weekend-cell";
+                        }
+                        return "";
                     }
-
-                    monthContainer.append(`<div class="calendar-day ${dayClass}" data-date="${year}-${month}-${day}">${dateString}</div>`);
-
-                    inn = `<input type="text" class="${dayClass} calendar-day inputss" onchange="convertTimeInput(this)" data-date="${year}-${month}-${day}">`;
-
-                    inp += inn;
                 }
+            ];
 
-                calendarContainer.append(monthContainer);
-
-                $('.second-input').append(inp);
-            }
-
-
-
-
-            // Align Gantt bars with the calendar
-            function alignGanttBars() {
-                const dayWidth = $(".calendar-day").outerWidth(); // Width of a single day or week
-                const ganttStartDate = new Date($('#st_date').val()); // Gantt chart start date
-
-                $('.draggable').each(function (index) {
-                    const $task = $(this);
-                    const taskStartDate = new Date($task.attr('data-start-date'));
-                    const taskEndDate = new Date($task.attr('data-end-date'));
-                    const taskTop = $(this).outerHeight() * index;
-                    const taskHeight = $(this).outerHeight();
-
-                    console.log('height: '+taskHeight)
-
-                    // Calculate the number of days/weeks from the Gantt start date to the task start and end dates
-                    const daysFromStart = Math.floor((taskStartDate - ganttStartDate) / (1000 * 60 * 60 * 24));
-                    const taskDuration = Math.floor((taskEndDate - taskStartDate) / (1000 * 60 * 60 * 24)) + 1;
-
-                    // Calculate the left position and width of the task bar
-                    const leftPosition = daysFromStart * dayWidth;
-                    const barWidth = taskDuration * dayWidth;
-
-                    if (isNaN(taskStartDate) || isNaN(taskEndDate)) {
-                        console.warn("Invalid dates for task:", $task.attr('data-task'), taskStartDate, taskEndDate);
-                        return; // skip this task
-                    }
-
-                    // const taskDuration = Math.floor((taskEndDate - taskStartDate) / (1000 * 60 * 60 * 24)) + 1;
-
-                    if (taskDuration <= 0) {
-                        console.warn("Task duration invalid or zero:", $task.attr('data-task'), taskDuration);
-                        return;
-                    }
-
-                    // Apply the calculated styles to the task bar
-                    $task.css({
-                        left: `${leftPosition}px`,
-                        width: `${barWidth}px`,
-                        height: '24px',
-                    });
-                });
-
-                // Add this after setting bars:
-                // makeDraggableAndResizable();
-            }
-
-            // Calculate date from offset
-            function calculateDateFromOffset(offset, dayWidth) {
-                const daysFromStart = Math.round(offset / dayWidth);
-                const date = new Date($('#st_date').val());
-                date.setDate(date.getDate() + daysFromStart * (isWeeklyView ? 7 : 1));
-                return date.toISOString().split('T')[0];
-            }
-
-            // Toggle between daily and weekly views
+            gantt.config.scale_height = 52;
+            gantt.config.min_column_width = 24;
+            gantt.config.max_column_width = 24;
+            
+            // Hide the grid completely
+            gantt.config.grid_width = 0;
+            
+            // Task bar sizing to match custom calendar
+            gantt.config.bar_height = 20;
+            gantt.config.row_height = 29.5;
+            
+            // Read-only mode
+            gantt.config.readonly = true;
+            gantt.config.drag_move = false;
+            gantt.config.drag_resize = false;
+            gantt.config.drag_progress = false;
+            gantt.config.drag_links = false;
+            gantt.config.show_links = false;
+            gantt.config.details_on_dblclick = false;
+            
+            // Set start date to match calendar
+            gantt.config.start_date = calendarStartDate;
+            gantt.config.end_date = calendarEndDate;
+            
+            // Prepare data for DHTMLX Gantt
+            var tasks = {
+                data: [
+                    @foreach ($data as $key => $item)
+                    {
+                        id: {{ $item->id }},
+                        text: "{{ $item->name }}",
+                        start_date: "{{ $item->start_date ? \Carbon\Carbon::parse($item->start_date)->format('Y-m-d') : \Carbon\Carbon::now()->format('Y-m-d') }}",
+                        end_date: "{{ $item->end_date ? \Carbon\Carbon::parse($item->end_date)->format('Y-m-d') : \Carbon\Carbon::now()->addDays(30)->format('Y-m-d') }}",
+                        progress: 0,
+                        open: true
+                    }{{ $loop->last ? '' : ',' }}
+                    @endforeach
+                ],
+                links: []
+            };
+            
+            // Initialize gantt
+            gantt.init("gantt_here");
+            gantt.parse(tasks);
+            
+            // Scroll to today's position
+            setTimeout(function() {
+                var today = new Date();
+                gantt.showDate(today);
+            }, 100);
+            
+            // Daily/Weekly view toggle
+            let isWeeklyView = false;
             $('#toggleView').on('click', function () {
-                isWeeklyView = !isWeeklyView; // Toggle the view mode
-                renderCalendar(); // Re-render the calendar
-                alignGanttBars(); // Re-align the Gantt bars
-            });
-
-            // Prevent scroll-container from scrolling when dragging bars
-
-            // Function to scroll to today minus 7 days
-            function scrollToCurrentPosition() {
-                const today = new Date();
-                const targetDate = new Date(today);
-                targetDate.setDate(today.getDate() - 7); // 7 days before today
+                isWeeklyView = !isWeeklyView;
                 
-                const currentYear = targetDate.getFullYear();
-                const currentMonth = targetDate.getMonth() + 1; // getMonth() returns 0-11, so add 1
-                const currentDay = targetDate.getDate();
-                
-                // Create the date string for the target date
-                const targetDateStr = `${currentYear}-${currentMonth.toString().padStart(2, '0')}-${currentDay.toString().padStart(2, '0')}`;
-                
-                // Find the calendar day element for the target date
-                const $targetElement = $(`.calendar-day[data-date="${targetDateStr}"]`);
-                
-                if ($targetElement.length > 0) {
-                    const scrollContainer = $('.scroll-container');
-                    const elementLeft = $targetElement.position().left;
-                    
-                    // Scroll to position the target date at the left edge of the viewport
-                    scrollContainer.scrollLeft(Math.max(0, elementLeft));
+                if (isWeeklyView) {
+                    // Weekly view
+                    gantt.config.scale_unit = "week";
+                    gantt.config.date_scale = "Week #%W";
+                    gantt.config.subscales = [
+                        {unit: "month", step: 1, date: "%F %Y"}
+                    ];
+                } else {
+                    // Daily view
+                    gantt.config.scale_unit = "day";
+                    gantt.config.date_scale = "%d";
+                    gantt.config.subscales = [
+                        {unit: "month", step: 1, date: "%F %Y"}
+                    ];
                 }
+                
+                gantt.render();
+            });
+            
+            // Home button - scroll to today
+            $('#home').on('click', function() {
+                var today = new Date();
+                gantt.showDate(today);
+            });
+            
+            // Mouse wheel scroll handler - convert vertical scroll to horizontal
+            const ganttContainer = document.getElementById('gantt_here');
+            if (ganttContainer) {
+                ganttContainer.addEventListener('wheel', function(e) {
+                    const deltaY = e.deltaY;
+                    const deltaX = e.deltaX;
+                    
+                    // If vertical scrolling is dominant, convert to horizontal
+                    if (Math.abs(deltaY) > Math.abs(deltaX)) {
+                        e.preventDefault();
+                        const scrollAmount = deltaY * 0.8; // 0.8x scroll speed
+                        const currentScroll = gantt.getScrollState().x;
+                        const newScroll = currentScroll + scrollAmount;
+                        gantt.scrollTo(newScroll, null);
+                    }
+                }, { passive: false });
             }
-
-            // Initial render
-            renderCalendar();
-            alignGanttBars();
-            scrollToCurrentPosition(); // Add scroll positioning after rendering
-            // $(window).resize(alignGanttBars);
         });
     </script>
 
@@ -596,121 +634,6 @@
     </script>
 
     <script>
-        function highlightToday() {
-                const today = new Date();
-
-                const st = $('#st_date').val();
-                const en = $('#en_date').val();
-
-                const startDate = new Date(st); // Adjust this to your Gantt chart's start date
-                const dayWidth = $(".calendar-day").outerWidth();
-                const coun = $('#task_count').val();
-
-                // Calculate the number of days from the start date to today
-                const daysFromStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
-
-                // Calculate the left position for the today line
-                const todayPosition = daysFromStart * dayWidth;
-
-
-                // Add the today line to the Gantt chart
-                const todayLine = $('<div class="today-line"></div>');
-                todayLine.css({
-                    left: todayPosition + 'px',
-                    // height: coun * 30 + 5 + 'px'
-                    height: coun * 30 + 22 + 'px'
-                });
-
-                $('.gantt-bar-container').append(todayLine);
-            }
-
-            // Call the function after the DOM is ready
-            $(document).ready(function () {
-                highlightToday();
-            });
-    </script>
-
-    <script>
-        function highlightHolidays() {
-
-            const st = $('#st_date').val();
-            const en = $('#en_date').val();
-
-            const startDate = new Date(st); // Adjust this to your Gantt chart's start date (April 1, 2025)
-            const endDate = new Date(en); // Adjust this to your Gantt chart's end date (December 31, 2025)
-            const dayWidth = $(".calendar-day").outerWidth();
-
-            // Calculate all weekend dates (Saturdays and Sundays) within the date range
-            const holidays = [];
-            for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-                const dayOfWeek = d.getDay(); // 0 = Sunday, 6 = Saturday
-                if (dayOfWeek === 0 || dayOfWeek === 6) {
-                    holidays.push(new Date(d)); // Add weekend date to the holidays array
-                }
-            }
-
-            // Highlight each holiday in the Gantt chart
-            holidays.forEach(holiday => {
-                const daysFromStart = Math.floor((holiday - startDate) / (1000 * 60 * 60 * 24));
-
-                // Calculate the left position for the holiday highlight
-                const holidayPosition = daysFromStart * dayWidth;
-
-                // Add the holiday highlight to the Gantt chart
-                const holidayHighlight = $('<div class="holiday-highlight"></div>');
-                holidayHighlight.css({
-                    left: holidayPosition + 'px',
-                    width: dayWidth + 'px',
-                });
-
-                $('.gantt-bar-container').append(holidayHighlight);
-            });
-        }
-
-        // Call the function after the DOM is ready
-        $(document).ready(function () {
-            highlightHolidays();
-        });
-    </script>
-
-
-
-<script>
-    $(document).ready(function () {
-        // Drag-to-scroll functionality for each scrollable container
-        $('.scroll-container').each(function () {
-            const scrollContainer = $('.scroll-container'); // Target the specific scroll-container
-            let isDragging = false;
-            let startX;
-            let scrollLeft;
-
-            // Mouse down event to start dragging
-            scrollContainer.on('mousedown', function (e) {
-                isDragging = true;
-                startX = e.pageX - scrollContainer.offset().left;
-                scrollLeft = scrollContainer.scrollLeft();
-                scrollContainer.css('cursor', 'grabbing'); // Change cursor to grabbing
-            });
-
-            // Mouse move event to handle scrolling
-            scrollContainer.on('mousemove', function (e) {
-                if (!isDragging) return;
-                e.preventDefault();
-                const x = e.pageX - scrollContainer.offset().left;
-                const walk = (x - startX) * 1; // Adjust the multiplier for faster/slower scrolling
-                scrollContainer.scrollLeft(scrollLeft - walk);
-            });
-
-            // Mouse up or leave event to stop dragging
-            scrollContainer.on('mouseup mouseleave', function () {
-                isDragging = false;
-                scrollContainer.css('cursor', 'grab'); // Reset cursor to grab
-            });
-        });
-    });
-</script>
-
-<script>
 $(document).ready(function() {
     let asc = '{{ request("sort", "asc") }}' === 'asc';
     $('#sortProject').on('click', function() {
@@ -719,24 +642,6 @@ $(document).ready(function() {
         let url = new URL(window.location.href);
         url.searchParams.set('sort', newSort);
         window.location.href = url.toString();
-    });
-});
-</script>
-
-<script>
-$(document).ready(function() {
-    $('#home').on('click', function() {
-        // Find the today line
-        const $todayLine = $('.today-line');
-        if ($todayLine.length) {
-            const scrollContainer = $('.scroll-container');
-            // Calculate the left position of the today line relative to the scroll container
-            const todayLeft = $todayLine.position().left;
-            // Scroll so that the today line is centered (or just visible)
-            scrollContainer.animate({
-                scrollLeft: todayLeft - scrollContainer.width()/14 + 20 // +20 for a little padding
-            }, 400);
-        }
     });
 });
 </script>

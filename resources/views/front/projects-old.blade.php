@@ -16,9 +16,6 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
-     <!-- DHTMLX Gantt -->
-    <script src="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.js"></script>
-    <link href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css" rel="stylesheet">
     <style>
 
         .sss .task-header{
@@ -63,6 +60,21 @@
         .modal-footer button {
             margin-left: 10px;
         }
+        .draggable {
+            cursor: move;
+            background-color: #4A5568 !important;
+            border-radius: 5px !important;
+            border: 1px solid #fff !important;
+        }
+
+        .draggable[data-task="task1"] {
+            margin-top: 3px !important;
+        }
+
+        .draggable span{
+            font-size: 12px;
+            display: block;
+        }
 
         .calendar-day{
             width: 24px !important;
@@ -84,11 +96,19 @@
             box-sizing: border-box;
         }
 
+        .draggable[data-task="task1"] {
+            margin-top: 3px !important;
+        }
+
         .second-input{
             display: flex;
         }
 
-        .calendar-container {
+        .draggable:first-of-type{
+            top: 0 !important;
+            margin-top: 0px !important;
+        }
+        .calendar-container, .gantt-bar-container {
             display: flex;
             white-space: nowrap;
             position: relative;
@@ -122,12 +142,17 @@
             height: 20px !important;
             text-align: center;
         }
+        .gantt-bar-container {
+            position: relative;
+        }
         .scroll-container {
             overflow-x: scroll;
             width: 100%;
             cursor: grab;
             border-top-right-radius: 4px;
             border-bottom-right-radius: 4px;
+            scrollbar-width: none; /* For Firefox */
+            -ms-overflow-style: none; /* For Internet Explorer and Edge */
         }
 
         .scroll-container::-webkit-scrollbar {
@@ -304,24 +329,6 @@
             background-color: #D9534F; /* Red color for the today line */
             z-index: 100; /* Ensure it appears above other elements */
         }
-        
-        /* Today marker line in gantt */
-        .today-marker {
-            background-color: #ff0000 !important;
-            opacity: 0.8;
-            width: 2px !important;
-        }
-        
-        /* Weekend styling for gantt scale cells */
-        .gantt-weekend-cell span {
-            color: #d32f2f !important;
-            font-weight: 400 !important;
-        }
-        
-        .gantt-weekday-cell span {
-            color: #000 !important;
-            font-weight: normal !important;
-        }
 
         /* Highlight holidays in the Gantt chart */
         .holiday-highlight {
@@ -421,43 +428,6 @@
             color: #4b5563 !important;
         }
 
-        /* Collapsible member time entries styles */
-        .expand-arrow {
-            cursor: pointer;
-            font-size: 12px;
-            margin-left: 8px;
-            user-select: none;
-            padding: 4px;
-            display: inline-block;
-            min-width: 16px;
-            text-align: center;
-            z-index: 10;
-            position: relative;
-        }
-
-        .expand-arrow:hover {
-            background-color: rgba(0, 0, 0, 0.1);
-            border-radius: 3px;
-        }
-
-        .member-time-entries {
-            background-color: #f9fafb;
-            border-left: 0px solid #d1d5db;
-        }
-
-        .member-time-entries.expanded {
-            display: block;
-        }
-
-        .time-entry-row {
-            border-left: 0px solid #e5e7eb;
-            background-color: #f8fafc;
-        }
-
-        .member-time-calendar-row {
-            background-color: #f9fafb;
-        }
-
         /* Hide number input arrows/spinners */
         .inputss::-webkit-outer-spin-button,
         .inputss::-webkit-inner-spin-button {
@@ -469,81 +439,6 @@
             -moz-appearance: textfield;
             appearance: textfield;
         }
-
-        /* Hide number input arrows/spinners */
-        .inputsss::-webkit-outer-spin-button,
-        .inputsss::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-        .inputsss[type=number] {
-            -moz-appearance: textfield;
-            appearance: textfield;
-        }
-
-        /* .gantt_task_scale{
-            display: none;
-        } */
-
-        .gantt_scale_line:first-child{
-            background: #000 !important;
-        }
-
-         .gantt_scale_line:first-child .gantt_scale_cell span{
-            color: #fff !important;
-            font-size: 14px;
-        }
-
-        .gantt_scale_line:not(:first-child) .gantt_scale_cell span{
-            display: inline-block;
-            vertical-align: top;
-            border: 1px solid #ccc;
-            /* padding-top: 1px; */
-            font-size: 10px;
-            box-sizing: border-box;
-            margin: 0;
-            border-top: unset;
-            width: 24px !important;
-            height: 20px !important;
-            text-align: center;
-        }
-
-        
-
-        /* Top scale row (month) */
-.gantt_scale_line:first-child {
-    height: 32px !important;
-    line-height: 32px !important;  /* vertical center text */
-}
-
-/* All other scale rows (days, etc.) */
-.gantt_scale_line:not(:first-child) {
-    height: 20px !important;
-    line-height: 20px !important;  /* vertical center text */
-}
-
-/* Weekend and weekday styling - only apply to day row (second scale line) */
-.gantt_scale_line:not(:first-child) .gantt-weekend-cell span {
-    color: #d32f2f !important;
-}
-
-.gantt_scale_line:not(:first-child) .gantt-weekday-cell span {
-    color: #000 !important;
-}
-
-/* Make vertical scrollbar background transparent */
-.gantt_ver_scroll {
-    background-color: transparent !important;
-}
-
-.gantt_layout_cell.scrollVer_cell {
-    background-color: transparent !important;
-}
-
-.gantt_layout_cell{
-    border: unset !important;
-}
     </style>
 
     <!-- Fonts -->
@@ -573,14 +468,6 @@
                     <h5 style="font-size: 20px; font-weight: 600; margin-left: 7px;">{{ $data->name }}</h5>
                 </div>
                 <div class="flex items-center " style="float: right;">
-                            <!-- Undo/Redo Buttons -->
-                            <button class="text-gray-600 hover:text-black" id="undoBtn" style="margin-right: 8px;" title="Undo" disabled>
-                                <i class="fas fa-undo" style="border: 1px solid #eee; padding: 10px 12px; border-radius: 4px; font-size: 14px;"></i>
-                            </button>
-                            <button class="text-gray-600 hover:text-black" id="redoBtn" style="margin-right: 8px;" title="Redo" disabled>
-                                <i class="fas fa-redo" style="border: 1px solid #eee; padding: 10px 12px; border-radius: 4px; font-size: 14px;"></i>
-                            </button>
-                            
                             <button class="text-gray-600 hover:text-black" id="home" style="margin-right: 8px;">
                                 <img src="{{ asset('house.png') }}" style="border: 1px solid #000;padding: 10px 12px;border-radius: 4px;border-color: #eee; ">
                             </button>
@@ -618,41 +505,6 @@
                                     outline: none;
                                 }
                             </style>
-                            
-                            <style>
-                                /* Undo/Redo button styles */
-                                #undoBtn, #redoBtn {
-                                    transition: all 0.2s ease;
-                                }
-                                
-                                #undoBtn:disabled, #redoBtn:disabled {
-                                    opacity: 0.5;
-                                    cursor: not-allowed;
-                                }
-                                
-                                #undoBtn:disabled i, #redoBtn:disabled i {
-                                    border-color: #f3f4f6 !important;
-                                    color: #9ca3af !important;
-                                }
-                                
-                                #undoBtn:not(:disabled):hover i, #redoBtn:not(:disabled):hover i {
-                                    border-color: #000 !important;
-                                    background-color: #f9fafb;
-                                }
-                                
-                                #undoBtn:not(:disabled) i, #redoBtn:not(:disabled) i {
-                                    color: #374151;
-                                    cursor: pointer;
-                                }
-                                /* Overlapping task bar styling */
-                                .gantt_task_line.task-overlap {
-                                    background-color: #dc2626 !important; /* red */
-                                    border-color: #dc2626 !important;
-                                }
-                                .gantt_task_line.task-overlap .gantt_task_progress {
-                                    background-color: rgba(255,255,255,0.4) !important;
-                                }
-                            </style>
                             <script>
                                 // Toggle active class on click
                                 $('#toggleDaily, #toggleWeekly').on('click', function() {
@@ -661,15 +513,7 @@
                                     // Add your view switching logic here if needed
                                 });
                             </script>
-                            {{-- <a href="/projects/{{ $data->id }}/v2" class="bg-green-600 text-white px-4 py-2 rounded" style="font-size: 13px; padding: 0.4rem 1rem; cursor: pointer; margin-right: 8px; background-color: #059669 !important; display: inline-flex; align-items: center; height: 34px;" title="New Clean Version">
-                                <i class="fas fa-rocket" style="margin-right: 6px;"></i> V2
-                            </a>
-                            
-                            <a href="/projects/{{ $data->id }}/dhtmlx" class="bg-blue-600 text-white px-4 py-2 rounded" style="font-size: 13px; padding: 0.4rem 1rem; cursor: pointer; margin-right: 8px; background-color: #2563eb !important; display: inline-flex; align-items: center; height: 34px;" title="Open DHTMLX Gantt">
-                                <i class="fas fa-crown" style="margin-right: 6px;"></i> DHTMLX Gantt
-                            </a> --}}
-                            
-                            <a class="bg-black text-white px-4 py-2 rounded" id="addMemberButton" style="font-size: 13px; padding:0.4rem 1rem; cursor: pointer; margin-right: 8px;">+  Add to Team</a>
+                            <a class="bg-black text-white px-4 py-2 rounded" id="addMemberButton" style="font-size: 13px; padding:0.4rem 1rem; cursor: pointer; margin-right: 8px;">+  Add Member</a>
                             {{-- <a href="/projects/create" class="bg-black text-white px-4 py-2 rounded" style="font-size: 13px; padding:0.4rem 1rem;">+  Add Project</a> --}}
                 </div>
             </div>
@@ -712,9 +556,9 @@
 
                 <div class="scroll-container">
                     <div class="relative">
-                        {{-- <div class="calendar-container">
+                        <div class="calendar-container">
                             <!-- JavaScript will populate the months and dates here -->
-                        </div> --}}
+                        </div>
                         @php
 
                             $height = 0;
@@ -728,7 +572,17 @@
                             }
 
                         @endphp
-                        <div id="gantt_here" data-check-height="{{ ($data->tasks->count() * 32) + 52 }}" style='width:100% !important; height:{{ ($data->tasks->count() * 32) + 52 +15}}px;'></div>
+                        <div class="gantt-bar-container" style="height: {{ (24*$height) +5}}px">
+                            @foreach ($data->tasks as $key => $item)
+                            @if ($item->start_date != null)
+                                <div class="draggable bg-blue-600 text-white text-center py-1 px-2" data-task-id="{{ $item->id }}" data-task="task{{$key + 1}}" style="left: calc(3.225% * 5); position: absolute; padding: 0px; padding-top: 1px;" data-start-date="{{ \Carbon\Carbon::parse($item->start_date)->format('Y-m-d') }}" data-end-date="{{ \Carbon\Carbon::parse($item->end_date)->format('Y-m-d') }}">
+                                    <span>T{{ $key + 1 }}</span>
+                                    <div class="ui-resizable-handle ui-resizable-e"></div>
+                                    <div class="ui-resizable-handle ui-resizable-w"></div>
+                                </div>
+                            @endif
+                            @endforeach
+                        </div>
                     </div>
                 </div>
             </div>
@@ -748,11 +602,10 @@
                         @foreach ($data->members as $item)
                             @if ($item->archieve == 0)
                                 <div class="task-item team-member-row data-id-{{ $item->id }}" data-task="task{{ $item->task_id }}" data-member-id="{{ $item->id }}" data-user-id="{{ $item->user_id }}" style="position: unset">
-                                    <span style="width: 50%; font-size: 12px; display: inline-flex; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; align-items: center;">
+                                    <span style="width: 50%; font-size: 12px; display: inline-flex; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px;">
                                         <img class="drag-handle" src="{{ asset('dots.svg') }}" style="margin-right: 5px;">
                                         <img src="{{ $item->user->profile_image_url ? asset('storage/'.$item->user->profile_image_url) : 'https://randomuser.me/api/portraits/men/4.jpg' }}">
                                         {{ $item->user->name }}
-                                        <div class="expand-arrow" data-target="member-time-entries" data-id="{{ $item->user_id }}" data-project-id="{{ $data->id }}">▶</div>
                                     </span>
                                         @php
                                             $es = DB::table('estimated_time_entries')->where('project_id',$data->id)->where('user_id',$item->user_id)->sum('hours');
@@ -766,41 +619,6 @@
                                     @else
                                     <span style="display: block; width:10%; padding-top: 6px; padding-bottom: 6px; text-align: center;"> <i class="fas fa-eye-slash" data-id="{{ $item->id }}" style="color: #4B5563; font-size: 13px;"></i> </span>
                                     @endif
-                                </div>
-                                
-                                <!-- Expandable Time Entries for this Team Member -->
-                                <div class="member-time-entries" data-user-id="{{ $item->user_id }}" data-project-id="{{ $data->id }}">
-                                    <!-- Summary row showing time entries with actual data -->
-                                    <div class="task-item time-entry-row" data-user-id="{{ $item->user_id }}">
-                                        <span style="padding-left: 20px; width: 50%; font-size: 11px; display: inline-flex; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; align-items: center;">
-                                            <span style="width: 6px; height: 6px; background-color: #6b7280; border-radius: 50%; margin-right: 8px; display: inline-block;"></span>
-                                            <!-- Blank space as requested -->
-                                        </span>
-                                        <span style="width: 25%; font-size: 11px; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; text-align: center;" class="member-time-cost-{{ $item->user_id }}">
-                                            @php
-                                                $currentWeekStart = now()->startOfWeek();
-                                                $currentWeekEnd = now()->endOfWeek();
-                                                $timeEntries = DB::table('time_entries')
-                                                    ->where('user_id', $item->user_id)
-                                                    ->where('project_id', $data->id)
-                                                    // ->whereBetween('entry_date', [$currentWeekStart, $currentWeekEnd])
-                                                    ->get();
-                                                $totalHours = $timeEntries->sum('hours');
-                                                $totalCost = $totalHours * $item->user->hourly_rate;
-                                                // dd($timeEntries);   
-                                            @endphp
-                                            {{ formatCurrency($totalCost) }}
-                                        </span>
-                                        <span style="width: 15%; font-size: 11px; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; text-align: center;" class="member-time-hours-{{ $item->user_id }}">
-                                            {{ number_format($totalHours, 0) }}
-                                        </span>
-                                        <span style="width: 10%; font-size: 11px; padding-top: 4px; padding-bottom: 4px; text-align: center;"></span>
-                                    </div>
-                                    
-                                    <!-- Calendar input row (will be populated by JavaScript) -->
-                                    <div class="member-time-calendar-row" data-user-id="{{ $item->user_id }}" data-project-id="{{ $data->id }}">
-                                        <!-- Calendar inputs will be populated by JavaScript with time_entries data only -->
-                                    </div>
                                 </div>
                             @endif
                         @endforeach
@@ -834,12 +652,6 @@
                             @foreach ($data->members as $item)
                             @if ($item->archieve == 0)
                                 <div class="second-input time-input-row data-id-{{ $item->id }}" data-task-id="{{ $item->task_id }}" data-user-id="{{ $item->user_id }}" data-member-id="{{ $item->id }}"></div>
-                                
-                                <!-- Member time calendar row (hidden initially, will be populated by JavaScript) -->
-                                <div class="second-input member-time-calendar-row member-time-{{ $item->user_id }}" 
-                                     data-user-id="{{ $item->user_id }}" 
-                                     data-project-id="{{ $data->id }}" 
-                                     style="display: none;"></div>
                             @endif
                             @endforeach
                         </div>
@@ -862,7 +674,6 @@
     <input type="hidden" id="en_date" value={{ $data->end_date }}>
     <input type="hidden" id="task_count" value={{ count($data->tasks) }}>
     <input type="hidden" id="date_format" value="{{ globalSettings('date_format') }}">
-    <input type="hidden" id="currency_symbol" value="{{ str_replace(number_format(0, 0), '', formatCurrency(0)) }}">
 
     <script>
         // Function to format date according to user settings
@@ -896,8 +707,8 @@
 
         // Function to format currency with symbol
         function formatCurrency(amount) {
-            // Get dynamic currency symbol from backend settings
-            const currencySymbol = document.getElementById('currency_symbol').value;
+            // You can customize the currency symbol and format here
+            const currencySymbol = '$'; // Change this to your preferred currency symbol
             const formattedAmount = Number(amount).toLocaleString('en-US', {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 2
@@ -905,70 +716,15 @@
             return currencySymbol + formattedAmount;
         }
         
-
-
-
-
-
         $(function () {
-
-            // Pass server-side time entry data to JavaScript
-            @php
-                // Collect all time entries for all project members (only actual time entries, not estimates)
-                $allTimeEntries = collect();
-                foreach ($data->members as $member) {
-                    $memberTimeEntries = DB::table('time_entries')
-                        ->where('user_id', $member->user_id)
-                        ->where('project_id', $data->id)
-                        ->select('user_id', 'entry_date', 'hours') // Only select fields we need
-                        ->get();
-                    $allTimeEntries = $allTimeEntries->concat($memberTimeEntries);
-                }
-                
-                // Group by user_id and entry_date, then sum hours for each date
-                $groupedTimeEntries = $allTimeEntries->groupBy('user_id')->map(function($userEntries) {
-                    return $userEntries->groupBy('entry_date')->map(function($dateEntries) {
-                        return $dateEntries->sum('hours');
-                    });
-                });
-            @endphp
-            
-            window.memberTimeEntries = @json($groupedTimeEntries);
-            
-            // Debug: Log the time entry data structure
-            console.log('Member time entries data (time_entries only, no estimates):', window.memberTimeEntries);
-
             const calendarContainer = $('.calendar-container');
+            const ganttBarContainer = $('.gantt-bar-container');
             const scrollContainer = $('.scroll-container');
             const st = $('#st_date').val();
             const en = $('#en_date').val();
-            
-            // Find earliest task start date
-            const taskDates = [
-                @foreach ($data->tasks as $item)
-                    @if ($item->start_date != null)
-                        "{{ \Carbon\Carbon::parse($item->start_date)->format('Y-m-d') }}",
-                    @endif
-                @endforeach
-            ].filter(date => date).map(date => new Date(date));
-            
-            const earliestTaskDate = taskDates.length > 0 ? new Date(Math.min(...taskDates)) : new Date(st);
-            
-            // Set start date to 1 year before earliest task date (make it global for home button)
-            window.calendarStartDate = new Date(earliestTaskDate);
-            window.calendarStartDate.setFullYear(window.calendarStartDate.getFullYear() - 1);
-            let startDate = window.calendarStartDate;
-            
-            // Set end date to 10 years after project end date
-            let endDate = new Date(en);
-            endDate.setFullYear(endDate.getFullYear() + 10);
-            
-            console.log('Earliest task date:', earliestTaskDate.toDateString());
-            
-            const projectDurationDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-            
-            console.log('Calendar range:', startDate, 'to', endDate, '(' + Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + ' days)');
-            
+            let startDate = new Date(st);
+            startDate.setDate(startDate.getDate() - 30); // Add this line to go 30 days before
+            const endDate = new Date(en);
             const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
             let isWeeklyView = false; // Default to daily view
 
@@ -1028,91 +784,361 @@
 
                 calendarContainer.append(monthContainer);
 
-                // Only append to regular second-input elements, not member-time-calendar-row
-                $('.second-input:not(.member-time-calendar-row)').append(inp);
+                $('.second-input').append(inp);
                 
                 // Set data-user-id for the newly added input fields
-                $('.second-input:not(.member-time-calendar-row)').each(function() {
+                $('.second-input').each(function() {
                     const userId = $(this).data('user-id');
                     const taskId = $(this).data('task-id');
                     $(this).find('.inputss').attr('data-user-id', userId);
                     $(this).find('.inputss').attr('data-task-id', taskId);
                 });
-
-                // Calendar rows are now preloaded with actual data from the server
-                
-                // Populate member time calendar rows with time entry data
-                populateMemberTimeCalendarRows();
             }
 
-            // Function to populate member calendar rows with time entry data
-            function populateMemberTimeCalendarRows() {
-                $('.member-time-calendar-row').each(function() {
-                    const userId = $(this).data('user-id');
-                    const projectId = $(this).data('project-id');
-                    const memberRow = $(this);
-                    
-                    // Clear any existing content
-                    memberRow.empty();
-                    
-                    // Get time entry data for this user from the server-side rendered data
-                    const userTimeEntries = window.memberTimeEntries && window.memberTimeEntries[userId] ? window.memberTimeEntries[userId] : {};
-                    
-                    // Create the same calendar structure but for member time entries
-                    let memberInp = '';
-                    
-                    // Use the same date iteration as the main calendar
-                    const currentDate = new Date(startDate);
-                    while (currentDate <= endDate) {
-                        const day = currentDate.getDate().toString().padStart(2, '0');
-                        const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
-                        const year = currentDate.getFullYear();
-                        const dayOfWeek = currentDate.getDay();
-                        const dateString = `${year}-${month}-${day}`;
-                        const dayClass = (dayOfWeek === 0 || dayOfWeek === 6) ? 'calendar-day holiday' : 'calendar-day';
-                        
-                        // Get existing hours for this date (handle undefined gracefully)
-                        const existingHours = userTimeEntries[dateString] || '';
-                        
-                        // Create input field for member time entry
-                        memberInp += `<input type="number" 
-                                             min="1" 
-                                             max="8" 
-                                             step="1" 
-                                             class="${dayClass} inputsss member-time-input" 
-                                             style="min-width: 24px;" 
-                                             data-user-id="${userId}" 
-                                             data-project-id="${projectId}" 
-                                             data-date="${dateString}"
-                                             value="${existingHours}"
-                                             disabled
-                                             >`;
-                        
-                        currentDate.setDate(currentDate.getDate() + 1);
+
+
+
+            // Align Gantt bars with the calendar
+            function alignGanttBars() {
+                const dayWidth = $(".calendar-day").outerWidth(); // Width of a single day or week
+                let ganttStartDate = new Date($('#st_date').val()); // Gantt chart start date
+                ganttStartDate.setDate(ganttStartDate.getDate() - 30);
+
+                $('.draggable').each(function (index) {
+                    const $task = $(this);
+                    const taskStartDate = new Date($task.attr('data-start-date'));
+                    const taskEndDate = new Date($task.attr('data-end-date'));
+                    const taskTop = 30 * index;
+                    const taskHeight = $(this).outerHeight();
+
+                    console.log('height: '+taskTop)
+
+                    // Calculate the number of days/weeks from the Gantt start date to the task start and end dates
+                    const daysFromStart = Math.floor((taskStartDate - ganttStartDate) / (1000 * 60 * 60 * 24));
+                    const taskDuration = Math.floor((taskEndDate - taskStartDate) / (1000 * 60 * 60 * 24)) + 1;
+
+                    // Calculate the left position and width of the task bar
+                    const leftPosition = daysFromStart * dayWidth;
+                    const barWidth = taskDuration * dayWidth;
+
+                    if (isNaN(taskStartDate) || isNaN(taskEndDate)) {
+                        console.warn("Invalid dates for task:", $task.attr('data-task'), taskStartDate, taskEndDate);
+                        return; // skip this task
                     }
-                    
-                    memberRow.append(memberInp);
+
+                    // const taskDuration = Math.floor((taskEndDate - taskStartDate) / (1000 * 60 * 60 * 24)) + 1;
+
+                    if (taskDuration <= 0) {
+                        console.warn("Task duration invalid or zero:", $task.attr('data-task'), taskDuration);
+                        return;
+                    }
+
+                    // Apply the calculated styles to the task bar
+                    $task.css({
+                        left: `${leftPosition}px`,
+                        width: `${barWidth}px`,
+                        top: taskTop + 'px',
+                        height: '24px'
+                    });
                 });
-                
-                // Load actual time entry data for these inputs
-                loadMemberTimeEntryData();
+
+                // Add this after setting bars:
+                makeDraggableAndResizable();
             }
 
-            // Function to load actual time entry data from the server
-            function loadMemberTimeEntryData() {
-                // Data is now preloaded server-side, no AJAX needed
-                console.log('Member time entry data loaded from server-side rendering');
+            function makeDraggableAndResizable() {
+                $(".draggable").draggable({
+                    axis: "x",
+                    grid: [$(".calendar-day").outerWidth(), 0],
+                    containment: "document",
+                    cancel: ".ui-resizable-handle",
+                    start: function(event, ui) {
+                        if ($(event.originalEvent.target).hasClass('ui-resizable-handle')) {
+                            return false;
+                        }
+                        const $task = $(this);
+                        $task.data("initialLeft", ui.position.left); // Store the initial position
+                        $task.data("initialStartDate", $task.attr("data-start-date")); // Store the initial start date
+                        $task.data("initialEndDate", $task.attr("data-end-date")); // Store the initial end date
+                    },
+                    drag: function(event, ui) {
+                        if ($(event.originalEvent.target).hasClass('ui-resizable-handle')) {
+                            return false;
+                        }
+                        const $task = $(this);
+                        const dayWidth = $(".calendar-day").outerWidth();
+                        const startOffset = ui.position.left;
+                        const startDate = calculateDateFromOffset(startOffset, dayWidth);
+                        $task.attr('data-start-date', startDate);
+                    },
+                    stop: function(event, ui) {
+
+                        const $task = $(this);
+                        const initialStartDate = $task.data("initialStartDate");
+                        const initialEndDate = $task.data('initialEndDate');
+
+                        const dayWidth = $(".calendar-day").outerWidth(); // Width of a single day
+                        let ganttStartDate = new Date($('#st_date').val()); // Gantt chart start date
+                        ganttStartDate.setDate(ganttStartDate.getDate() - 30);
+
+                        // Calculate the start and end offsets
+                        const startOffset = ui.position.left;
+                        const endOffset = startOffset + $task.outerWidth();
+
+                        // Calculate the current start and end dates
+                        const currentStartDate = new Date(ganttStartDate);
+                        currentStartDate.setDate(ganttStartDate.getDate() + Math.round(startOffset / dayWidth));
+
+                        const currentEndDate = new Date(ganttStartDate);
+                        currentEndDate.setDate(ganttStartDate.getDate() + Math.round(endOffset / dayWidth) - 1);
+
+                        checkDates(initialStartDate, initialEndDate, currentStartDate, currentEndDate, $task.attr("data-task-id"));
+
+
+                        // checkDates();
+
+                        updateTaskDates($task);
+                    }
+                }).resizable({
+                    handles: {
+                        'e': '.ui-resizable-e',
+                        'w': '.ui-resizable-w'
+                    },
+                    grid: [$(".calendar-day").outerWidth(), 0],
+                    containment: "document",
+                    start: function (event, ui) {
+                        ui.element.addClass("ui-resizable-resizing");
+                        const $task = $(this);
+                        $task.data("initialLeft", ui.position.left); // Store the initial position
+                        $task.data("initialWidth", ui.size.width); // Store the initial width
+                        $task.data("initialStartDate", $task.attr("data-start-date")); // Store the initial start date
+                        $task.data("initialEndDate", $task.attr("data-end-date")); // Store the initial end date
+                    },
+                    resize: function(event, ui) {
+                        const $task = $(this);
+                        const dayWidth = $(".calendar-day").outerWidth();
+                        let ganttStartDate = new Date($('#st_date').val());
+                        ganttStartDate.setDate(ganttStartDate.getDate() - 30);
+
+                        // Snap the start and end offsets to the nearest day boundary
+                        const startOffset = Math.round(ui.position.left / dayWidth) * dayWidth;
+                        const endOffset = Math.round((ui.position.left + ui.size.width) / dayWidth) * dayWidth;
+
+                        // Calculate the current start and end dates using calculateDateFromOffset
+                        const currentStartDate = calculateDateFromOffset(startOffset, dayWidth);
+                        const currentEndDate = calculateDateFromOffset(endOffset, dayWidth);
+
+                        // Update the task's attributes dynamically during resizing
+                        $task.attr("data-start-date", currentStartDate);
+                        $task.attr("data-end-date", currentEndDate);
+
+                        // Debugging (optional)
+                        // console.log("Resizing - Start Date:", currentStartDate);
+                        // console.log("Resizing - End Date:", currentEndDate);
+                    },
+                    stop: function (event, ui) {
+                        ui.element.removeClass("ui-resizable-resizing");
+
+                        const $task = $(this);
+                        const initialStartDate = $task.data("initialStartDate");
+                        const initialEndDate = $task.data("initialEndDate");
+
+                        const dayWidth = $(".calendar-day").outerWidth(); // Width of a single day
+                        let ganttStartDate = new Date($('#st_date').val()); // Gantt chart start date
+                        ganttStartDate.setDate(ganttStartDate.getDate() - 30);
+                        // Snap the start and end offsets to the nearest day boundary
+                        const startOffset = Math.round(ui.position.left / dayWidth) * dayWidth;
+                        const endOffset = Math.round((ui.position.left + ui.size.width) / dayWidth) * dayWidth;
+
+                        // Calculate the start and end offsets
+                        // const startOffset = ui.position.left;
+                        // const endOffset = startOffset + ui.size.width;
+
+                        // Calculate the final start and end dates
+                        const finalStartDate = new Date(ganttStartDate);
+                        finalStartDate.setDate(ganttStartDate.getDate() + Math.floor(startOffset / dayWidth));
+
+                        const finalEndDate = new Date(ganttStartDate);
+                        finalEndDate.setDate(ganttStartDate.getDate() + Math.floor(endOffset / dayWidth) - 1);
+
+                        // Call the checkDates function to validate the new dates
+                        checkDatesforresize(initialStartDate, initialEndDate, finalStartDate, finalEndDate, $task.attr("data-task-id"));
+
+                        // Update the task's attributes with the final dates
+                        $task.attr("data-start-date", finalStartDate.toISOString().split('T')[0]);
+                        $task.attr("data-end-date", finalEndDate.toISOString().split('T')[0]);
+
+                        // Optionally, call a function to save the updated dates to the server
+                        updateTaskDates($task);
+
+                        // Log the final dates (optional)
+                        // console.log("Resize Complete - Start Date:", finalStartDate.toISOString().split('T')[0]);
+                        // console.log("Resize Complete - End Date:", finalEndDate.toISOString().split('T')[0]);
+                    }
+                });
             }
+
+            function checkDatesforresize(startDate, endDate, stoppedStartDate, stoppedEndDate, taskId) {
+                const stoppedStartDateFormatted = stoppedStartDate.toISOString().split('T')[0];
+                const stoppedEndDateFormatted = stoppedEndDate.toISOString().split('T')[0];
+
+                $.ajax({
+                    url: '/projects/check-dates',
+                    type: 'POST',
+                    data: {
+                        startDate: startDate,
+                        endDate: endDate,
+                        stoppedStartDate: stoppedStartDateFormatted,
+                        stoppedEndDate: stoppedEndDateFormatted,
+                        task_id: taskId,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function (response) {
+                        if (response.overlap) {
+                            $task = $('.gantt-bar-container [data-task-id="'+taskId+'"]')
+
+                            // $task.attr('data-start-date', startDate);
+                            // $task.attr('data-end-date', endDate);
+                            // alignGanttBars();
+                            // alert('Dates overlap with another task.');
+                            $task.addClass('alert-danger')
+                            $.ajax({
+                                url: '/projects/save-dates',
+                                type: 'POST',
+                                data: {
+                                    stoppedStartDate: stoppedStartDateFormatted,
+                                    stoppedEndDate: stoppedEndDateFormatted,
+                                    task_id: taskId,
+                                    _token: '{{ csrf_token() }}'
+                                },
+                                success: function (response) {
+                                    $task = $('.gantt-bar-container [data-task-id="'+response.data.id+'"]')
+                                    $('.start-'+taskId).html(formatDateForDisplay(stoppedStartDateFormatted));
+                                }
+                            });
+                        } else {
+                            $.ajax({
+                                url: '/projects/save-dates',
+                                type: 'POST',
+                                data: {
+                                    stoppedStartDate: stoppedStartDateFormatted,
+                                    stoppedEndDate: stoppedEndDateFormatted,
+                                    task_id: taskId,
+                                    _token: '{{ csrf_token() }}'
+                                },
+                                success: function (response) {
+                                    $task = $('.gantt-bar-container [data-task-id="'+response.data.id+'"]')
+                                    $task.removeClass('alert-danger')
+                                    $('.start-'+taskId).html(formatDateForDisplay(stoppedStartDateFormatted));
+                                    // window.location.reload();
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+
+
+
+            function checkDates(startDate, endDate, stoppedstartDate, stoppedendDate, taskId){
+                const stoppedStartDateFormatted = stoppedstartDate.toISOString().split('T')[0];
+                const stoppedEndDateFormatted = stoppedendDate.toISOString().split('T')[0];
+                    $.ajax({
+                    url: '/projects/check-dates',
+                    type: 'POST',
+                    data: {
+                        startDate: startDate,
+                        endDate: endDate,
+                        stoppedStartDate: stoppedStartDateFormatted,
+                        stoppedEndDate: stoppedEndDateFormatted,
+                        task_id: taskId,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function (response) {
+                        if (response.overlap) {
+                            $task = $('.gantt-bar-container [data-task-id="'+taskId+'"]')
+
+                            // $task.attr('data-start-date', startDate);
+                            // $task.attr('data-end-date', endDate);
+                            // alignGanttBars();
+                            // alert('Dates overlap with another task.');
+                            $task.addClass('alert-danger')
+                            $.ajax({
+                                url: '/projects/save-dates',
+                                type: 'POST',
+                                data: {
+                                    stoppedStartDate: stoppedStartDateFormatted,
+                                    stoppedEndDate: stoppedEndDateFormatted,
+                                    task_id: taskId,
+                                    _token: '{{ csrf_token() }}'
+                                },
+                                success: function (response) {
+                                    $task = $('.gantt-bar-container [data-task-id="'+response.data.id+'"]')
+                                    $('.start-'+taskId).html(formatDateForDisplay(stoppedStartDateFormatted));
+                                }
+                            });
+                        }else{
+                            $.ajax({
+                                url: '/projects/save-dates',
+                                type: 'POST',
+                                data: {
+                                    stoppedStartDate: stoppedStartDateFormatted,
+                                    stoppedEndDate: stoppedEndDateFormatted,
+                                    task_id: taskId,
+                                    _token: '{{ csrf_token() }}'
+                                },
+                                success: function (response) {
+                                    $task = $('.gantt-bar-container [data-task-id="'+response.data.id+'"]')
+                                    $task.removeClass('alert-danger')
+                                    $('.start-'+taskId).html(formatDateForDisplay(stoppedStartDateFormatted));
+                                    // window.location.reload();
+
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+
+
+            // Update task dates based on position and width
+            function updateTaskDates($task) {
+                const dayWidth = $(".calendar-day").outerWidth();
+                const startOffset = $task.position().left;
+                const endOffset = startOffset + $task.outerWidth();
+
+                const startDate = calculateDateFromOffset(startOffset, dayWidth);
+                const endDate = calculateDateFromOffset(endOffset - dayWidth, dayWidth);
+
+                $task.attr('data-start-date', startDate);
+                $task.attr('data-end-date', endDate);
+
+
+            }
+
+            // Calculate date from offset
+            function calculateDateFromOffset(offset, dayWidth) {
+                const daysFromStart = Math.round(offset / dayWidth);
+                const date = new Date($('#st_date').val());
+                date.setDate(date.getDate() + daysFromStart * (isWeeklyView ? 7 : 1));
+                return date.toISOString().split('T')[0];
+            }
+
+            // Toggle between daily and weekly views
+            $('#toggleView').on('click', function () {
+                isWeeklyView = !isWeeklyView; // Toggle the view mode
+                renderCalendar(); // Re-render the calendar
+                alignGanttBars(); // Re-align the Gantt bars
+            });
+
+            // Prevent scroll-container from scrolling when dragging bars
+            $(".draggable").on("mousedown", function (event) {
+                event.stopPropagation(); // Stop the event from propagating to the scroll-container
+            });
 
             // Initial render
             renderCalendar();
-            
-            // Scroll to 1 week before today - call directly after render
-            scrollToOneWeekBefore();
-            
-            // Hide all member time calendar rows initially
-            $('.member-time-calendar-row').hide();
-            $('.member-time-entries').hide();
+            alignGanttBars();
             
             // Populate time tracking data after calendar is rendered
             setTimeout(function() {
@@ -1133,25 +1159,7 @@
                 populateTimeTrackingData();
             }, 200);
             
-            // Function to scroll to 1 week before today
-            function scrollToOneWeekBefore() {
-                const today = new Date();
-                const oneWeekBefore = new Date(today);
-                oneWeekBefore.setDate(today.getDate() - 7);
-                
-                // Calculate days from calendar start (which is 1 year before today) to target date
-                const daysFromStart = Math.floor((oneWeekBefore - startDate) / (1000 * 60 * 60 * 24));
-                const scrollPosition = daysFromStart * 24; // 24px per day
-                
-                console.log('[Auto-scroll] Calendar starts at:', startDate.toDateString());
-                console.log('[Auto-scroll] Scrolling to 1 week before today:', oneWeekBefore.toDateString());
-                console.log('[Auto-scroll] Days from calendar start:', daysFromStart);
-                console.log('[Auto-scroll] Scroll position:', scrollPosition + 'px');
-                
-                $('.scroll-container').scrollLeft(scrollPosition);
-                gantt.scrollTo(scrollPosition, null); // Sync gantt chart too
-                console.log('[Auto-scroll] Both calendars scrolled to position:', scrollPosition);
-            }
+            // $(window).resize(alignGanttBars);
         });
     </script>
 
@@ -1177,6 +1185,99 @@
     </script>
 
     <script>
+        function highlightToday() {
+                const today = new Date();
+
+                const st = $('#st_date').val();
+                const en = $('#en_date').val();
+
+                const startDate = new Date(st); // Adjust this to your Gantt chart's start date
+                startDate.setDate(startDate.getDate() - 30);
+                const dayWidth = $(".calendar-day").outerWidth();
+                const coun = $('#task_count').val();
+
+                // Calculate the number of days from the start date to today
+                const daysFromStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+
+                // Calculate the left position for the today line
+                const todayPosition = daysFromStart * dayWidth;
+
+
+                // Add the today line to the Gantt chart
+                const todayLine = $('<div class="today-line"></div>');
+                
+                // Calculate height: (total tasks × individual task height) + date cell height
+                const totalTasks = coun; // Total number of tasks
+                const individualTaskHeight = 30; // Height of each individual task row
+                const dateCellHeight = 20; // Height of the date showing cell
+                const totalHeight = (totalTasks * individualTaskHeight) + dateCellHeight;
+                
+                todayLine.css({
+                    left: todayPosition + 'px',
+                    height: totalHeight + 'px'
+                });
+
+                $('.gantt-bar-container').append(todayLine);
+            }
+
+            // Call the function after the DOM is ready
+            $(document).ready(function () {
+                highlightToday();
+            });
+    </script>
+
+    <script>
+        function highlightHolidays() {
+
+            const st = $('#st_date').val();
+            const en = $('#en_date').val();
+
+            const startDate = new Date(st); // Adjust this to your Gantt chart's start date (April 1, 2025)
+            const endDate = new Date(en); // Adjust this to your Gantt chart's end date (December 31, 2025)
+            const dayWidth = $(".calendar-day").outerWidth();
+
+            // Calculate all weekend dates (Saturdays and Sundays) within the date range
+            const holidays = [];
+            
+            // Use a safer date iteration approach
+            const currentDate = new Date(startDate);
+            while (currentDate <= endDate) {
+                const dayOfWeek = currentDate.getDay(); // 0 = Sunday, 6 = Saturday
+                if (dayOfWeek === 2 || dayOfWeek === 1) {
+                    holidays.push(new Date(currentDate)); // Add weekend date to the holidays array
+                }
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            // Clear existing holiday highlights
+            $('.gantt-bar-container .holiday-highlight').remove();
+
+            // Highlight each holiday in the Gantt chart
+            holidays.forEach(holiday => {
+                const daysFromStart = Math.floor((holiday - startDate) / (1000 * 60 * 60 * 24));
+
+                // Calculate the left position for the holiday highlight
+                const holidayPosition = daysFromStart * dayWidth;
+
+                // Add the holiday highlight to the Gantt chart
+                const holidayHighlight = $('<div class="holiday-highlight"></div>');
+                holidayHighlight.css({
+                    left: holidayPosition + 'px',
+                    width: dayWidth + 'px',
+                });
+
+                $('.gantt-bar-container').append(holidayHighlight);
+            });
+        }
+
+        // Call the function after the DOM is ready
+        $(document).ready(function () {
+            highlightHolidays();
+        });
+    </script>
+
+
+<script>
     $(document).ready(function () {
         const addTaskButton = $('#addTaskButton');
         const addTaskButton2 = $('#addTaskButton2');
@@ -1230,7 +1331,7 @@
 </script>
 
 
-{{-- <script>
+<script>
     $(document).ready(function () {
         // Drag-to-scroll functionality for each scrollable container
         $('.scroll-container').each(function () {
@@ -1263,7 +1364,7 @@
             });
         });
     });
-</script> --}}
+</script>
 
 <script>
     // Function to restrict input to integers only
@@ -1278,61 +1379,6 @@
             inputElement.value = '1';
         }
     }
-
-    // Function to update project totals without page reload
-        async function updateProjectTotals(project_id) {
-            try {
-                const response = await fetch(`/projects/${project_id}/totals`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    // Update progress rings
-                    if (data.budget_progress !== undefined) {
-                        updateProgressRing('budget', data.budget_progress, data.budget_total, data.budget_spent);
-                    }
-                    if (data.hour_progress !== undefined) {
-                        updateProgressRing('hour', data.hour_progress, data.hour_total, data.hour_spent);
-                    }
-                    if (data.task_progress !== undefined) {
-                        updateProgressRing('task', data.task_progress, data.task_total, data.task_completed);
-                    }
-                }
-            } catch (error) {
-                console.error('Error updating project totals:', error);
-            }
-        }
-
-        // Function to update individual progress ring
-        function updateProgressRing(type, percentage, total, spent) {
-            const ringId = type === 'budget' ? 'budget-ring' : type === 'hour' ? 'hour-ring' : 'task-ring';
-            const ring = document.getElementById(ringId);
-            if (!ring) return;
-
-            const circumference = 2 * Math.PI * 40;
-            const offset = circumference - (percentage / 100) * circumference;
-            
-            ring.style.strokeDashoffset = offset;
-            
-            // Update text
-            const container = ring.closest('.circle-progess');
-            if (container) {
-                const progressText = container.querySelector('.progress-text');
-                if (progressText) {
-                    if (type === 'task') {
-                        progressText.textContent = `${spent}/${total}`;
-                    } else {
-                        progressText.textContent = `${Math.round(percentage)}%`;
-                    }
-                }
-            }
-        }
 
     // Function to handle integer time input
         async function convertTimeInput(inputElement) {
@@ -1362,13 +1408,19 @@
                     });
 
                     if (response.ok) {
-                        const responseData = await response.json();
+                        // console.log('Data saved successfully.');
+
+                        const responseData = await response.json(); // parse the JSON
 
                         $('.user-hour-'+user_id).html(responseData.data.total);
-                        $('.user-cost-'+user_id).html(responseData.data.cost);
 
-                        // Update project totals dynamically without page reload
-                        await updateProjectTotals(project_id);
+                        $('.user-cost-'+user_id).html(formatCurrency(responseData.data.cost));
+
+                        $('#fetch').load('/projects/reload-data/' + project_id, function() {
+                            setTimeout(() => {
+                                initProgressRings();
+                            }, 10);
+                        });
                     } else {
                         console.error('Failed to save data:', response.statusText);
                     }
@@ -1403,14 +1455,19 @@
                 });
 
                 if (response.ok) {
-                    const responseData = await response.json();
+                    // console.log('Data saved successfully.');
 
-                    // Update user-specific hours and cost
+                    const responseData = await response.json(); // parse the JSON
+
                     $('.user-hour-'+user_id).html(responseData.data.total);
-                    $('.user-cost-'+user_id).html(responseData.data.cost);
 
-                    // Update project totals dynamically without page reload
-                    await updateProjectTotals(project_id);
+                    $('.user-cost-'+user_id).html(formatCurrency(responseData.data.cost));
+
+                    $('#fetch').load('/projects/reload-data/' + project_id, function() {
+                            setTimeout(() => {
+                                initProgressRings();
+                            }, 10);
+                        });
                 } else {
                     console.error('Failed to save data:', response.statusText);
                 }
@@ -1524,81 +1581,6 @@
             });
         }
 
-        // Function to save member order to server
-        function saveMemberOrder(memberOrder) {
-            const projectId = $('#project_id').val();
-            
-            $.ajax({
-                url: '/projects/' + projectId + '/save-member-order',
-                type: 'POST',
-                data: {
-                    member_order: memberOrder,
-                    _token: '{{ csrf_token() }}'
-                },
-                success: function(response) {
-                    console.log('Member order saved successfully');
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error saving member order:', error);
-                }
-            });
-        }
-
-        // Function to load and apply saved member order
-        function loadSavedMemberOrder() {
-            const projectId = $('#project_id').val();
-            
-            $.ajax({
-                url: '/projects/' + projectId + '/get-member-order',
-                type: 'GET',
-                success: function(response) {
-                    if (response.member_order && response.member_order.length > 0) {
-                        applyMemberOrder(response.member_order);
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error loading member order:', error);
-                }
-            });
-        }
-
-        // Function to apply member order to the DOM
-        function applyMemberOrder(memberOrder) {
-            const $membersList = $('#team-members-list');
-            const $timeInputContainer = $('#team-time-inputs');
-            
-            // Detach all member rows and time inputs
-            const $memberRows = $membersList.find('.team-member-row').detach();
-            const $timeInputs = $timeInputContainer.find('.time-input-row').detach();
-            
-            // Reorder based on saved order
-            memberOrder.forEach(function(memberId) {
-                const $matchingMember = $memberRows.filter('[data-member-id="' + memberId + '"]');
-                const $matchingInput = $timeInputs.filter('[data-member-id="' + memberId + '"]');
-                
-                if ($matchingMember.length > 0) {
-                    $membersList.append($matchingMember);
-                }
-                if ($matchingInput.length > 0) {
-                    $timeInputContainer.append($matchingInput);
-                }
-            });
-            
-            // Append any members not in the saved order (in case new members were added)
-            $memberRows.each(function() {
-                if (!$(this).parent().length) {
-                    $membersList.append($(this));
-                }
-            });
-            $timeInputs.each(function() {
-                if (!$(this).parent().length) {
-                    $timeInputContainer.append($(this));
-                }
-            });
-            
-            refreshInputFieldAttributes();
-        }
-
         // Make the team member list sortable
         $('#team-members-list').sortable({
             handle: '.drag-handle',
@@ -1629,15 +1611,9 @@
                 // Refresh input field attributes after reordering
                 refreshInputFieldAttributes();
                 
-                // Save the new order to the server
-                saveMemberOrder(memberOrder);
-                
                 console.log('Team members reordered:', memberOrder);
             }
         });
-
-        // Load saved member order on page load
-        loadSavedMemberOrder();
         
         // Optional: Add visual feedback when hovering over sortable items
         $('#team-members-list').on('mouseenter', '.team-member-row', function() {
@@ -1785,10 +1761,10 @@
       $('input[name="date"], #startDate, #startDateedit').daterangepicker({
         opens: 'left',
         locale: {
-          format: 'YYYY-MM-DD'
+          format: 'DD/MM/YYYY'
         }
       }, function(start, end, label) {
-        console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
+        console.log("A new date selection was made: " + start.format('DD/MM/YYYY') + ' to ' + end.format('DD/MM/YYYY'));
       });
     });
     </script>
@@ -1822,10 +1798,48 @@ $(document).ready(function() {
             }
         });
         
+        // Get corresponding Gantt bars and sort them based on task order
+        let ganttBars = $('.gantt-bar-container .draggable').get();
+        let taskOrder = items.map(function(item) {
+            return $(item).data('task');
+        });
+        
+        ganttBars.sort(function(a, b) {
+            let taskA = $(a).data('task');
+            let taskB = $(b).data('task');
+            let indexA = taskOrder.indexOf(taskA);
+            let indexB = taskOrder.indexOf(taskB);
+            
+            if (indexA === -1) indexA = 999;
+            if (indexB === -1) indexB = 999;
+            
+            return indexA - indexB;
+        });
+        
         // Reorder task items
         $.each(items, function(i, item) {
             $('.mains .task-list').append(item);
         });
+        
+        // Clear and reorder Gantt bars with new positions
+        $('.gantt-bar-container').empty();
+        $.each(ganttBars, function(index, bar) {
+            const $bar = $(bar);
+            const taskTop = 30 * index;
+            $bar.css({
+                top: taskTop + 'px'
+            });
+            $('.gantt-bar-container').append($bar);
+        });
+        
+        // Re-initialize draggable and resizable functionality
+        makeDraggableAndResizable();
+        
+        // Regenerate today line and holiday highlights with new task count and order
+        $('.today-line').remove();
+        $('.holiday-highlight').remove();
+        highlightToday();
+        highlightHolidays();
         
         asc = !asc;
         $('#sortProjectIcon').toggleClass('fa-sort-alpha-down fa-sort-alpha-up');
@@ -1883,637 +1897,210 @@ $(document).ready(function() {
 
 <script>
     $(document).ready(function() {
-    // Home button - scroll both calendars to 1 week before today
     $('#home').on('click', function() {
-        const today = new Date();
-        const oneWeekBefore = new Date(today);
-        oneWeekBefore.setDate(oneWeekBefore.getDate() - 7);
-        
-        // Use the actual calendar start date
-        const calendarStart = window.calendarStartDate || new Date();
-        
-        // Calculate scroll position based on days from calendar start
-        const daysFromStart = Math.floor((oneWeekBefore - calendarStart) / (1000 * 60 * 60 * 24));
-        const scrollPosition = daysFromStart * 24; // 24px per day
-        
-        console.log('Scrolling to 1 week before today:', oneWeekBefore.toDateString());
-        console.log('Days from calendar start:', daysFromStart, '| Scroll position:', scrollPosition);
-        
-        // Scroll gantt first (instant)
-        gantt.scrollTo(Math.max(0, scrollPosition), null);
-        
-        // Then scroll bottom calendar with animation (will sync back via event)
-        $('.scroll-container').animate({
-            scrollLeft: scrollPosition
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${yyyy}-${mm}-${dd}`;
+
+    // Find the calendar-day for today
+    const $todayCell = $(`.calendar-day[data-date="${todayStr}"]`);
+    if ($todayCell.length) {
+        const scrollContainer = $('.scroll-container');
+        const cellLeft = $todayCell.position().left;
+        scrollContainer.animate({
+            scrollLeft: cellLeft - scrollContainer.width()/14 + $todayCell.outerWidth()/2
         }, 400);
-    });
+    }
+});
+
+const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${yyyy}-${mm}-${dd}`;
+
+    // Find the calendar-day for today
+    const $todayCell = $(`.calendar-day[data-date="${todayStr}"]`);
+    if ($todayCell.length) {
+        const scrollContainer = $('.scroll-container');
+        const cellLeft = $todayCell.position().left;
+        scrollContainer.animate({
+            scrollLeft: cellLeft - scrollContainer.width()/14 + $todayCell.outerWidth()/2
+        }, 400);
+    }
 });
 </script>
 
 <script>
-// Handle expand/collapse functionality for member time entries
-$(document).on('click', '.expand-arrow', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log('Arrow clicked!'); // Debug log
-    
-    const arrow = $(this);
-    const targetClass = arrow.data('target');
-    const targetId = arrow.data('id');
-    const projectId = arrow.data('project-id');
-    
-    console.log('Target class:', targetClass); // Debug log
-    console.log('Target ID:', targetId); // Debug log
-    console.log('Project ID:', projectId); // Debug log
-    
-    if (targetClass === 'member-time-entries') {
-        const isExpanded = arrow.hasClass('expanded');
-        
-        console.log('Is expanded:', isExpanded); // Debug log
-        
-        // Toggle arrow state
-        if (isExpanded) {
-            arrow.removeClass('expanded').html('▶');
-        } else {
-            arrow.addClass('expanded').html('▼');
-        }
-        
-        // Toggle time entries visibility - show/hide the preloaded calendar
-        const timeEntriesDiv = $(`.member-time-entries[data-user-id="${targetId}"][data-project-id="${projectId}"]`);
-        const calendarRow = timeEntriesDiv.find('.member-time-calendar-row');
-        
-        console.log('Time entries div found:', timeEntriesDiv.length); // Debug log
-        console.log('Calendar row found:', calendarRow.length); // Debug log
-        console.log('Calendar row HTML:', calendarRow.html() ? 'Has content' : 'Empty'); // Debug log
-        console.log('Calendar row parent:', calendarRow.parent().attr('class')); // Debug log
-        
-        if (isExpanded) {
-            // Collapse - hide the entire time entries container and calendar input row
-            console.log('Collapsing...');
-            timeEntriesDiv.slideUp(300, function() {
-                console.log('Collapse complete');
-            });
-            
-            // Also hide the calendar input row in the bottom section
-            $(`.member-time-${targetId}`).slideUp(300);
-        } else {
-            // Expand - show the entire time entries container and calendar input row
-            console.log('Expanding...');
-            console.log('Time entries div is currently visible:', timeEntriesDiv.is(':visible'));
-            console.log('Time entries div display style:', timeEntriesDiv.css('display'));
-            timeEntriesDiv.slideDown(300, function() {
-                console.log('Expand complete - now visible:', timeEntriesDiv.is(':visible'));
-            });
-            
-            // Also show the calendar input row in the bottom section
-            $(`.member-time-${targetId}`).slideDown(300);
-        }
+document.addEventListener('DOMContentLoaded', function () {
+    function isOverlap(startA, endA, startB, endB) {
+        return (startA <= endB && endA >= startB);
     }
-});
 
-// Function to update time entry data when inputs change
-function updateMemberTimeSummary(userId, projectId) {
-    let totalHours = 0;
-    
-    // Calculate total hours from all inputs for this member
-    $(`.member-time-input[data-user-id="${userId}"][data-project-id="${projectId}"]`).each(function() {
-        const hours = parseFloat($(this).val()) || 0;
-        totalHours += hours;
-    });
-    
-    // Get hourly rate from the existing data
-    const hourlyRateElement = $(`.user-cost-${userId}`);
-    const hourlyRateText = hourlyRateElement.text().replace(/[^0-9.-]+/g,"");
-    const hourlyRate = parseFloat(hourlyRateText) || 0;
-    
-    const totalCost = totalHours * hourlyRate;
-    
-    // Update the summary display
-    $(`.member-time-cost-${userId}`).text(formatCurrency(totalCost.toFixed(2)));
-    $(`.member-time-hours-${userId}`).text(totalHours);
-}
+    function highlightOverlappingBars() {
+        const bars = $('.gantt-bar-container .draggable');
+        bars.removeClass('alert-danger'); // Remove previous highlights
 
-// Add event listener for input changes
-$(document).on('input change', '.member-time-input', function() {
-    const userId = $(this).data('user-id');
-    const projectId = $(this).data('project-id');
-    updateMemberTimeSummary(userId, projectId);
+        bars.each(function(i, barA) {
+            const $barA = $(barA);
+            const startA = new Date($barA.attr('data-start-date'));
+            const endA = new Date($barA.attr('data-end-date'));
+
+            bars.each(function(j, barB) {
+                if (i === j) return; // Skip self
+                const $barB = $(barB);
+                const startB = new Date($barB.attr('data-start-date'));
+                const endB = new Date($barB.attr('data-end-date'));
+
+                if (isOverlap(startA, endA, startB, endB)) {
+                    $barA.addClass('alert-danger');
+                }
+            });
+        });
+    }
+
+    // Call after bars are rendered and aligned
+    highlightOverlappingBars();
 });
 </script>
 
-<script type="text/javascript">
-        // DHTMLX Gantt Configuration
-        const EXACT_DAY_WIDTH = 24;
-        
-        // Find earliest task start date for DHTMLX Gantt
-        const ganttTaskDates = [
-            @foreach ($data->tasks as $item)
-                @if ($item->start_date != null)
-                    "{{ \Carbon\Carbon::parse($item->start_date)->format('Y-m-d') }}",
-                @endif
-            @endforeach
-        ].filter(date => date).map(date => new Date(date));
-        
-        const ganttEarliestTaskDate = ganttTaskDates.length > 0 ? new Date(Math.min(...ganttTaskDates)) : new Date('{{ $data->start_date }}');
-        
-        // Set calendar start date to 1 year before earliest task date
-        const calendarStartDate = new Date(ganttEarliestTaskDate);
-        calendarStartDate.setFullYear(calendarStartDate.getFullYear() - 1);
-        
-        // Set end date to 10 years after project end
-        const projectEndDate = new Date('{{ $data->end_date }}');
-        const calendarEndDate = new Date(projectEndDate);
-        calendarEndDate.setFullYear(calendarEndDate.getFullYear() + 10);
-        
-        console.log('DHTMLX Gantt - Earliest task:', ganttEarliestTaskDate.toDateString(), '| Calendar start:', calendarStartDate.toDateString());
-        
-        // Configure date format
-        gantt.config.date_format = "%Y-%m-%d";
-        
-        // Move scrollbar outside the chart
-        gantt.config.layout = {
-            css: "gantt_container",
-            rows: [
-                {
-                    cols: [
-                        {view: "timeline", scrollX: "scrollHor", scrollY: "scrollVer"},
-                        {view: "scrollbar", id: "scrollVer", group:"vertical"}
-                    ]
-                },
-                {view: "scrollbar", id: "scrollHor", group:"horizontal"}
-            ]
-        };
-        
-        // Timeline configuration - FORCE 24px per day
-gantt.config.scales = [
-    { unit: "month", step: 1, format: "%F", height: 32 }, // Top row: Month
-    { 
-        unit: "day", 
-        step: 1, 
-        format: "%d", 
-        height: 20,
-        css: function(date) {
-            const dayOfWeek = date.getDay();
-            if (dayOfWeek === 0 || dayOfWeek === 6) {
-                return "gantt-weekend-cell";
+<script>
+    // --- Improved Robust Auto-scroll for Gantt drag/resize ---
+function enableAutoScrollOnDragResize() {
+    let autoScrollInterval = null;
+    let lastDirection = null;
+    let isBarActive = false;
+    let $activeScrollContainer = null;
+    let $activeBar = null;
+    let lastMouseX = null;
+    let lastScrollLeft = null;
+    let isResizing = false;
+    let activeDragEvent = null;
+    const scrollSpeed = 30; // px per interval
+    const edgeThreshold = 60; // px from edge to trigger scroll
+
+    // Detect if a bar is being dragged or resized
+    $(document).on('mousedown touchstart', '.draggable, .ui-resizable-handle', function(e) {
+        isBarActive = true;
+        $activeBar = $(e.target).closest('.draggable');
+        $activeScrollContainer = $activeBar.closest('.scroll-container');
+        isResizing = $(e.target).hasClass('ui-resizable-handle');
+        if (e.type === 'touchstart') {
+            lastMouseX = e.originalEvent.touches[0].clientX;
+        } else {
+            lastMouseX = e.pageX;
+        }
+        lastScrollLeft = $activeScrollContainer.scrollLeft();
+    });
+    $(document).on('mouseup touchend', function() {
+        isBarActive = false;
+        stopAutoScroll();
+        $activeScrollContainer = null;
+        $activeBar = null;
+        lastMouseX = null;
+        lastScrollLeft = null;
+        isResizing = false;
+        activeDragEvent = null;
+    });
+
+    // Patch jQuery UI drag/resize to expose the current event
+    $(document).on('dragstart', '.draggable', function(event, ui) {
+        activeDragEvent = ui;
+    });
+    $(document).on('resizestart', '.draggable', function(event, ui) {
+        activeDragEvent = ui;
+    });
+
+    function triggerSyntheticMove(newX) {
+        if (!isBarActive) return;
+        let event;
+        if ('ontouchstart' in window) {
+            event = new TouchEvent('touchmove', {
+                touches: [new Touch({
+                    identifier: Date.now(),
+                    target: $activeBar[0],
+                    clientX: newX,
+                    clientY: 0
+                })],
+                bubbles: true,
+                cancelable: true
+            });
+        } else {
+            event = new MouseEvent('mousemove', {
+                clientX: newX,
+                bubbles: true,
+                cancelable: true
+            });
+        }
+        document.dispatchEvent(event);
+    }
+
+    function startAutoScroll(direction) {
+        if (autoScrollInterval && lastDirection === direction) return;
+        stopAutoScroll();
+        lastDirection = direction;
+        autoScrollInterval = setInterval(() => {
+            if (!$activeScrollContainer || !$activeBar) return;
+            let prevScrollLeft = $activeScrollContainer.scrollLeft();
+            if (direction === 'left') {
+                $activeScrollContainer.scrollLeft(prevScrollLeft - scrollSpeed);
+            } else if (direction === 'right') {
+                $activeScrollContainer.scrollLeft(prevScrollLeft + scrollSpeed);
             }
-            return "gantt-weekday-cell";
+            let newScrollLeft = $activeScrollContainer.scrollLeft();
+            let scrollDelta = newScrollLeft - prevScrollLeft;
+            if (scrollDelta !== 0 && lastMouseX !== null) {
+                // Use jQuery UI's API to update the bar position if possible
+                if (activeDragEvent && activeDragEvent.position) {
+                    activeDragEvent.position.left += scrollDelta;
+                    $activeBar.css('left', activeDragEvent.position.left + 'px');
+                } else {
+                    // fallback
+                    let barOffset = $activeBar.position().left;
+                    $activeBar.css('left', (barOffset + scrollDelta) + 'px');
+                }
+                triggerSyntheticMove(lastMouseX + scrollDelta);
+            }
+        }, 20);
+    }
+    function stopAutoScroll() {
+        if (autoScrollInterval) {
+            clearInterval(autoScrollInterval);
+            autoScrollInterval = null;
+            lastDirection = null;
         }
     }
-];
 
-gantt.config.scale_height = 52;  // Enough height for two rows
-gantt.config.min_column_width = 24;
-gantt.config.max_column_width = 24;
-        
-        // Hide the grid completely
-        gantt.config.grid_width = 0;
-        
-        // Task bar sizing
-        gantt.config.bar_height = 20;
-        gantt.config.row_height = 29.5;
-        
-        // Enable interactions
-        gantt.config.drag_move = true;
-        gantt.config.drag_resize = true;
-        gantt.config.drag_progress = false;
-        gantt.config.readonly = false;
-        
-        // Disable task linking/connections
-        gantt.config.drag_links = false;
-        gantt.config.show_links = false;
-        
-        // Set start date to match calendar
-        gantt.config.start_date = calendarStartDate;
-        gantt.config.end_date = calendarEndDate;
-        
-        // Override task positioning template
-        gantt.templates.task_position = function(start, end, task) {
-            const startDate = new Date(start);
-            const endDate = new Date(end);
-            
-            const daysFromCalendarStart = Math.floor((startDate - calendarStartDate) / (1000 * 60 * 60 * 24)) + 1;
-            const taskDurationDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-            
-            const left = daysFromCalendarStart * EXACT_DAY_WIDTH;
-            const width = taskDurationDays * EXACT_DAY_WIDTH;
-            
-            return {
-                left: left,
-                width: width
-            };
-        };
-        
-        // Initialize gantt
-        gantt.init("gantt_here");
-        
-        // Load tasks from Laravel data
-        const ganttTasks = {
-            data: [
-                @foreach ($data->tasks as $key => $item)
-                @if ($item->start_date != null && $item->end_date != null)
-                {
-                    id: {{ $item->id }},
-                    text: "T{{ $key + 1 }}",
-                    start_date: "{{ \Carbon\Carbon::parse($item->start_date)->format('Y-m-d') }}",
-                    end_date: "{{ \Carbon\Carbon::parse($item->end_date)->format('Y-m-d') }}",
-                    duration: {{ \Carbon\Carbon::parse($item->start_date)->diffInDays(\Carbon\Carbon::parse($item->end_date)) + 1 }},
-                    progress: 0
-                },
-                @endif
-                @endforeach
-            ]
-        };
-        
-        // Parse and load the tasks
-        gantt.parse(ganttTasks);
-        
-        console.log('DHTMLX Gantt initialized with', ganttTasks.data.length, 'tasks');
-        console.log('Tasks data:', ganttTasks.data);
-
-        // Provide missing applyWeekendStyling referenced after renders
-        function applyWeekendStyling(){
-            // Weekend cells already styled via templates; keep as safe no-op.
-            // If custom styling needed later, add here.
-            // console.log('[applyWeekendStyling] executed');
+    // For drag/resize (mouse and touch)
+    $(document).on('mousemove touchmove', function(e) {
+        if (!isBarActive || !$activeScrollContainer) { stopAutoScroll(); return; }
+        let mouseX;
+        if (e.type === 'touchmove') {
+            mouseX = e.originalEvent.touches[0].clientX;
+        } else {
+            mouseX = e.pageX;
         }
-
-        // ---------------- Overlap Detection ----------------
-        // Returns true if two ranges overlap (inclusive)
-        function rangesOverlap(aStart, aEnd, bStart, bEnd){
-            return aStart < bEnd && bStart < aEnd; // half-open logic
+        lastMouseX = mouseX;
+        const containerOffset = $activeScrollContainer.offset();
+        if (!containerOffset) return;
+        const leftEdge = containerOffset.left;
+        const rightEdge = leftEdge + $activeScrollContainer.outerWidth();
+        if (mouseX < leftEdge + edgeThreshold) {
+            startAutoScroll('left');
+        } else if (mouseX > rightEdge - edgeThreshold) {
+            startAutoScroll('right');
+        } else {
+            stopAutoScroll();
         }
+    });
+}
 
-        function detectAndMarkOverlaps(){
-            const tasks = [];
-            gantt.eachTask(function(t){
-                tasks.push({ id: t.id, start: t.start_date, end: t.end_date });
-            });
-            tasks.sort((a,b)=> a.start - b.start);
-            const overlapping = new Set();
-            for(let i=0;i<tasks.length;i++){
-                for(let j=i+1;j<tasks.length;j++){
-                    if(tasks[j].start >= tasks[i].end){
-                        break; // no more overlaps possible with tasks[i]
-                    }
-                    if(rangesOverlap(tasks[i].start, tasks[i].end, tasks[j].start, tasks[j].end)){
-                        overlapping.add(tasks[i].id);
-                        overlapping.add(tasks[j].id);
-                    }
-                }
-            }
-            window.ganttOverlappingIds = overlapping;
-            console.log('[Overlap] overlapping task ids:', Array.from(overlapping));
-            gantt.render();
-        }
-
-        // Template to apply overlap class
-        gantt.templates.task_class = function(start, end, task){
-            if(window.ganttOverlappingIds && window.ganttOverlappingIds.has(task.id)){
-                return 'task-overlap';
-            }
-            return '';
-        };
-        // Initial detection after load
-        detectAndMarkOverlaps();
-        // ---------------- End Overlap Detection ----------------
-
-        // ---------------- Undo / Redo Implementation ----------------
-        // Stacks to keep historical snapshots of all task dates
-        let undoStack = [];
-        let redoStack = [];
-
-        // Date helpers
-        const dateToStr = gantt.date.date_to_str("%Y-%m-%d");
-        const strToDate = gantt.date.str_to_date("%Y-%m-%d");
-
-        // Capture current state of ALL task start/end dates
-        function captureAllTasks() {
-            const snapshot = [];
-            gantt.eachTask(function(task){
-                snapshot.push({
-                    id: task.id,
-                    start_date: dateToStr(task.start_date),
-                    end_date: dateToStr(task.end_date)
-                });
-            });
-            return snapshot;
-        }
-
-        // Apply a previously captured snapshot to the gantt (restore dates)
-        function applySnapshot(snapshot) {
-            snapshot.forEach(function(item){
-                if (gantt.isTaskExists(item.id)) {
-                    const task = gantt.getTask(item.id);
-                    task.start_date = strToDate(item.start_date);
-                    task.end_date = strToDate(item.end_date);
-                    task.duration = Math.ceil((task.end_date - task.start_date) / (1000 * 60 * 60 * 24));
-                    gantt.updateTask(task.id);
-                }
-            });
-            gantt.render();
-            detectAndMarkOverlaps();
-            // Optionally persist restored dates to server (batch)
-            snapshot.forEach(function(item){
-                $.ajax({
-                    url: '/projects/save-dates',
-                    type: 'POST',
-                    data: {
-                        stoppedStartDate: item.start_date,
-                        stoppedEndDate: item.end_date,
-                        task_id: item.id,
-                        _token: '{{ csrf_token() }}'
-                    }
-                });
-                $(`.start-${item.id}`).html(formatDateForDisplay(item.start_date));
-            });
-        }
-
-        function updateUndoRedoButtons(){
-            const undoDisabled = undoStack.length === 0;
-            const redoDisabled = redoStack.length === 0;
-            $('#undoBtn').prop('disabled', undoDisabled);
-            $('#redoBtn').prop('disabled', redoDisabled);
-            // Debug logs
-            console.log('[Undo/Redo] Stack sizes => undo:', undoStack.length, 'redo:', redoStack.length);
-            console.log('[Undo/Redo] Buttons => undoDisabled:', undoDisabled, 'redoDisabled:', redoDisabled);
-        }
-
-        // Initialize button states
-        updateUndoRedoButtons();
-
-        // Before any drag (move/resize/progress) store snapshot for undo
-        gantt.attachEvent("onBeforeTaskDrag", function(id, mode, e){
-            // Push current state BEFORE modification
-            undoStack.push(captureAllTasks());
-            // Any new change invalidates redo history
-            redoStack = [];
-            updateUndoRedoButtons();
-            return true;
-        });
-
-        // Undo button click
-        $('#undoBtn').on('click', function(){
-            if (undoStack.length === 0) return;
-            // Current becomes a redo candidate
-            redoStack.push(captureAllTasks());
-            const previous = undoStack.pop();
-            applySnapshot(previous);
-            updateUndoRedoButtons();
-            console.log('[Undo] Applied previous snapshot');
-        });
-
-        // Redo button click
-        $('#redoBtn').on('click', function(){
-            if (redoStack.length === 0) return;
-            // Current goes back to undo stack
-            undoStack.push(captureAllTasks());
-            const nextState = redoStack.pop();
-            applySnapshot(nextState);
-            updateUndoRedoButtons();
-            console.log('[Redo] Re-applied next snapshot');
-        });
-        // ---------------- End Undo / Redo Implementation ----------------
-        
-        // Scroll gantt to 1 week before today on load
-        setTimeout(function() {
-            const today = new Date();
-            const oneWeekBefore = new Date(today);
-            oneWeekBefore.setDate(oneWeekBefore.getDate() - 7);
-            const daysFromStart = Math.floor((oneWeekBefore - calendarStartDate) / (1000 * 60 * 60 * 24));
-            const scrollPosition = daysFromStart * EXACT_DAY_WIDTH;
-            
-            gantt.scrollTo(Math.max(0, scrollPosition), null);
-            console.log('Gantt scrolled to 1 week before today:', oneWeekBefore.toDateString());
-            
-            // Add red vertical line for today's date using CSS
-            const todayDaysFromStart = Math.floor((today - calendarStartDate) / (1000 * 60 * 60 * 24));
-            const todayPosition = todayDaysFromStart * EXACT_DAY_WIDTH;
-            
-            const ganttTask = document.querySelector('.gantt_task');
-            if (ganttTask) {
-                const existingLine = ganttTask.querySelector('.today-marker-line');
-                if (existingLine) existingLine.remove();
-                
-                const todayLine = document.createElement('div');
-                todayLine.className = 'today-marker-line';
-                todayLine.style.position = 'absolute';
-                todayLine.style.left = todayPosition + 'px';
-                todayLine.style.top = '52px';
-                todayLine.style.width = '2px';
-                todayLine.style.height = '100%';
-                todayLine.style.backgroundColor = '#ff0000';
-                todayLine.style.zIndex = '10';
-                todayLine.style.pointerEvents = 'none';
-                ganttTask.appendChild(todayLine);
-            }
-        }, 200);
-        
-        // Re-apply after gantt renders (scrolling, etc.)
-        let initialRenderHandled = false;
-        gantt.attachEvent("onGanttRender", function() {
-            setTimeout(applyWeekendStyling, 10);
-            if(!initialRenderHandled && window.AppLoader){
-                // Hide skeleton once the first render occurs
-                setTimeout(function(){ window.AppLoader.hide && window.AppLoader.hide(); }, 80);
-                initialRenderHandled = true;
-            }
-            
-            // Re-add today line after render
-            setTimeout(function() {
-                const today = new Date();
-                const todayDaysFromStart = Math.floor((today - calendarStartDate) / (1000 * 60 * 60 * 24));
-                const todayPosition = todayDaysFromStart * EXACT_DAY_WIDTH;
-                
-                const ganttTask = document.querySelector('.gantt_task');
-                if (ganttTask) {
-                    const existingLine = ganttTask.querySelector('.today-marker-line');
-                    if (existingLine) existingLine.remove();
-                    
-                    const todayLine = document.createElement('div');
-                    todayLine.className = 'today-marker-line';
-                    todayLine.style.position = 'absolute';
-                    todayLine.style.left = todayPosition + 'px';
-                    todayLine.style.top = '52px';
-                    todayLine.style.width = '2px';
-                    todayLine.style.height = '100%';
-                    todayLine.style.backgroundColor = '#ff0000';
-                    todayLine.style.zIndex = '10';
-                    todayLine.style.pointerEvents = 'none';
-                    ganttTask.appendChild(todayLine);
-                }
-            }, 50);
-            
-            return true;
-        });
-        
-        // Simple smooth scroll synchronization - both containers sync instantly
-        let isGanttScrolling = false;
-        let isBottomScrolling = false;
-        let bottomScrollStopTimeout;
-        let ganttScrollStopTimeout;
-        
-        // Recalibration function - ensures perfect alignment after scrolling stops
-        function recalibrateScrollPosition() {
-            const bottomScrollPos = $('.scroll-container').scrollLeft();
-            const ganttScrollPos = gantt.getScrollState().x;
-            if (Math.abs(bottomScrollPos - ganttScrollPos) > 1) {
-                isGanttScrolling = true;
-                $('.scroll-container').scrollLeft(ganttScrollPos);
-                setTimeout(() => { isGanttScrolling = false; }, 10);
-            }
-        }
-        
-        // When gantt scrolls, instantly sync bottom calendar
-        gantt.attachEvent("onGanttScroll", function(left, top) {
-            if (isBottomScrolling) return true; // Prevent feedback loop
-            isGanttScrolling = true;
-            $('.scroll-container').scrollLeft(left);
-            setTimeout(() => { isGanttScrolling = false; }, 10);
-            
-            // Recalibrate after scrolling stops
-            clearTimeout(ganttScrollStopTimeout);
-            ganttScrollStopTimeout = setTimeout(recalibrateScrollPosition, 300);
-            
-            return true;
-        });
-        
-        // When bottom calendar scrolls, instantly sync gantt
-        $('.scroll-container').on('scroll', function() {
-            if (isGanttScrolling) return; // Prevent feedback loop
-            isBottomScrolling = true;
-            const scrollLeft = $(this).scrollLeft();
-            gantt.scrollTo(scrollLeft, null);
-            setTimeout(() => { isBottomScrolling = false; }, 10);
-            
-            // Recalibrate after scrolling stops
-            clearTimeout(bottomScrollStopTimeout);
-            bottomScrollStopTimeout = setTimeout(recalibrateScrollPosition, 300);
-        });
-        
-        // Mouse wheel scroll handlers - DAILY VIEW (0.8x speed)
-        $('.scroll-container').on('wheel', function(e) {
-            const deltaY = e.originalEvent.deltaY;
-            const deltaX = e.originalEvent.deltaX;
-            
-            // If vertical scrolling is dominant, convert to horizontal
-            if (Math.abs(deltaY) > Math.abs(deltaX)) {
-                e.preventDefault();
-                const scrollAmount = deltaY * 0.8;
-                const currentScroll = $(this).scrollLeft();
-                const newScroll = currentScroll + scrollAmount;
-                $(this).scrollLeft(newScroll);
-            }
-        });
-        
-        // Gantt container wheel handler
-        const ganttContainer = document.getElementById('gantt_here');
-        if (ganttContainer) {
-            ganttContainer.addEventListener('wheel', function(e) {
-                const deltaY = e.deltaY;
-                const deltaX = e.deltaX;
-                
-                // If vertical scrolling is dominant, convert to horizontal
-                if (Math.abs(deltaY) > Math.abs(deltaX)) {
-                    e.preventDefault();
-                    const scrollAmount = deltaY * 0.8;
-                    const currentScroll = gantt.getScrollState().x;
-                    const newScroll = currentScroll + scrollAmount;
-                    gantt.scrollTo(newScroll, null);
-                }
-            }, { passive: false });
-            
-            // MutationObserver to detect when gantt re-renders the scale
-            const observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    if (mutation.target.classList.contains('gantt_scale_line')) {
-                        // Weekend styling is now handled by gantt.templates.scale_cell_class
-                        // No manual styling needed
-                    }
-                });
-            });
-            
-            observer.observe(ganttContainer, {
-                childList: true,
-                subtree: true,
-                attributes: false
-            });
-        }
-        
-        // Drag-to-scroll functionality for calendar headers (not time inputs)
-        let isDragging = false;
-        let dragStartX = 0;
-        let dragScrollLeft = 0;
-        let dragScrollContainer = null;
-        
-        // Only allow dragging on calendar headers (not on time input rows)
-        $(document).on('mousedown', '.calendar-container, .calendar-day, .month-header, .month-container', function(e) {
-            // Don't start drag if clicking on an input
-            if ($(e.target).is('input, button, a')) return;
-            
-            dragScrollContainer = $(this).closest('.scroll-container');
-            if (dragScrollContainer.length === 0) return;
-            
-            isDragging = true;
-            dragStartX = e.pageX;
-            dragScrollLeft = dragScrollContainer.scrollLeft();
-            dragScrollContainer.css('cursor', 'grabbing');
-            e.preventDefault();
-        });
-        
-        $(document).on('mousemove', function(e) {
-            if (!isDragging || !dragScrollContainer) return;
-            e.preventDefault();
-            const walk = (dragStartX - e.pageX) * 1.5; // 1.5x for more responsive drag
-            dragScrollContainer.scrollLeft(dragScrollLeft + walk);
-        });
-        
-        $(document).on('mouseup', function() {
-            if (isDragging && dragScrollContainer) {
-                dragScrollContainer.css('cursor', 'grab');
-            }
-            isDragging = false;
-            dragScrollContainer = null;
-        });
-        
-        // Event handlers for drag/resize
-        gantt.attachEvent("onAfterTaskDrag", function(id, mode, e) {
-            const task = gantt.getTask(id);
-            console.log('Task dragged:', task.text, 'New dates:', task.start_date, '->', task.end_date);
-            
-            // Save to server
-            $.ajax({
-                url: '/projects/save-dates',
-                type: 'POST',
-                data: {
-                    stoppedStartDate: gantt.date.date_to_str("%Y-%m-%d")(task.start_date),
-                    stoppedEndDate: gantt.date.date_to_str("%Y-%m-%d")(task.end_date),
-                    task_id: id,
-                    _token: '{{ csrf_token() }}'
-                },
-                success: async function(response) {
-                    console.log('✓ Task dates saved to server');
-                    $(`.start-${id}`).html(formatDateForDisplay(gantt.date.date_to_str("%Y-%m-%d")(task.start_date)));
-                    
-                    // Update project totals dynamically without page reload
-                    const project_id = {{ $project_id ?? 'null' }};
-                    if (project_id) {
-                        await updateProjectTotals(project_id);
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error saving task dates:', error);
-                }
-            });
-            // Recompute overlaps after drag or resize
-            detectAndMarkOverlaps();
-            
-            return true;
-        });
-    </script>
-
-
-
+$(function() {
+    enableAutoScrollOnDragResize();
+});
+</script>
 
 </body>
 </html>

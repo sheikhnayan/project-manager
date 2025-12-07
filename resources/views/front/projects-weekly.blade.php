@@ -403,6 +403,10 @@
             background: #fff !important;
             color: #4b5563 !important;
         }
+
+        .gantt_layout_cell{
+            border: unset !important;
+        }
     </style>
 
     <!-- Fonts -->
@@ -480,7 +484,7 @@
                                 <a href="/projects/{{ $data->id }}/v2" class="bg-green-600 text-white px-4 py-2 rounded" style="font-size: 13px; padding: 0.4rem 1rem; cursor: pointer; margin-right: 8px; background-color: #059669 !important; display: inline-flex; align-items: center; height: 34px;" title="New Clean Version">
                                     <i class="fas fa-rocket" style="margin-right: 6px;"></i> V2
                                 </a>
-                                <a class="bg-black text-white px-4 py-2 rounded" id="addMemberButton" style="font-size: 13px; padding:0.4rem 1rem; cursor: pointer; margin-right: 8px;">+  Add Member</a>
+                                <a class="bg-black text-white px-4 py-2 rounded" id="addMemberButton" style="font-size: 13px; padding:0.4rem 1rem; cursor: pointer; margin-right: 8px;">+  Add to Team</a>
                                 {{-- <a href="/projects/create" class="bg-black text-white px-4 py-2 rounded" style="font-size: 13px; padding:0.4rem 1rem;">+  Add Project</a> --}}
                     </div>
                 </div>
@@ -665,9 +669,10 @@
             const st = $('#st_date').val();
             const en = $('#en_date').val();
             
-            // Set start date to 1 year before today
-            const calendarStartDate = new Date();
-            calendarStartDate.setFullYear(calendarStartDate.getFullYear() - 1);
+            // Set start date to 1 year before today (make it global for home button)
+            window.calendarStartDate = new Date();
+            window.calendarStartDate.setFullYear(window.calendarStartDate.getFullYear() - 1);
+            const calendarStartDate = window.calendarStartDate;
             
             // Set end date to 10 years after project end date
             const calendarEndDate = new Date(en);
@@ -948,10 +953,16 @@
                                     task_id: taskId,
                                     _token: '{{ csrf_token() }}'
                                 },
-                                success: function (response) {
+                                success: async function (response) {
                                     $task = $('.gantt-bar-container [data-task-id="'+response.data.id+'"]')
                                     $task.removeClass('alert-danger')
                                     $('.start-'+taskId).html(formatDateForDisplay(stoppedStartDateFormatted));
+                                    
+                                    // Update project totals dynamically without page reload
+                                    const project_id = {{ $project_id ?? 'null' }};
+                                    if (project_id) {
+                                        await updateProjectTotals(project_id);
+                                    }
                                 }
                             });
                         }
@@ -1061,38 +1072,66 @@
 
 
 <script>
-    $(document).ready(function () {
-        // Drag-to-scroll functionality for each scrollable container
-        $('.scroll-container').each(function () {
-            const scrollContainer = $('.scroll-container'); // Target the specific scroll-container
-            let isDragging = false;
-            let startX;
-            let scrollLeft;
-
-            // Mouse down event to start dragging
-            scrollContainer.on('mousedown', function (e) {
-                isDragging = true;
-                startX = e.pageX - scrollContainer.offset().left;
-                scrollLeft = scrollContainer.scrollLeft();
-                scrollContainer.css('cursor', 'grabbing'); // Change cursor to grabbing
-            });
-
-            // Mouse move event to handle scrolling
-            scrollContainer.on('mousemove', function (e) {
-                if (!isDragging) return;
-                e.preventDefault();
-                const x = e.pageX - scrollContainer.offset().left;
-                const walk = (x - startX) * 1; // Adjust the multiplier for faster/slower scrolling
-                scrollContainer.scrollLeft(scrollLeft - walk);
-            });
-
-            // Mouse up or leave event to stop dragging
-            scrollContainer.on('mouseup mouseleave', function () {
-                isDragging = false;
-                scrollContainer.css('cursor', 'grab'); // Reset cursor to grab
-            });
-        });
+$(document).ready(function() {
+    // Drag-to-scroll functionality for calendar headers (not time inputs)
+    let isDragging = false;
+    let dragStartX = 0;
+    let dragScrollLeft = 0;
+    let dragScrollContainer = null;
+    
+    // Only allow dragging on calendar headers (not on time input rows)
+    $(document).on('mousedown', '.calendar-container, .calendar-day, .month-header, .month-container, .week-block', function(e) {
+        // Don't start drag if clicking on an input
+        if ($(e.target).is('input, button, a')) return;
+        
+        dragScrollContainer = $(this).closest('.scroll-container');
+        if (dragScrollContainer.length === 0) return;
+        
+        isDragging = true;
+        dragStartX = e.pageX;
+        dragScrollLeft = dragScrollContainer.scrollLeft();
+        dragScrollContainer.css('cursor', 'grabbing');
+        e.preventDefault();
     });
+    
+    $(document).on('mousemove', function(e) {
+        if (!isDragging || !dragScrollContainer) return;
+        e.preventDefault();
+        const walk = (dragStartX - e.pageX) * 1.5; // 1.5x for more responsive drag
+        dragScrollContainer.scrollLeft(dragScrollLeft + walk);
+    });
+    
+    $(document).on('mouseup', function() {
+        if (isDragging && dragScrollContainer) {
+            dragScrollContainer.css('cursor', 'grab');
+        }
+        isDragging = false;
+        dragScrollContainer = null;
+    });
+    
+    // Home button - scroll both calendars to 1 week before today
+    $('#home').on('click', function() {
+        const today = new Date();
+        const oneWeekBefore = new Date(today);
+        oneWeekBefore.setDate(oneWeekBefore.getDate() - 7);
+        
+        // Use the actual calendar start date
+        const calendarStart = window.calendarStartDate || new Date();
+        
+        // Calculate scroll position based on weeks from calendar start
+        const daysFromStart = Math.floor((oneWeekBefore - calendarStart) / (1000 * 60 * 60 * 24));
+        const weeksFromStart = Math.floor(daysFromStart / 7);
+        const scrollPosition = weeksFromStart * 32; // 32px per week
+        
+        console.log('Scrolling to 1 week before today:', oneWeekBefore.toDateString());
+        console.log('Weeks from calendar start:', weeksFromStart, '| Scroll position:', scrollPosition);
+        
+        // Scroll both calendars smoothly
+        $('.scroll-container').animate({
+            scrollLeft: scrollPosition
+        }, 400);
+    });
+});
 </script>
 
 <script>
@@ -1134,17 +1173,13 @@
                     if (response.ok) {
                         // console.log('Data saved successfully.');
 
-                        const responseData = await response.json(); // parse the JSON
+                        const responseData = await response.json();
 
                         $('.user-hour-'+user_id).html(responseData.data.total);
-
                         $('.user-cost-'+user_id).html(responseData.data.cost);
 
-                        $('#fetch').load('/projects/reload-data/' + project_id, function() {
-                            setTimeout(() => {
-                                initProgressRings();
-                            }, 10);
-                        });
+                        // Update project totals dynamically without page reload
+                        await updateProjectTotals(project_id);
                     } else {
                         console.error('Failed to save data:', response.statusText);
                     }
@@ -1193,17 +1228,13 @@
                 if (response.ok) {
                     // console.log('Data saved successfully.');
 
-                    const responseData = await response.json(); // parse the JSON
+                    const responseData = await response.json();
 
                     $('.user-hour-'+user_id).html(responseData.data.total);
-
                     $('.user-cost-'+user_id).html(responseData.data.cost);
 
-                    $('#fetch').load('/projects/reload-data/' + project_id, function() {
-                            setTimeout(() => {
-                                initProgressRings();
-                            }, 10);
-                        });
+                    // Update project totals dynamically without page reload
+                    await updateProjectTotals(project_id);
                 } else {
                     console.error('Failed to save data:', response.statusText);
                 }

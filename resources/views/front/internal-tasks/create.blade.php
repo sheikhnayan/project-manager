@@ -17,8 +17,32 @@
     <!-- Lucide Icons -->
     <script src='https://unpkg.com/lucide@latest'></script>
 
+    <!-- jQuery -->
+    <script src='https://code.jquery.com/jquery-3.6.0.min.js'></script>
+
     <!-- Custom CSS -->
     <link rel='stylesheet' href='{{asset('css/styles.css')}}'>
+
+    <style>
+        /* User selector styles */
+        .user-selector-panel {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .user-checkbox:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .assigned-user-row {
+            transition: background-color 0.2s;
+        }
+        
+        .assigned-user-row:hover {
+            background-color: #f9fafb;
+        }
+    </style>
 </head>
 <body class="bg-gray-50">
     @include('front.nav')
@@ -66,59 +90,20 @@
 
                         <!-- Department -->
                         <div>
-                            <label for="department" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label for="department_id" class="block text-sm font-medium text-gray-700 mb-2">
                                 Department <span class="text-red-500">*</span>
                             </label>
-                            <select name="department" 
-                                    id="department" 
+                            <select name="department_id" 
+                                    id="department_id" 
                                     required 
                                     class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black">
                                 <option value="">Select Department</option>
                                 @foreach($departments as $department)
-                                    <option value="{{ $department->name }}" {{ old('department') == $department->name ? 'selected' : '' }}>
+                                    <option value="{{ $department->id }}" {{ (old('department_id') ?? ($selectedDepartment == $department->name ? $department->id : '')) == $department->id ? 'selected' : '' }}>
                                         {{ $department->name }}
                                     </option>
                                 @endforeach
                             </select>
-                        </div>
-
-                        <!-- Category -->
-                        <div>
-                            <label for="category" class="block text-sm font-medium text-gray-700 mb-2">
-                                Category <span class="text-red-500">*</span>
-                            </label>
-                            <select name="category" 
-                                    id="category" 
-                                    required 
-                                    class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black">
-                                <option value="">Select Category</option>
-                                @foreach($categories as $category)
-                                    <option value="{{ $category->name }}" {{ old('category') == $category->name ? 'selected' : '' }}>
-                                        {{ $category->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <!-- Hourly Rate -->
-                        <div>
-                            <label for="hourly_rate" class="block text-sm font-medium text-gray-700 mb-2">
-                                Hourly Rate (Optional)
-                            </label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-500 sm:text-sm">$</span>
-                                </div>
-                                <input type="number" 
-                                       name="hourly_rate" 
-                                       id="hourly_rate" 
-                                       value="{{ old('hourly_rate') }}"
-                                       step="0.01"
-                                       min="0"
-                                       max="9999.99"
-                                       class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black pl-7"
-                                       placeholder="0.00">
-                            </div>
                         </div>
 
                         <!-- Max Hours Per Day -->
@@ -147,6 +132,75 @@
                                       rows="3"
                                       class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
                                       placeholder="Describe what this internal task is for...">{{ old('description') }}</textarea>
+                        </div>
+
+                        <!-- Assigned Users Section -->
+                        <div class="md:col-span-2">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-base font-semibold text-gray-900">Assign Users (Optional)</h3>
+                                <button type="button" onclick="toggleUserSelector()" class="text-sm text-blue-600 hover:text-blue-800 flex items-center space-x-1">
+                                    <i data-lucide="user-plus" class="w-4 h-4"></i>
+                                    <span>Add Users</span>
+                                </button>
+                            </div>
+                            
+                            <!-- User Selector Panel (hidden by default) -->
+                            <div id="userSelector" class="hidden mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <div class="flex justify-between items-center mb-3">
+                                    <h4 class="text-sm font-medium text-gray-700">Select Users</h4>
+                                    <button style="color:#000;" type="button" onclick="toggleSelectAll()" class="text-xs text-blue-600 hover:text-blue-800">
+                                        Select All
+                                    </button>
+                                </div>
+                                
+                                <div class="user-selector-panel space-y-2">
+                                    @php
+                                        $user = auth()->user();
+                                        if ($user->role_id == 8) {
+                                            $companyUsers = \App\Models\User::all();
+                                        } else {
+                                            $companyUsers = \App\Models\User::where('company_id', $user->company_id)->get();
+                                        }
+                                    @endphp
+                                    
+                                    @foreach($companyUsers as $companyUser)
+                                        <label class="flex items-center p-2 hover:bg-white rounded cursor-pointer">
+                                            <input type="checkbox" 
+                                                   class="user-checkbox rounded border-gray-300 text-black focus:ring-black"
+                                                   value="{{ $companyUser->id }}"
+                                                   data-user-name="{{ $companyUser->name }}"
+                                                   data-user-email="{{ $companyUser->email }}"
+                                                   onchange="toggleUserSelection({{ $companyUser->id }}, '{{ addslashes($companyUser->name) }}', '{{ $companyUser->email }}')">
+                                            <div class="ml-3 flex items-center space-x-2">
+                                                <div class="w-8 h-8 rounded-full bg-gray-700 text-white flex items-center justify-center text-xs font-medium">
+                                                    {{ strtoupper(substr($companyUser->name, 0, 2)) }}
+                                                </div>
+                                                <div>
+                                                    <div class="text-sm font-medium text-gray-900">{{ $companyUser->name }}</div>
+                                                    <div class="text-xs text-gray-500">{{ $companyUser->email }}</div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    @endforeach
+                                </div>
+                                
+                                <div class="mt-3 flex justify-end space-x-2">
+                                    <button type="button" onclick="toggleUserSelector()" class="text-sm text-gray-600 hover:text-gray-800 px-3 py-1">
+                                        Cancel
+                                    </button>
+                                    <button type="button" onclick="addSelectedUsers()" class="text-sm bg-black text-white px-4 py-1 rounded hover:bg-gray-800">
+                                        Add Selected
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Display Assigned Users -->
+                            <div id="assignedUsersList" class="space-y-2">
+                                <!-- Assigned users will be displayed here -->
+                            </div>
+                            
+                            <!-- Hidden input to store assigned user IDs -->
+                            <input type="hidden" name="assigned_users" id="assignedUsers" value="">
                         </div>
 
                         <!-- Settings -->
@@ -213,6 +267,108 @@
                 dropdown.classList.remove('show');
             }
         });
+
+        // User assignment functionality
+        let selectedUsers = {};
+        let assignedUsers = {};
+
+        function toggleUserSelector() {
+            const selector = document.getElementById('userSelector');
+            selector.classList.toggle('hidden');
+            if (!selector.classList.contains('hidden')) {
+                lucide.createIcons();
+            }
+        }
+
+        function toggleSelectAll() {
+            const checkboxes = document.querySelectorAll('.user-checkbox:not(:disabled)');
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = !allChecked;
+                const userId = parseInt(checkbox.value);
+                const userName = checkbox.dataset.userName;
+                const userEmail = checkbox.dataset.userEmail;
+                
+                if (checkbox.checked && !assignedUsers[userId]) {
+                    selectedUsers[userId] = { name: userName, email: userEmail };
+                } else if (!checkbox.checked) {
+                    delete selectedUsers[userId];
+                }
+            });
+        }
+
+        function toggleUserSelection(userId, userName, userEmail) {
+            const checkbox = document.querySelector(`.user-checkbox[value="${userId}"]`);
+            
+            if (checkbox.checked && !assignedUsers[userId]) {
+                selectedUsers[userId] = { name: userName, email: userEmail };
+            } else {
+                delete selectedUsers[userId];
+            }
+        }
+
+        function addSelectedUsers() {
+            Object.keys(selectedUsers).forEach(userId => {
+                if (!assignedUsers[userId]) {
+                    assignedUsers[userId] = selectedUsers[userId];
+                    addAssignedUserRow(userId, selectedUsers[userId]);
+                }
+            });
+            
+            selectedUsers = {};
+            document.querySelectorAll('.user-checkbox').forEach(cb => cb.checked = false);
+            toggleUserSelector();
+            updateAssignedUsers();
+        }
+
+        function addAssignedUserRow(userId, user) {
+            const listContainer = document.getElementById('assignedUsersList');
+            
+            const userRow = document.createElement('div');
+            userRow.className = 'assigned-user-row flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg';
+            userRow.dataset.userId = userId;
+            
+            userRow.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-gray-700 text-white flex items-center justify-center text-xs font-medium">
+                        ${user.name.substring(0, 2).toUpperCase()}
+                    </div>
+                    <div>
+                        <div class="text-sm font-medium text-gray-900">${user.name}</div>
+                        <div class="text-xs text-gray-500">${user.email}</div>
+                    </div>
+                </div>
+                <button type="button" 
+                        onclick="removeAssignedUser(this, ${userId})" 
+                        class="remove-user-btn text-red-600 hover:text-red-800 p-1">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            `;
+            
+            listContainer.appendChild(userRow);
+            lucide.createIcons();
+            
+            // Disable checkbox in selector
+            const checkbox = document.querySelector(`.user-checkbox[value="${userId}"]`);
+            if (checkbox) checkbox.disabled = true;
+        }
+
+        function removeAssignedUser(button, userId) {
+            delete assignedUsers[userId];
+            button.closest('.assigned-user-row').remove();
+            
+            // Re-enable checkbox in selector
+            const checkbox = document.querySelector(`.user-checkbox[value="${userId}"]`);
+            if (checkbox) checkbox.disabled = false;
+            
+            updateAssignedUsers();
+        }
+
+        function updateAssignedUsers() {
+            const userIds = Object.keys(assignedUsers).join(',');
+            document.getElementById('assignedUsers').value = userIds;
+        }
     </script>
 </body>
 </html>

@@ -42,7 +42,7 @@ class Department extends Model
      */
     public function internalTasks()
     {
-        return $this->hasMany(InternalTask::class, 'department', 'name');
+        return $this->hasMany(InternalTask::class, 'department', 'id');
     }
 
     /**

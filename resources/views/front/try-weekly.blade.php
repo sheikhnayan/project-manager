@@ -2164,6 +2164,20 @@ $(document).on('input change', '.member-time-input', function() {
         // Configure date format
         gantt.config.date_format = "%Y-%m-%d";
         
+        // Move scrollbar outside the chart
+        gantt.config.layout = {
+            css: "gantt_container",
+            rows: [
+                {
+                    cols: [
+                        {view: "timeline", scrollX: "scrollHor", scrollY: "scrollVer"},
+                        {view: "scrollbar", id: "scrollVer", group:"vertical"}
+                    ]
+                },
+                {view: "scrollbar", id: "scrollHor", group:"horizontal"}
+            ]
+        };
+        
         // Timeline configuration - WEEKLY VIEW (Month + Week numbers at 24px each)
 gantt.config.scales = [
     { unit: "month", step: 1, format: "%F %Y", height: 32 }, // Top row: Month Year
@@ -2491,6 +2505,13 @@ gantt.config.max_column_width = 32;
                 }, 50);
             }, 0);
             
+            // Trigger recalibration after gantt scrollbar drag stops (300ms)
+            clearTimeout(ganttScrollStopTimeout);
+            ganttScrollStopTimeout = setTimeout(function() {
+                console.log('[Gantt Scrollbar] Scrollbar drag stopped, recalibrating...');
+                recalibrateScrollPosition();
+            }, 300);
+            
             return true;
         });
         
@@ -2512,6 +2533,13 @@ gantt.config.max_column_width = 32;
                     syncInProgress = false;
                 }, 50);
             }, 0);
+            
+            // Trigger recalibration after scrollbar drag stops (300ms)
+            clearTimeout(bottomScrollStopTimeout);
+            bottomScrollStopTimeout = setTimeout(function() {
+                console.log('[Bottom Scrollbar] Scrollbar drag stopped, recalibrating...');
+                recalibrateScrollPosition();
+            }, 300);
         });
         
         // Recalibration timers for when scroll stops

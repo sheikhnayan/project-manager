@@ -12,7 +12,67 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <!-- DHTMLX Gantt -->
+    <script src="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.js"></script>
+    <link href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css" rel="stylesheet">
     <style>
+        /* DHTMLX Gantt Custom Styling to match weekly calendar */
+        .gantt_container {
+            font-family: Arial, sans-serif;
+        }
+        
+        .gantt_scale_cell {
+            border-right: 1px solid #ccc;
+        }
+        
+        .gantt_task_scale .gantt_scale_cell {
+            border-bottom: 1px solid #ccc;
+        }
+        
+        /* Month header styling */
+        .gantt_scale_line:first-child .gantt_scale_cell {
+            background-color: #000 !important;
+            color: white !important;
+            font-size: 14px;
+            font-weight: normal;
+            border-right: 1px solid #fff;
+        }
+        
+        /* Week number styling */
+        .gantt_scale_line:last-child .gantt_scale_cell {
+            background-color: #ffffff;
+            font-size: 10px;
+            width: 32px !important;
+            text-align: center;
+        }
+        
+        /* Task row styling */
+        .gantt_task_row {
+            border-bottom: 1px solid #ebebeb;
+        }
+        
+        /* Task bar styling */
+        .gantt_task_line {
+            background-color: #4A5568 !important;
+            border: 1px solid #fff !important;
+            border-radius: 5px;
+        }
+        
+        .gantt_task_content {
+            color: white;
+            font-size: 12px;
+            text-align: center;
+        }
+        
+        /* Remove default task bar borders/shadows */
+        .gantt_task_line.gantt_selected {
+            box-shadow: none;
+        }
+        
+        /* Grid column lines */
+        .gantt_task_cell {
+            border-right: 1px solid #ebebeb;
+        }
 
         .sss .task-header{
             padding: 14px;
@@ -394,29 +454,7 @@
             </div>
 
             <div class="scroll-container" style="border-top-right-radius: 4px;">
-                <div class="relative">
-                    <div class="calendar-container">
-                        <!-- JavaScript will populate the months and dates here -->
-                    </div>
-                    @php
-
-                        $height = 0;
-
-                        foreach ($data as $key => $value) {
-                                $height +=1;
-                        }
-
-                    @endphp
-                    <div class="gantt-bar-container" style="height: {{ (30*$height)}}px; margin-top: -5px;">
-                        @foreach ($data as $key => $item)
-                            @foreach ($item->tasks as $k => $it)
-                                <div class="draggable bg-blue-600 text-white text-center" data-project-id="{{ $item->id }}" data-task-id="{{ $it->id }}" data-task="task{{$key + 1}}" style="left: calc(3.225% * 5); position: absolute; top: {{ 32*$key }}px; padding: 0px; padding-top: 1px;" data-start-date="{{ \Carbon\Carbon::parse($it->start_date)->format('Y-m-d') }}" data-end-date="{{ \Carbon\Carbon::parse($it->end_date)->format('Y-m-d') }}">
-                                    <span>T0{{ $k+1 }}</span>
-                                </div>
-                            @endforeach
-                        @endforeach
-                    </div>
-                </div>
+                <div id="gantt_here" data-check-height="{{ (count($data) * 32) + 52 }}" style="width: 100% !important; height: {{ (count($data) * 32) + 52 + 15 }}px;"></div>
             </div>
         </div>
     </div>
@@ -459,295 +497,106 @@
 
     <script>
         $(function () {
-            const calendarContainer = $('.calendar-container');
-            const ganttBarContainer = $('.gantt-bar-container');
-            const scrollContainer = $('.scroll-container');
-            const st = $('#st_date').val();
-            const en = $('#en_date').val();
-            const startDate = new Date(st);
-            const endDate = new Date(en);
-            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-            const totalMonthsToShow = 480; // Show at least 12 months of weeks
-
-            function renderCalendar() {
-                calendarContainer.empty(); // Clear the calendar container
-
-                // Get the project's start date
-                const projectStartDate = new Date($('#st_date').val());
-                const projectYear = projectStartDate.getFullYear();
-
-                // Find the 1st Monday of January of the project's year
-                let firstMondayOfYear = new Date(projectYear, 0, 1); // January 1st of the project's year
-                const dayOfWeek = firstMondayOfYear.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-                const daysToMonday = (dayOfWeek === 0 ? 1 : 8 - dayOfWeek); // Calculate days to the first Monday
-                firstMondayOfYear.setDate(firstMondayOfYear.getDate() + daysToMonday);
-
-                // Set the start date to the 1st day of the month of the project's start date
-                let startDate = new Date(projectStartDate.getFullYear(), projectStartDate.getMonth(), 1);
-
-                let currentMonth = startDate.getMonth(); // Get the starting month index (0–11)
-                let currentYear = startDate.getFullYear(); // Get the starting year
-                let monthContainer = $('<div class="month-container"></div>');
-                const monthStartDate = new Date(currentYear, currentMonth, 1);
-                let weekNumber = getWeekNumberFromFirstMonday(new Date(monthStartDate)); // Start with Week 1
-
-                inp = ``;
-
-
-                for (let i = 0; i < totalMonthsToShow; i++) {
-                    const monthStartDate = new Date(currentYear, currentMonth, 1);
-
-                    // Adjust to the first Monday of the month
-                    const dayOfWeek = monthStartDate.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-                    const daysToMonday = (dayOfWeek === 0 ? 1 : 8 - dayOfWeek); // Calculate days to the first Monday
-                    monthStartDate.setDate(monthStartDate.getDate() + daysToMonday);
-                    const monthEndDate = new Date(currentYear, currentMonth + 1, 0);
-
-                    monthContainer.append(`<div class="month-header">${monthNames[currentMonth]} ${currentYear}</div>`);
-
-                    for (let d = new Date(monthStartDate); d <= monthEndDate; d.setDate(d.getDate() + 7)) {
-                        const day = d.getDate().toString().padStart(2, '0'); // Pad day with leading zero
-                        const month = (d.getMonth() + 1).toString().padStart(2, '0'); // Pad month with leading zero
-                        const year = d.getFullYear();
-                        const dateString = `${year}-${month}-${day}`;
-                        // Create a week block for each week starting from the first Monday
-                        const weekBlock = $(`<div class="calendar-day week-block" data-week-start="${dateString}" data-week="${weekNumber}" data-month="${currentMonth}">W${weekNumber}</div>`);
-                        monthContainer.append(weekBlock);
-                        weekNumber++;
-
-
-                        inp += `<input type="text" class="calendar-day inputss" onchange="convertTimeInput(this)" data-date="${dateString}">`;
-                    }
-
-                    // Only append if there are week blocks (more than just the header)
-                    if (monthContainer.children('.week-block').length > 0) {
-                        calendarContainer.append(monthContainer);
-                    }
-
-                    // Move to the next month
-                    currentMonth++;
-                    if (currentMonth > 11) {
-                        currentMonth = 0;
-                        currentYear++;
-                    }
-
-                    // Reset the month container for the next month
-                    monthContainer = $('<div class="month-container"></div>');
+            const EXACT_WEEK_WIDTH = 32;
+            const calendarStartDate = new Date("{{ \Carbon\Carbon::parse('2025-05-01')->format('Y-m-d') }}");
+            const calendarEndDate = new Date("{{ \Carbon\Carbon::parse('2025-05-01')->addDays(1000)->format('Y-m-d') }}");
+            
+            // Configure date format
+            gantt.config.date_format = "%Y-%m-%d";
+            
+            // Move scrollbar outside the chart
+            gantt.config.layout = {
+                css: "gantt_container",
+                rows: [
+                    {
+                        cols: [
+                            {view: "timeline", scrollX: "scrollHor", scrollY: "scrollVer"},
+                            {view: "scrollbar", id: "scrollVer", group:"vertical"}
+                        ]
+                    },
+                    {view: "scrollbar", id: "scrollHor", group:"horizontal"}
+                ]
+            };
+            
+            // Timeline configuration - FORCE 32px per week to match custom calendar
+            gantt.config.scales = [
+                { unit: "month", step: 1, format: "%F", height: 32 },
+                { 
+                    unit: "week", 
+                    step: 1, 
+                    format: "W%W", 
+                    height: 20
                 }
+            ];
 
-                $('.second-input').append(inp);
-            }
-
-            function getWeekNumberFromFirstMonday(date) {
-                // Get the year of the given date
-                const year = date.getFullYear();
-
-                // Find the 1st Monday of January of the given year
-                let firstMonday = new Date(year, 0, 1); // January 1st of the year
-                const dayOfWeek = firstMonday.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-                const daysToMonday = (dayOfWeek === 0 ? 1 : 8 - dayOfWeek); // Calculate days to the first Monday
-                firstMonday.setDate(firstMonday.getDate() + daysToMonday);
-
-                // Calculate the difference in days between the given date and the 1st Monday
-                const diffInTime = date - firstMonday;
-                const diffInDays = Math.floor(diffInTime / (1000 * 60 * 60 * 24));
-
-                // Calculate the week number (add 1 to include the first week)
-                const weekNumber = Math.floor(diffInDays / 7) + 2; // Add 2 to account for the first week starting from the first Monday
-
-                return weekNumber;
-            }
-
-            function alignGanttBars() {
-    const weekWidth = $(".week-block").outerWidth();
-    const ganttStartDate = new Date($('#st_date').val());
-
-    // Set the startDate to the 1st day of the month
-    ganttStartDate.setDate(1);
-
-    // Adjust to the first Monday of the month
-    const dayOfWeek = ganttStartDate.getDay();
-    const daysToMonday = (dayOfWeek === 0 ? 1 : 8 - dayOfWeek);
-    ganttStartDate.setDate(ganttStartDate.getDate() + daysToMonday);
-
-    // Group bars by project (data-task)
-    let barIndex = 0;
-    $('.task-item').each(function() {
-        const taskData = $(this).attr('data-task');
-        // All bars for this project
-        $('.gantt-bar-container .draggable[data-task="' + taskData + '"]').each(function() {
-            const $task = $(this);
-            const taskStartDate = new Date($task.attr('data-start-date'));
-            const taskEndDate = new Date($task.attr('data-end-date'));
-            const taskTop = 30 * barIndex; // 30 is your row height
-            const taskHeight = 28; // or your preferred bar height
-
-            // Calculate the number of weeks from the Gantt start date to the task start and end dates
-            const weeksFromStart = Math.floor((taskStartDate - ganttStartDate) / (1000 * 60 * 60 * 24 * 7));
-            const taskDurationWeeks = Math.ceil((taskEndDate - taskStartDate) / (1000 * 60 * 60 * 24 * 7));
-
-            // Calculate the left position and width of the task bar
-            const leftPosition = weeksFromStart * weekWidth;
-            const barWidth = taskDurationWeeks * weekWidth;
-
-            if (isNaN(taskStartDate) || isNaN(taskEndDate)) return;
-            if (taskDurationWeeks <= 0) return;
-
-            $task.css({
-                left: `${leftPosition}px`,
-                width: `${barWidth}px`,
-                top: `${taskTop}px`,
-                height: `${taskHeight}px`
-            });
-        });
-        barIndex++;
-    });
-
-    // makeDraggableAndResizable();
-}
-
-            function makeDraggableAndResizable() {
-                $(".draggable").draggable({
-                    axis: "x",
-                    grid: [$(".week-block").outerWidth(), 0],
-                    containment: "document",
-                    cancel: ".ui-resizable-handle",
-                    start: function(event, ui) {
-                        if ($(event.originalEvent.target).hasClass('ui-resizable-handle')) {
-                            return false;
-                        }
-                        const $task = $(this);
-                        $task.data("initialLeft", ui.position.left); // Store the initial position
-                        $task.data("initialStartDate", $task.attr("data-start-date")); // Store the initial start date
-                        $task.data("initialEndDate", $task.attr("data-end-date")); // Store the initial end date
-
-                        // Stop propagation to prevent scroll container from reacting
-                        event.stopPropagation();
-                    },
-                    drag: function(event, ui) {
-                        if ($(event.originalEvent.target).hasClass('ui-resizable-handle')) {
-                            return false;
-                        }
-                        const $task = $(this);
-                        const weekWidth = $(".week-block").outerWidth();
-                        const startOffset = ui.position.left;
-                        const startDate = calculateDateFromOffset(startOffset, weekWidth);
-                        $task.attr('data-start-date', startDate);
-
-                        // Stop propagation to prevent scroll container from reacting
-                        event.stopPropagation();
-                    },
-                    stop: function(event, ui) {
-                        const $task = $(this);
-
-                        const initialStartDate = $task.data("initialStartDate");
-                        const initialEndDate = $task.data('initialEndDate');
-
-                        const dayWidth = $(".week-block").outerWidth(); // Width of a single day
-                        const ganttStartDate = new Date($('#st_date').val()); // Gantt chart start date
-
-                        // Set the startDate to the 1st day of the month
-                        ganttStartDate.setDate(1);
-
-                        // Calculate the start and end offsets
-                        const startOffset = ui.position.left;
-                        const endOffset = startOffset + $task.outerWidth();
-
-                        // Calculate the current start and end dates
-                        const currentStartDate = new Date(ganttStartDate);
-                        currentStartDate.setDate(ganttStartDate.getDate() + Math.round(startOffset / dayWidth));
-
-                        const currentEndDate = new Date(ganttStartDate);
-                        currentEndDate.setDate(ganttStartDate.getDate() + Math.round(endOffset / dayWidth) - 1);
-
-                        checkDates(initialStartDate, initialEndDate, currentStartDate, currentEndDate, $task.attr("data-task-id"));
-
-                        updateTaskDates($task);
-
-                        // Stop propagation to prevent scroll container from reacting
-                        event.stopPropagation();
+            gantt.config.scale_height = 52;
+            gantt.config.min_column_width = 32;
+            gantt.config.max_column_width = 32;
+            
+            // Hide the grid completely
+            gantt.config.grid_width = 0;
+            
+            // Task bar sizing to match custom calendar
+            gantt.config.bar_height = 20;
+            gantt.config.row_height = 29.5;
+            
+            // Read-only mode
+            gantt.config.readonly = true;
+            gantt.config.drag_move = false;
+            gantt.config.drag_resize = false;
+            gantt.config.drag_progress = false;
+            gantt.config.drag_links = false;
+            gantt.config.show_links = false;
+            gantt.config.details_on_dblclick = false;
+            
+            // Set start date to match calendar
+            gantt.config.start_date = calendarStartDate;
+            gantt.config.end_date = calendarEndDate;
+            
+            // Prepare data for DHTMLX Gantt
+            var tasks = {
+                data: [
+                    @foreach ($data as $key => $item)
+                    {
+                        id: {{ $item->id }},
+                        text: "{{ $item->name }}",
+                        start_date: "{{ $item->start_date ? \Carbon\Carbon::parse($item->start_date)->format('Y-m-d') : \Carbon\Carbon::now()->format('Y-m-d') }}",
+                        end_date: "{{ $item->end_date ? \Carbon\Carbon::parse($item->end_date)->format('Y-m-d') : \Carbon\Carbon::now()->addDays(30)->format('Y-m-d') }}",
+                        progress: 0,
+                        open: true
+                    }{{ $loop->last ? '' : ',' }}
+                    @endforeach
+                ],
+                links: []
+            };
+            
+            // Initialize gantt
+            gantt.init("gantt_here");
+            gantt.parse(tasks);
+            
+            // Scroll to today's position
+            setTimeout(function() {
+                var today = new Date();
+                gantt.showDate(today);
+            }, 100);
+            
+            // Mouse wheel scroll handler - convert vertical scroll to horizontal
+            const ganttContainer = document.getElementById('gantt_here');
+            if (ganttContainer) {
+                ganttContainer.addEventListener('wheel', function(e) {
+                    const deltaY = e.deltaY;
+                    const deltaX = e.deltaX;
+                    
+                    // If vertical scrolling is dominant, convert to horizontal
+                    if (Math.abs(deltaY) > Math.abs(deltaX)) {
+                        e.preventDefault();
+                        const scrollAmount = deltaY * 0.8; // 0.8x scroll speed
+                        const currentScroll = gantt.getScrollState().x;
+                        const newScroll = currentScroll + scrollAmount;
+                        gantt.scrollTo(newScroll, null);
                     }
-                }).resizable({
-                    handles: {
-                        'e': '.ui-resizable-e',
-                        'w': '.ui-resizable-w'
-                    },
-                    grid: [$(".week-block").outerWidth(), 0],
-                    containment: "document",
-                    stop: function (event, ui) {
-                        const $task = $(this);
-                        updateTaskDates($task);
-                    }
-                });
+                }, { passive: false });
             }
-
-            function checkDates(startDate, endDate, stoppedstartDate, stoppedendDate, taskId){
-                const stoppedStartDateFormatted = stoppedstartDate.toISOString().split('T')[0];
-                const stoppedEndDateFormatted = stoppedendDate.toISOString().split('T')[0];
-                    $.ajax({
-                    url: '/projects/check-dates',
-                    type: 'POST',
-                    data: {
-                        startDate: startDate,
-                        endDate: endDate,
-                        stoppedStartDate: stoppedStartDateFormatted,
-                        stoppedEndDate: stoppedEndDateFormatted,
-                        task_id: taskId,
-                        _token: '{{ csrf_token() }}'
-                    },
-                    success: function (response) {
-                        if (response.overlap) {
-                            $task = $('[data-task-id="'+taskId+'"]')
-
-                            $task.attr('data-start-date', startDate);
-                            $task.attr('data-end-date', endDate);
-                            alignGanttBars();
-                        }else{
-                            $.ajax({
-                                url: '/projects/save-dates',
-                                type: 'POST',
-                                data: {
-                                    stoppedStartDate: stoppedStartDateFormatted,
-                                    stoppedEndDate: stoppedEndDateFormatted,
-                                    task_id: taskId,
-                                    _token: '{{ csrf_token() }}'
-                                },
-                                success: function (response) {
-                                    $('.start-'+taskId).html(formatDateForDisplay(stoppedStartDateFormatted));
-                                }
-                            });
-                        }
-                    }
-                });
-            }
-
-            function updateTaskDates($task) {
-                const weekWidth = $(".week-block").outerWidth();
-                const startOffset = $task.position().left;
-                const endOffset = startOffset + $task.outerWidth();
-
-                const startDate = calculateDateFromOffset(startOffset, weekWidth);
-                const endDate = calculateDateFromOffset(endOffset - weekWidth, weekWidth);
-
-                $task.attr('data-start-date', startDate);
-                $task.attr('data-end-date', endDate);
-            }
-
-            function calculateDateFromOffset(offset, weekWidth) {
-                const weeksFromStart = Math.round(offset / weekWidth);
-                const date = new Date($('#st_date').val());
-                date.setDate(date.getDate() + weeksFromStart * 7);
-                return date.toISOString().split('T')[0];
-            }
-
-            // Prevent scroll-container from scrolling when dragging bars
-            $(".draggable").on("mousedown", function (event) {
-                event.stopPropagation(); // Stop the event from propagating to the scroll-container
-            });
-
-            // Initial render
-            renderCalendar();
-            alignGanttBars();
         });
     </script>
 

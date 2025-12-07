@@ -120,6 +120,7 @@ Route::controller(ProjectController::class)->prefix('/projects')->group(function
     Route::get('/{id}/dhtmlx', 'show_dhtmlx')->name('projects.dhtmlx')->middleware('permission:view_projects');
     Route::get('/{id}/gantt', 'gantt')->name('projects.gantt')->middleware('permission:view_projects');
     Route::get('/reload-data/{id}', 'reload')->name('projects.reload')->middleware('permission:view_projects');
+    Route::get('/{id}/totals', 'getTotals')->name('projects.totals')->middleware('permission:view_projects');
     Route::get('/{id}/edit', 'edit')->name('projects.edit')->middleware('permission:edit_projects');
     Route::post('/', 'store')->name('projects.store')->middleware('permission:create_projects');
     Route::post('/update-project/{id}', 'update')->name('projects.update')->middleware('permission:edit_projects');

@@ -10,6 +10,7 @@ class InternalTask extends Model
     protected $fillable = [
         'name',
         'description',
+        'department_id',
         'department',
         'hourly_rate',
         'is_active',
@@ -51,11 +52,20 @@ class InternalTask extends Model
     }
 
     /**
-     * Relationship with Department (based on department name)
+     * Relationship with Department (based on department_id foreign key)
      */
     public function departmentModel()
     {
-        return $this->belongsTo(Department::class, 'department', 'name');
+        return $this->belongsTo(Department::class, 'department_id');
+    }
+
+    /**
+     * Relationship with Users (task assignees) - many-to-many
+     */
+    public function assignedUsers()
+    {
+        return $this->belongsToMany(User::class, 'internal_task_assignees', 'internal_task_id', 'user_id')
+                    ->withTimestamps();
     }
 
     /**

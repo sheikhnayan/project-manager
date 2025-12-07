@@ -121,7 +121,7 @@
     @include('front.nav')
     <div class="mx-auto shadow border rounded-lg overflow-hidden">
         <div class="p-4 rounded-lg" style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15);">
-            <div class="bg-white rounded-sm overflow-hidden">
+            <div class="bg-white rounded-sm overflow-hidden" style="background: transparent">
                 <div class="p-2 flex items-center justify-between" style="padding-left: 0px;"> 
                     <h2 style="font-size: 20px; font-weight: 600;">Track</h2>
                 <div class="flex items-center space-x-2">

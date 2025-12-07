@@ -105,7 +105,7 @@
     <div style="">
         <div style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15); padding-top: 0px; border-radius: 8px; margin-right: 16px; padding: 12px; padding-bottom: 20px; height: fit-content;">
           <div class="p-4" style="padding-top: 1rem; padding-bottom: 0px;">
-              <h6 style="font-size: 20px; font-weight: bold;">Estimated Costing</h6>
+              <h6 style="font-size: 20px; font-weight: bold;">Planned Budget</h6>
               {{-- <p>Includes all billable and non-billable works</p> --}}
               <div style="display: flex">
                   @php
@@ -257,7 +257,7 @@
     <div class="">
         <div style="border: 1px solid #D1D5DB; padding-top: 0; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15); padding-top: 0px; border-radius: 8px; margin-right: 0px; padding: 12px; padding-bottom: 20px;">
             <div class="p-4" style="padding-top: 1rem; padding-bottom: 0px;">
-                <h6 style="font-size: 20px; font-weight: bold;;">Actual Costing</h6>
+                <h6 style="font-size: 20px; font-weight: bold;;">Actual Spend</h6>
                 {{-- <p>Includes all billable and non-billable works</p> --}}
                 <div style="display: flex">
                     @php
@@ -377,7 +377,7 @@
     <div class="">
         <div style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15); padding-top: 0px; border-radius: 8px; margin-right: 0px; padding: 12px; padding-bottom: 20px;">
             <div class="p-4" style="padding-top: 0px; padding-bottom: 0px; padding-top: 1rem;">
-                <h6 style="font-size: 20px; font-weight: bold;">Employee Hours Tracking</h6>
+                <h6 style="font-size: 20px; font-weight: bold;">Hours Logged</h6>
                 <div style="display: flex; align-items: center; margin-top: 1rem;">
                     <select id="employeeSelector" style="padding: 8px 12px; border: 1px solid #D1D5DB; border-radius: 6px; background: white; font-size: 14px;">
                         <option value="all">All Employees</option>
@@ -504,7 +504,7 @@
         <div style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15); padding-top: 0px; border-radius: 8px; margin-right: 16px; padding: 12px; padding-bottom: 20px; height: fit-content;">
             <div class="p-4" style="padding-top: 12px; padding-bottom: 0px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h6 style="font-size: 20px; font-weight: bold;">Task Burn Chart</h6>
+                    <h6 style="font-size: 20px; font-weight: bold;">Project Burn Chart</h6>
                     <select id="taskSelector" style="padding: 8px 12px; border: 1px solid #D1D5DB; border-radius: 6px; background: white; font-size: 14px;">
                         <option value="all">All Tasks</option>
                         @foreach ($data->tasks as $task)
@@ -571,7 +571,7 @@
                 <!-- Add Task Modal -->
                 <div id="addMemberModal" class="modal">
                     <div class="modal-content">
-                        <div class="modal-header">Add Member</div>
+                        <div class="modal-header">Add to Team</div>
                         <div class="modal-body">
                             <form method="POST" action="/projects/member-store/{{ $data->id }}" id="addMemberForm">
                                 @csrf

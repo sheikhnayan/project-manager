@@ -61,10 +61,6 @@
                     <h2 class="font-bold" style="font-size: 20px">Internal Tasks Management</h2>
                     <p class="text-gray-600 mt-2">Manage departments for internal task tracking</p>
                 </div>
-                <a href="{{ route('internal-tasks.create') }}" class="bg-black text-white px-4 py-2 rounded hover:bg-gray-900 flex items-center gap-2 shadow-sm" style="font-size: 13px;">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
-                    Add Internal Task
-                </a>
             </div>
 
             @if(session('success'))
@@ -193,7 +189,7 @@
                                     <textarea x-model="formData.description" rows="3"
                                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                                 </div>
-
+{{-- 
                                 <div class="mb-4">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Assign Users</label>
                                     <select x-model="selectedUserId" @change="addUser()" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -214,7 +210,7 @@
                                             </div>
                                         </template>
                                     </div>
-                                </div>
+                                </div> --}}
                                 
                                 <div class="flex items-center mb-4">
                                     <input type="checkbox" x-model="formData.is_active" id="is_active"
