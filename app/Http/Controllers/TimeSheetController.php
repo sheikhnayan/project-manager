@@ -75,22 +75,34 @@ class TimeSheetController extends Controller
      */
     public function getDepartmentTasks($departmentId)
     {
-        $user = auth()->user();
+        $currentUser = auth()->user();
         $department = \App\Models\Department::findOrFail($departmentId);
         
-        // Get only the internal tasks in this department that are assigned to the user
+        // In time tracking, we need to check which user's timesheet we're viewing
+        // Admins can view/edit other users' timesheets
+        $targetUserId = request()->query('user_id') ?? $currentUser->id;
+        
+        // Verify the current user has permission to view this user's data
+        if ($currentUser->role_id != 8 && $currentUser->id != $targetUserId) {
+            // Check if user has permission to view all timesheets
+            if (!$currentUser->hasPermission('view_all_timesheets')) {
+                return response()->json(['error' => 'You can only view your own tasks'], 403);
+            }
+        }
+        
+        // Get only the internal tasks in this department that are assigned to the target user
         $tasks = InternalTask::where('department', $departmentId)
-                           ->whereHas('assignedUsers', function($query) use ($user) {
-                               $query->where('user_id', $user->id);
+                           ->whereHas('assignedUsers', function($query) use ($targetUserId) {
+                               $query->where('user_id', $targetUserId);
                            })
                            ->where('is_active', true)
                            ->select('id', 'name')
                            ->orderBy('name')
                            ->get();
         
-        // If no tasks found, return appropriate message
+        // If no tasks found, return empty array (not an error, just no tasks)
         if ($tasks->isEmpty()) {
-            return response()->json(['error' => 'You are not assigned to any tasks in this department'], 403);
+            return response()->json([]);
         }
                            
         return response()->json($tasks);

@@ -711,18 +711,28 @@
                 projectSelect.addEventListener('change', function () {
                     const selectedValue = this.value;
                     
-                    if (selectedValue.startsWith('internal_')) {
-                        // Handle internal task selection
+                    if (selectedValue.startsWith('internal_dept_')) {
+                        // Handle department selection - fetch internal tasks for this department
+                        taskSelect.disabled = false;
+                        taskSelect.style.backgroundColor = 'white';
+                        fetchTasksForProject(selectedValue, taskSelect);
+                        taskSelect.value = '';
+                    } else if (selectedValue.startsWith('internal_')) {
+                        // Handle old internal task selection format (if any)
                         taskSelect.innerHTML = '<option value="internal">Internal Task</option>';
                         taskSelect.value = 'internal';
                         taskSelect.disabled = true;
                         taskSelect.style.backgroundColor = '#f3f4f6';
-                    } else {
+                    } else if (selectedValue) {
                         // Handle regular project selection
                         taskSelect.disabled = false;
                         taskSelect.style.backgroundColor = 'white';
                         fetchTasksForProject(selectedValue, taskSelect);
                         taskSelect.value = '';
+                    } else {
+                        // No selection
+                        taskSelect.innerHTML = '<option value="">Select Project First</option>';
+                        taskSelect.disabled = true;
                     }
                     
                     validateTaskSelection(newRow);
@@ -912,7 +922,8 @@
                 // Check if this is a department selection
                 if (projectId.startsWith('internal_dept_')) {
                     const departmentId = projectId.replace('internal_dept_', '');
-                    return fetch(`/time-tracking/departments/${departmentId}/tasks`)
+                    const userId = document.getElementById('user-select').value;
+                    return fetch(`/time-tracking/departments/${departmentId}/tasks?user_id=${userId}`)
                         .then(response => {
                             if (!response.ok) {
                                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -921,15 +932,23 @@
                         })
                         .then(tasks => {
                             taskSelect.innerHTML = '<option value="">Select Task</option>';
-                            tasks.forEach(task => {
-                                const option = document.createElement('option');
-                                option.value = 'internal_' + task.id;
-                                option.textContent = task.name;
-                                if (option.value === selectedTask) {
-                                    option.selected = true;
-                                }
-                                taskSelect.appendChild(option);
-                            });
+                            if (Array.isArray(tasks) && tasks.length > 0) {
+                                tasks.forEach(task => {
+                                    const option = document.createElement('option');
+                                    option.value = 'internal_' + task.id;
+                                    option.textContent = task.name;
+                                    if (option.value === selectedTask) {
+                                        option.selected = true;
+                                    }
+                                    taskSelect.appendChild(option);
+                                });
+                            } else {
+                                taskSelect.innerHTML = '<option value="">No tasks available</option>';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching department tasks:', error);
+                            taskSelect.innerHTML = '<option value="">Error loading tasks</option>';
                         });
                 }
 
