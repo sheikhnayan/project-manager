@@ -190,6 +190,20 @@
             <div class="bg-white p-6 rounded-lg border border-gray-200">
                 <h2 class="text-lg font-semibold text-gray-900 mb-4">Branding</h2>
                 
+                <!-- Company Name -->
+                <div class="mb-6">
+                    <label for="company_name" class="block text-sm font-medium text-gray-700 mb-2">
+                        Company Name
+                    </label>
+                    <input type="text" 
+                           name="company_name" 
+                           id="company_name" 
+                           value="{{ old('company_name', $data->company_name ?? '') }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
+                           placeholder="Enter your company name">
+                    <p class="text-xs text-gray-500 mt-1">This will be displayed in timesheets and other areas</p>
+                </div>
+                
                 <div>
                     <label for="logo" class="block text-sm font-medium text-gray-700 mb-2">
                         Company Logo

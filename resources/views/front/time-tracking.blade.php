@@ -824,12 +824,17 @@
 
                 return Promise.all([projectsPromise, departmentsPromise])
                     .then(([projects, departmentsData]) => {
+                        console.log('Projects data:', projects);
+                        console.log('Departments data:', departmentsData);
+                        
                         projectSelect.innerHTML = '<option value="">Select Project</option>';
 
-                        // Add Internal Tasks / Departments FIRST
+                        // Add Internal Tasks / Departments with Company Name
                         if (departmentsData.departments && departmentsData.departments.length > 0) {
                             const internalOptgroup = document.createElement('optgroup');
-                            internalOptgroup.label = '🏢 Internal Tasks (Departments)';
+                            // Use company name if available, otherwise use default label
+                            const companyName = departmentsData.company_name || 'Internal Tasks';
+                            internalOptgroup.label = `🏢 ${companyName}`;
                             internalOptgroup.style.fontWeight = '600';
                             internalOptgroup.style.backgroundColor = '#f3f4f6';
                             
@@ -894,7 +899,7 @@
                         }
                     })
                     .catch(error => {
-                        console.error('Error fetching projects:', error);
+                        console.error('Error fetching projects or departments:', error);
                     });
             }
 

@@ -67,6 +67,7 @@ class SettingController extends Controller
         $settings->date_format = $request->input('date_format');
         $settings->currency = $request->input('currency');
         $settings->working_hour = $request->input('working_hour');
+        $settings->company_name = $request->input('company_name');
         
         // Handle task presets
         if ($request->filled('task_presets')) {

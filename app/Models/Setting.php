@@ -13,6 +13,7 @@ class Setting extends Model
         'date_format', 
         'currency',
         'working_hour',
+        'company_name',
         'logo',
         'company_id',
     ];

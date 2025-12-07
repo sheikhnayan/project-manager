@@ -16,7 +16,7 @@ use Carbon\Carbon;
 class TimeSheetController extends Controller
 {
     /**
-     * Get departments for a specific user
+     * Get departments for a specific user (based on assigned internal tasks)
      */
     public function getUserDepartments($userId)
     {
@@ -34,10 +34,19 @@ class TimeSheetController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
         
-        // Get all departments the user is assigned to
-        $query = Department::whereHas('assignedUsers', function($query) use ($userId) {
+        // Get all departments that have internal tasks assigned to this user
+        $userTasks = InternalTask::whereHas('assignedUsers', function($query) use ($userId) {
             $query->where('user_id', $userId);
-        })->where('is_active', true);
+        })
+        ->where('is_active', true)
+        ->get(['id', 'name', 'department', 'is_active']);
+        
+        // Filter out tasks with null departments and get unique department IDs
+        $departmentIds = $userTasks->whereNotNull('department')->pluck('department')->unique()->filter();
+        
+        // Fetch the departments
+        $query = Department::whereIn('id', $departmentIds)
+                          ->where('is_active', true);
         
         // Filter by company for non-admin users
         if ($currentUser->role_id != 8) {
@@ -47,29 +56,42 @@ class TimeSheetController extends Controller
         $departments = $query->select('id', 'name')
                            ->orderBy('name')
                            ->get();
+        
+        // Get company name from settings
+        $companyName = null;
+        if ($currentUser->company_id) {
+            $setting = \App\Models\Setting::where('company_id', $currentUser->company_id)->first();
+            $companyName = $setting ? $setting->company_name : null;
+        }
           
-        return response()->json(['departments' => $departments]);
+        return response()->json([
+            'departments' => $departments,
+            'company_name' => $companyName
+        ]);
     }
 
     /**
-     * Get tasks for a specific department
+     * Get tasks for a specific department (only tasks assigned to the user)
      */
     public function getDepartmentTasks($departmentId)
     {
         $user = auth()->user();
         $department = \App\Models\Department::findOrFail($departmentId);
         
-        // Check if user is assigned to the department
-        if (!$department->assignedUsers->contains($user->id)) {
-            return response()->json(['error' => 'You are not assigned to this department'], 403);
-        }
-        
-        // Get all tasks for the department
-        $tasks = InternalTask::where('department', $department->name)
+        // Get only the internal tasks in this department that are assigned to the user
+        $tasks = InternalTask::where('department', $departmentId)
+                           ->whereHas('assignedUsers', function($query) use ($user) {
+                               $query->where('user_id', $user->id);
+                           })
                            ->where('is_active', true)
                            ->select('id', 'name')
                            ->orderBy('name')
                            ->get();
+        
+        // If no tasks found, return appropriate message
+        if ($tasks->isEmpty()) {
+            return response()->json(['error' => 'You are not assigned to any tasks in this department'], 403);
+        }
                            
         return response()->json($tasks);
     }

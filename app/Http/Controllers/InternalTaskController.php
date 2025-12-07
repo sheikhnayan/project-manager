@@ -153,7 +153,6 @@ class InternalTaskController extends Controller
         $internalTask->update([
             'name' => $request->name,
             'description' => $request->description,
-            'department' => $request->department_id,
             'max_hours_per_day' => $request->max_hours_per_day,
             'requires_approval' => $request->boolean('requires_approval'),
             'is_active' => $request->boolean('is_active'),
