@@ -90,19 +90,22 @@
         }
 
         /* Style for client group headers in project dropdown */
-        optgroup {
-            font-weight: bold;
-            color: #374151;
-            background-color: #f9fafb;
-            padding: 8px 12px;
-            font-size: 14px;
+        .project-select optgroup,
+        .task-select optgroup {
+            font-weight: 600 !important;
+            color: #000 !important;
+            background-color: #fff !important;
+            padding: 8px 12px !important;
+            font-size: 13px !important;
         }
 
-        optgroup option {
-            font-weight: normal;
-            color: #1f2937;
-            padding-left: 20px;
-            background-color: white;
+        .project-select option,
+        .task-select option {
+            font-weight: normal !important;
+            color: #374151 !important;
+            padding: 8px 12px 8px 24px !important;
+            background-color: white !important;
+            font-size: 13px !important;
         }
 
         .delete-row{
@@ -844,9 +847,10 @@
                             const internalOptgroup = document.createElement('optgroup');
                             // Use company name if available, otherwise use default label
                             const companyName = departmentsData.company_name || 'Internal Tasks';
-                            internalOptgroup.label = `🏢 ${companyName}`;
+                            internalOptgroup.label = `${companyName}`;
                             internalOptgroup.style.fontWeight = '600';
                             internalOptgroup.style.backgroundColor = '#f3f4f6';
+                            internalOptgroup.style.padding = '20px 10px 10px';
                             
                             // Sort departments alphabetically
                             const sortedDepartments = departmentsData.departments.sort((a, b) => 
@@ -856,7 +860,7 @@
                             sortedDepartments.forEach(dept => {
                                 const option = document.createElement('option');
                                 option.value = `internal_dept_${dept.id}`;
-                                option.textContent = `📁 ${dept.name}`;
+                                option.textContent = `${dept.name}`;
                                 option.setAttribute('data-type', 'internal');
                                 option.setAttribute('data-department-id', dept.id);
                                 if (option.value === selectedProject) {

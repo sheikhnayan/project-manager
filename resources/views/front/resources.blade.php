@@ -277,7 +277,7 @@
         }
 
         .expand-arrow.expanded {
-            transform: rotate(90deg);
+            transform: rotate(0deg);
         }
 
         .member-projects {
@@ -1619,59 +1619,58 @@ $(document).ready(function() {
     };
 
     function sortTaskItems(getKey, col, isNumeric = false) {
-        $('.not-archived').each(function() {
-            let $container = $(this);
-            let items = $container.children('.task-item').get();
-            
-            // Sort the items based on the key
-            items.sort(function(a, b) {
-                let keyA = getKey($(a));
-                let keyB = getKey($(b));
-                if (isNumeric) {
-                    keyA = parseFloat((keyA + '').replace(/,/g, '')) || 0;
-                    keyB = parseFloat((keyB + '').replace(/,/g, '')) || 0;
-                }
-                if (keyA < keyB) return sortDirections[col] ? -1 : 1;
-                if (keyA > keyB) return sortDirections[col] ? 1 : -1;
-                return 0;
-            });
-            
-            // Get the order of data-ids from sorted items
-            let sortedDataIds = items.map(item => $(item).attr('class').match(/data-id-(\d+)/)[1]);
-            
-            // Remove all .task-item elements from left table
-            $container.children('.task-item').remove();
-            
-            // Append sorted items to left table
-            $.each(items, function(i, item) {
-                $container.append(item);
-            });
+        // Get items from left table (task-list)
+        let $leftContainer = $('.task-list .not-archived');
+        let items = $leftContainer.children('.task-item').get();
+        
+        // Sort the items based on the key
+        items.sort(function(a, b) {
+            let keyA = getKey($(a));
+            let keyB = getKey($(b));
+            if (isNumeric) {
+                keyA = parseFloat((keyA + '').replace(/,/g, '')) || 0;
+                keyB = parseFloat((keyB + '').replace(/,/g, '')) || 0;
+            }
+            if (keyA < keyB) return sortDirections[col] ? -1 : 1;
+            if (keyA > keyB) return sortDirections[col] ? 1 : -1;
+            return 0;
+        });
+        
+        // Get the order of data-ids from sorted items BEFORE removing them
+        let sortedDataIds = items.map(item => $(item).attr('class').match(/data-id-(\d+)/)[1]);
+        
+        // Remove all .task-item elements from left table
+        $leftContainer.children('.task-item').remove();
+        
+        // Append sorted items to left table
+        $.each(items, function(i, item) {
+            $leftContainer.append(item);
         });
 
         // Sort the right table (.second-input elements) in the same order
-        $('.scroll-container .not-archived').each(function() {
-            let $rightContainer = $(this);
-            let rightItems = $rightContainer.children('.second-input').get();
-            
-            // Get the sorted order from left table
-            let leftItems = $('.task-list .not-archived .task-item').get();
-            let sortedDataIds = leftItems.map(item => $(item).attr('class').match(/data-id-(\d+)/)[1]);
-            
-            // Sort right items based on the same order
-            rightItems.sort(function(a, b) {
-                let dataIdA = $(a).attr('class').match(/data-id-(\d+)/)[1];
-                let dataIdB = $(b).attr('class').match(/data-id-(\d+)/)[1];
-                let indexA = sortedDataIds.indexOf(dataIdA);
-                let indexB = sortedDataIds.indexOf(dataIdB);
-                return indexA - indexB;
-            });
-            
-            // Remove all .second-input elements from right table
-            $rightContainer.children('.second-input').remove();
-            
-            // Append sorted items to right table
-            $.each(rightItems, function(i, item) {
-                $rightContainer.append(item);
+        let $rightContainer = $('.scroll-container .not-archived');
+        let rightItems = $rightContainer.children('.second-input').not('.project-calendar-row').get();
+        
+        // Sort right items based on the same order
+        rightItems.sort(function(a, b) {
+            let dataIdA = $(a).attr('class').match(/data-id-(\d+)/)[1];
+            let dataIdB = $(b).attr('class').match(/data-id-(\d+)/)[1];
+            let indexA = sortedDataIds.indexOf(dataIdA);
+            let indexB = sortedDataIds.indexOf(dataIdB);
+            return indexA - indexB;
+        });
+        
+        // Remove only main .second-input elements (not project rows) from right table
+        $rightContainer.children('.second-input').not('.project-calendar-row').remove();
+        
+        // Append sorted items back to right table
+        $.each(rightItems, function(i, item) {
+            $rightContainer.append(item);
+            // Also move the associated project rows
+            let userId = $(item).attr('data-user-id');
+            let projectRows = $(`.member-project-${userId}`);
+            projectRows.each(function() {
+                $rightContainer.append(this);
             });
         });
         

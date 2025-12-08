@@ -103,7 +103,7 @@
 
 <div class="content grid grid-cols-5 gap-4">
     <div style="">
-        <div style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15); padding-top: 0px; border-radius: 8px; margin-right: 16px; padding: 12px; padding-bottom: 20px; height: fit-content;">
+        <div style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15); padding-top: 0px; border-radius: 8px; margin-right: 0px; padding: 12px; padding-bottom: 20px; height: 100vh;">
           <div class="p-4" style="padding-top: 1rem; padding-bottom: 0px;">
               <h6 style="font-size: 20px; font-weight: bold;">Planned Budget</h6>
               {{-- <p>Includes all billable and non-billable works</p> --}}
@@ -255,7 +255,7 @@
         </div>
     </div>
     <div class="">
-        <div style="border: 1px solid #D1D5DB; padding-top: 0; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15); padding-top: 0px; border-radius: 8px; margin-right: 0px; padding: 12px; padding-bottom: 20px;">
+        <div style="border: 1px solid #D1D5DB; padding-top: 0; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15); padding-top: 0px; border-radius: 8px; margin-right: 0px; padding: 12px; padding-bottom: 20px; height: 100vh;">
             <div class="p-4" style="padding-top: 1rem; padding-bottom: 0px;">
                 <h6 style="font-size: 20px; font-weight: bold;;">Actual Spend</h6>
                 {{-- <p>Includes all billable and non-billable works</p> --}}
@@ -375,7 +375,7 @@
         </div>
     </div>
     <div class="">
-        <div style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15); padding-top: 0px; border-radius: 8px; margin-right: 0px; padding: 12px; padding-bottom: 20px;">
+        <div style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15); padding-top: 0px; border-radius: 8px; margin-right: 0px; padding: 12px; padding-bottom: 20px; height: 100vh;">
             <div class="p-4" style="padding-top: 0px; padding-bottom: 0px; padding-top: 1rem;">
                 <h6 style="font-size: 20px; font-weight: bold;">Hours Logged</h6>
                 <div style="display: flex; align-items: center; margin-top: 1rem;">
@@ -501,7 +501,7 @@
         </div>
     </div>
     <div class="col-span-2">
-        <div style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15); padding-top: 0px; border-radius: 8px; margin-right: 16px; padding: 12px; padding-bottom: 20px; height: fit-content;">
+        <div style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15); padding-top: 0px; border-radius: 8px; margin-right: 16px; padding: 12px; padding-bottom: 20px; height: 100vh;">
             <div class="p-4" style="padding-top: 12px; padding-bottom: 0px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                     <h6 style="font-size: 20px; font-weight: bold;">Project Burn Chart</h6>

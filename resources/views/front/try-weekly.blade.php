@@ -699,13 +699,6 @@
                                     // Add your view switching logic here if needed
                                 });
                             </script>
-                            <a href="/projects/{{ $data->id }}/v2" class="bg-green-600 text-white px-4 py-2 rounded" style="font-size: 13px; padding: 0.4rem 1rem; cursor: pointer; margin-right: 8px; background-color: #059669 !important; display: inline-flex; align-items: center; height: 34px;" title="New Clean Version">
-                                <i class="fas fa-rocket" style="margin-right: 6px;"></i> V2
-                            </a>
-                            
-                            <a href="/projects/{{ $data->id }}/dhtmlx" class="bg-blue-600 text-white px-4 py-2 rounded" style="font-size: 13px; padding: 0.4rem 1rem; cursor: pointer; margin-right: 8px; background-color: #2563eb !important; display: inline-flex; align-items: center; height: 34px;" title="Open DHTMLX Gantt">
-                                <i class="fas fa-crown" style="margin-right: 6px;"></i> DHTMLX Gantt
-                            </a>
                             
                             <a class="bg-black text-white px-4 py-2 rounded" id="addMemberButton" style="font-size: 13px; padding:0.4rem 1rem; cursor: pointer; margin-right: 8px;">+  Add Member</a>
                             {{-- <a href="/projects/create" class="bg-black text-white px-4 py-2 rounded" style="font-size: 13px; padding:0.4rem 1rem;">+  Add Project</a> --}}
@@ -1439,6 +1432,70 @@
         }
     }
 
+    // Arrow key navigation for weekly time entry inputs
+    $(document).on('keydown', '.inputss, .inputsss', function(e) {
+        const currentInput = $(this);
+        const allInputs = $('.inputss, .inputsss').not(':disabled');
+        const currentIndex = allInputs.index(currentInput);
+        
+        // Get the date of current input
+        const currentDate = currentInput.data('date');
+        
+        // Find inputs in the same row (same user/task)
+        const currentRow = currentInput.parent();
+        const rowInputs = currentRow.find('.inputss, .inputsss').not(':disabled');
+        const rowIndex = rowInputs.index(currentInput);
+        
+        let targetInput = null;
+        
+        switch(e.keyCode) {
+            case 37: // Left arrow
+                e.preventDefault();
+                if (rowIndex > 0) {
+                    targetInput = rowInputs.eq(rowIndex - 1);
+                }
+                break;
+                
+            case 39: // Right arrow
+                e.preventDefault();
+                if (rowIndex < rowInputs.length - 1) {
+                    targetInput = rowInputs.eq(rowIndex + 1);
+                }
+                break;
+                
+            case 38: // Up arrow
+                e.preventDefault();
+                // Find the input above with the same date (same week)
+                const rowsAbove = currentRow.prevAll('.second-input, .time-input-row, .member-time-calendar-row');
+                for (let i = 0; i < rowsAbove.length; i++) {
+                    const inputAbove = $(rowsAbove[i]).find(`[data-date="${currentDate}"]`).not(':disabled');
+                    if (inputAbove.length > 0) {
+                        targetInput = inputAbove.first();
+                        break;
+                    }
+                }
+                break;
+                
+            case 40: // Down arrow
+                e.preventDefault();
+                // Find the input below with the same date (same week)
+                const rowsBelow = currentRow.nextAll('.second-input, .time-input-row, .member-time-calendar-row');
+                for (let i = 0; i < rowsBelow.length; i++) {
+                    const inputBelow = $(rowsBelow[i]).find(`[data-date="${currentDate}"]`).not(':disabled');
+                    if (inputBelow.length > 0) {
+                        targetInput = inputBelow.first();
+                        break;
+                    }
+                }
+                break;
+        }
+        
+        // Focus and select the target input
+        if (targetInput && targetInput.length > 0) {
+            targetInput.focus().select();
+        }
+    });
+
     // Function to handle integer time input
         async function convertTimeInput(inputElement) {
             const integerTime = parseInt(inputElement.value); // Get the input value as an integer
@@ -1471,14 +1528,20 @@
 
                         const responseData = await response.json(); // parse the JSON
 
-                        $('.user-hour-'+user_id).html(responseData.data.total);
+                        $('.user-hour-'+user_id).html(Math.round(responseData.data.total));
 
                         $('.user-cost-'+user_id).html(responseData.data.cost);
 
-                        $('#fetch').load('/projects/reload-data/' + project_id, function() {
-                            setTimeout(() => {
-                                initProgressRings();
-                            }, 10);
+                        // Reload estimate section without skeleton loader
+                        $.ajax({
+                            url: '/projects/reload-data/' + project_id,
+                            method: 'GET',
+                            success: function(html) {
+                                $('#fetch').html(html);
+                                setTimeout(() => {
+                                    initProgressRings();
+                                }, 10);
+                            }
                         });
                     } else {
                         console.error('Failed to save data:', response.statusText);
@@ -1490,8 +1553,8 @@
                 return;
             }
 
-            if (integerTime < 1 || integerTime > 8) {
-                alert('Value is Invalid. Please enter a number between 1 and 8.');
+            if (integerTime < 1 || integerTime > 56) {
+                alert('Value is Invalid. Please enter a number between 1 and 56.');
                 inputElement.value = ''; // Clear the input field
                 return; // Exit the function
             }
@@ -1518,15 +1581,21 @@
 
                     const responseData = await response.json(); // parse the JSON
 
-                    $('.user-hour-'+user_id).html(responseData.data.total);
+                    $('.user-hour-'+user_id).html(Math.round(responseData.data.total));
 
                     $('.user-cost-'+user_id).html(responseData.data.cost);
 
-                    $('#fetch').load('/projects/reload-data/' + project_id, function() {
+                    // Reload estimate section without skeleton loader
+                    $.ajax({
+                        url: '/projects/reload-data/' + project_id,
+                        method: 'GET',
+                        success: function(html) {
+                            $('#fetch').html(html);
                             setTimeout(() => {
                                 initProgressRings();
                             }, 10);
-                        });
+                        }
+                    });
                 } else {
                     console.error('Failed to save data:', response.statusText);
                 }
@@ -1967,6 +2036,8 @@ $(document).ready(function() {
         asc = !asc;
         $('#sortProjectIcon').toggleClass('fa-sort-alpha-down fa-sort-alpha-up');
     });
+
+    document.getElementById('app-skeleton').remove();
 });
 </script>
 

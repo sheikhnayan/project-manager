@@ -1067,6 +1067,8 @@
 
             $this.attr('data-user-id', $(this).parent().data('user-id'));
         });
+
+        document.getElementById('app-skeleton').remove();
     });
 </script>
 

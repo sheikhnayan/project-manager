@@ -311,16 +311,26 @@
             opacity: 0.8;
             width: 2px !important;
         }
+
+        .gantt-weekend-cell{
+            border-bottom: 1px solid #ccc !important;
+        }
         
         /* Weekend styling for gantt scale cells */
         .gantt-weekend-cell span {
             color: #d32f2f !important;
             font-weight: 400 !important;
+            background-color: #f7f7f7 !important;
         }
         
         .gantt-weekday-cell span {
             color: #000 !important;
             font-weight: normal !important;
+        }
+
+        /* Weekend styling for gantt timeline cells (below the scale) */
+        .gantt-timeline-weekend {
+            background-color: #f7f7f7 !important;
         }
 
         /* Highlight holidays in the Gantt chart */
@@ -631,7 +641,7 @@
                                 }
                                 
                                 #undoBtn:disabled i, #redoBtn:disabled i {
-                                    border-color: #f3f4f6 !important;
+                                    border-color: #eee !important;
                                     color: #9ca3af !important;
                                 }
                                 
@@ -1279,6 +1289,70 @@
         }
     }
 
+    // Arrow key navigation for time entry inputs
+    $(document).on('keydown', '.inputss, .inputsss', function(e) {
+        const currentInput = $(this);
+        const allInputs = $('.inputss, .inputsss').not(':disabled');
+        const currentIndex = allInputs.index(currentInput);
+        
+        // Get the date of current input
+        const currentDate = currentInput.data('date');
+        
+        // Find inputs in the same row (same user/task)
+        const currentRow = currentInput.parent();
+        const rowInputs = currentRow.find('.inputss, .inputsss').not(':disabled');
+        const rowIndex = rowInputs.index(currentInput);
+        
+        let targetInput = null;
+        
+        switch(e.keyCode) {
+            case 37: // Left arrow
+                e.preventDefault();
+                if (rowIndex > 0) {
+                    targetInput = rowInputs.eq(rowIndex - 1);
+                }
+                break;
+                
+            case 39: // Right arrow
+                e.preventDefault();
+                if (rowIndex < rowInputs.length - 1) {
+                    targetInput = rowInputs.eq(rowIndex + 1);
+                }
+                break;
+                
+            case 38: // Up arrow
+                e.preventDefault();
+                // Find the input above with the same date
+                const rowsAbove = currentRow.prevAll('.second-input, .time-input-row, .member-time-calendar-row');
+                for (let i = 0; i < rowsAbove.length; i++) {
+                    const inputAbove = $(rowsAbove[i]).find(`[data-date="${currentDate}"]`).not(':disabled');
+                    if (inputAbove.length > 0) {
+                        targetInput = inputAbove.first();
+                        break;
+                    }
+                }
+                break;
+                
+            case 40: // Down arrow
+                e.preventDefault();
+                // Find the input below with the same date
+                const rowsBelow = currentRow.nextAll('.second-input, .time-input-row, .member-time-calendar-row');
+                for (let i = 0; i < rowsBelow.length; i++) {
+                    const inputBelow = $(rowsBelow[i]).find(`[data-date="${currentDate}"]`).not(':disabled');
+                    if (inputBelow.length > 0) {
+                        targetInput = inputBelow.first();
+                        break;
+                    }
+                }
+                break;
+        }
+        
+        // Focus and select the target input
+        if (targetInput && targetInput.length > 0) {
+            targetInput.focus().select();
+        }
+    });
+
     // Function to update project totals without page reload
         async function updateProjectTotals(project_id) {
             try {
@@ -1367,8 +1441,17 @@
                         $('.user-hour-'+user_id).html(responseData.data.total);
                         $('.user-cost-'+user_id).html(responseData.data.cost);
 
-                        // Update project totals dynamically without page reload
-                        await updateProjectTotals(project_id);
+                        // Reload estimate section without skeleton loader
+                        $.ajax({
+                            url: '/projects/reload-data/' + project_id,
+                            method: 'GET',
+                            success: function(html) {
+                                $('#fetch').html(html);
+                                setTimeout(() => {
+                                    initProgressRings();
+                                }, 10);
+                            }
+                        });
                     } else {
                         console.error('Failed to save data:', response.statusText);
                     }
@@ -1406,11 +1489,20 @@
                     const responseData = await response.json();
 
                     // Update user-specific hours and cost
-                    $('.user-hour-'+user_id).html(responseData.data.total);
+                    $('.user-hour-'+user_id).html(Math.round(responseData.data.total));
                     $('.user-cost-'+user_id).html(responseData.data.cost);
 
-                    // Update project totals dynamically without page reload
-                    await updateProjectTotals(project_id);
+                    // Reload estimate section without skeleton loader
+                    $.ajax({
+                        url: '/projects/reload-data/' + project_id,
+                        method: 'GET',
+                        success: function(html) {
+                            $('#fetch').html(html);
+                            setTimeout(() => {
+                                initProgressRings();
+                            }, 10);
+                        }
+                    });
                 } else {
                     console.error('Failed to save data:', response.statusText);
                 }
@@ -1648,6 +1740,8 @@
 
         // Initial setup for input field attributes
         refreshInputFieldAttributes();
+
+        document.getElementById('app-skeleton').remove();
     });
 </script>
 
@@ -2102,6 +2196,15 @@ gantt.config.max_column_width = 24;
                 left: left,
                 width: width
             };
+        };
+
+        // Style timeline cells for weekends
+        gantt.templates.timeline_cell_class = function(task, date) {
+            const dayOfWeek = date.getDay();
+            if (dayOfWeek === 0 || dayOfWeek === 6) {
+                return "gantt-timeline-weekend";
+            }
+            return "";
         };
         
         // Initialize gantt
