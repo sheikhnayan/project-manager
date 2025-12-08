@@ -455,6 +455,32 @@ class InternalTaskController extends Controller
     }
 
     /**
+     * Archive/Unarchive a department
+     */
+    public function archiveDepartment($id)
+    {
+        $user = auth()->user();
+        
+        $query = \App\Models\Department::query();
+        
+        // Filter by company for non-superadmin users
+        if ($user->role_id != 8 && $user->company_id) {
+            $query->where('company_id', $user->company_id);
+        }
+        
+        $department = $query->findOrFail($id);
+        
+        // Toggle the is_active status (archive/unarchive)
+        $department->is_active = !$department->is_active;
+        $department->save();
+        
+        return response()->json([
+            'success' => true,
+            'message' => $department->is_active ? 'Department unarchived successfully' : 'Department archived successfully'
+        ]);
+    }
+
+    /**
      * Assign a user to a department
      */
     public function assignUser(Request $request, $id)

@@ -215,6 +215,7 @@ Route::middleware(['auth', 'permission:manage_settings'])->group(function () {
     Route::get('/internal-tasks/departments/{id}/edit', [InternalTaskController::class, 'editDepartment']);
     Route::put('/internal-tasks/departments/{id}', [InternalTaskController::class, 'updateDepartment']);
     Route::delete('/internal-tasks/departments/{id}', [InternalTaskController::class, 'deleteDepartment']);
+    Route::post('/internal-tasks/departments/{id}/archive', [InternalTaskController::class, 'archiveDepartment']);
     Route::post('/internal-tasks/departments/{id}/assign-user', [InternalTaskController::class, 'assignUser']);
     Route::post('/internal-tasks/departments/{id}/unassign-user', [InternalTaskController::class, 'unassignUser']);
 });

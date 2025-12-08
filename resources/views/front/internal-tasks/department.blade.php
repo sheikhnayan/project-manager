@@ -133,12 +133,6 @@
                             <p class="text-gray-600 text-sm mt-1">{{ $department->description ?: 'Department tasks and team management' }}</p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <a href="{{ route('internal-tasks.create', ['department' => $department->name]) }}" class="bg-black text-white px-4 py-2 rounded hover:bg-gray-900 flex items-center gap-2" style="font-size: 13px; padding: 0.4rem 1rem; height: 34px;">
-                            <i data-lucide="plus" class="w-4 h-4"></i>
-                            Add Task
-                        </a>
-                    </div>
                 </div>
             </div>
 
@@ -172,8 +166,12 @@
                 <!-- Tasks Section -->
                 <div class="bg-white rounded-lg shadow">
                     <div class="p-6">
-                        <div class="mb-4">
+                        <div class="flex items-center justify-between mb-4">
                             <h2 class="text-lg font-semibold text-gray-900">Department Tasks</h2>
+                            <a href="{{ route('internal-tasks.create', ['department' => $department->name]) }}" class="bg-black text-white px-4 py-2 rounded hover:bg-gray-900 flex items-center gap-2" style="font-size: 13px; padding: 0.4rem 1rem; height: 34px;">
+                                <i data-lucide="plus" class="w-4 h-4"></i>
+                                Add Task
+                            </a>
                         </div>
                         
                         <div class="overflow-x-auto">
@@ -223,7 +221,7 @@
                                     @empty
                                     <tr>
                                         <td colspan="7" class="py-8 px-4 text-center text-gray-500">
-                                            No tasks assigned to you in this department.
+                                            No tasks assigned in this department.
                                         </td>
                                     </tr>
                                     @endforelse

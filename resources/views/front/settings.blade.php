@@ -41,10 +41,16 @@
     <div class="mx-auto p-4 shadow rounded-lg border" style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15);">
         <div class="mb-4">
             <h2 class=" font-bold text-gray-900" style="font-size: 20px;">Settings</h2>
-            <p class="text-gray-600 mt-1">Configure your application settings, remember to save for these to take effect.</p>
+            <p class="text-gray-600 mt-1" style="float: left;">Configure your application settings, remember to save for these to take effect.</p>
+            <div class="flex justify-end">
+                <button style="margin-right: 1.6rem;" type="button" onclick="document.getElementById('settingsForm').submit()" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors duration-200">
+                    <i class="fas fa-save mr-2"></i>
+                    Save Settings
+                </button>
+            </div>
         </div>
 
-        <form method="POST" action="/settings" enctype="multipart/form-data" class="space-y-6">
+        <form id="settingsForm" method="POST" action="/settings" enctype="multipart/form-data" class="space-y-6">
             @csrf
             {{-- @method('PUT') --}}
 

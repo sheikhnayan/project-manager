@@ -765,7 +765,7 @@
             </div>
             <div class="content us" style="margin-top: 10px !important; border: 1px solid #D1D5DB; border-radius: 4px;">
                 <div class="task-list" style="border-right: 0px; padding-right: 0px; padding-top: 0px">
-                    <div class="task-header" style="margin-bottom: 0px; padding: 10px; padding-right: 0px;">
+                    <div class="task-header" style="border-top-left-radius: 4px; margin-bottom: 0px; padding: 10px; padding-right: 0px;">
                         <span style="width: 50%; font-size: 12px; cursor: pointer; display: inherit; padding-left: 10px; border-right: 1px solid #eee; padding-top: 17px; padding-bottom: 17px;" id="sortProjectuser">
                             Name
                             <img style="margin-left: 5px;" src="{{ asset('sort.svg') }}" id="sortProjectIcon" alt="">

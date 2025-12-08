@@ -88,8 +88,15 @@
                             </button>
                         </div>
                     </div>
+
+                    <div class="px-6 py-4">
+                        <div class="flex gap-2">
+                            <button @click="activeTab = 'active'" :class="activeTab === 'active' ? 'bg-black text-white' : 'bg-gray-200 text-black'" class="px-4 py-2 rounded">Active Departments</button>
+                            <button @click="activeTab = 'archived'" :class="activeTab === 'archived' ? 'bg-black text-white' : 'bg-gray-200 text-black'" class="px-4 py-2 rounded">Archived Departments</button>
+                        </div>
+                    </div>
                     
-                    <div class="overflow-x-auto">
+                    <div class="overflow-x-auto" x-show="activeTab === 'active'">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
@@ -121,7 +128,7 @@
                                     </tr>
                                 </template>
                                 
-                                <template x-for="dept in departments" :key="dept.id">
+                                <template x-for="dept in activeDepartments" :key="dept.id">
                                     <tr class="hover:bg-gray-50">
                                         <td class="px-6 py-2 whitespace-nowrap">
                                             <button @click="viewDepartment(dept.id)" class="text-black hover:text-blue-700 font-medium">
@@ -143,25 +150,84 @@
                                                 <span x-text="dept.is_active ? 'Active' : 'Inactive'"></span>
                                             </span>
                                         </td>
-                                        <td class="px-6 py-2 whitespace-nowrap text-center relative">
-                                            <button onclick="toggleSettings(event)" class="inline-flex items-center justify-center w-8 h-8 text-gray-600 hover:text-black rounded-full hover:bg-gray-100 focus:outline-none settings-menu-trigger" type="button">
-                                                <i data-lucide="more-vertical" class="w-5 h-5"></i>
+                                        <td class="px-6 py-2 whitespace-nowrap text-center">
+                                            <div class="flex items-center justify-center gap-2">
+                                                <button @click="editDepartment(dept)" class="p-1 hover:bg-gray-100 rounded" title="Edit Department">
+                                                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                                                </button>
+                                                <button @click="archiveDepartment(dept.id, dept.is_active)" class="p-1 hover:bg-gray-100 rounded archive-dept-btn" :title="dept.is_active ? 'Archive Department' : 'Unarchive Department'">
+                                                    <i data-lucide="archive" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="overflow-x-auto" x-show="activeTab === 'archived'">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider" style="font-size: 0.875rem !important;">Name</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider" style="font-size: 0.875rem !important;">Description</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 tracking-wider" style="font-size: 0.875rem !important;">Tasks</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 tracking-wider" style="font-size: 0.875rem !important;">Users</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider" style="font-size: 0.875rem !important;">Status</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 tracking-wider" style="font-size: 0.875rem !important;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <template x-if="loading">
+                                    <tr>
+                                        <td colspan="6" class="px-6 py-8 text-center">
+                                            <div class="flex justify-center items-center">
+                                                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                                                <span class="ml-2 text-gray-500">Loading departments...</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>
+                                
+                                <template x-if="!loading && archivedDepartments.length === 0">
+                                    <tr>
+                                        <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                                            No archived departments found.
+                                        </td>
+                                    </tr>
+                                </template>
+                                
+                                <template x-for="dept in archivedDepartments" :key="dept.id">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-2 whitespace-nowrap">
+                                            <button @click="viewDepartment(dept.id)" class="text-black hover:text-blue-700 font-medium">
+                                                <span x-text="dept.name"></span>
                                             </button>
-                                            <div x-ref="menu" class="settings-menu hidden absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
-                                                <div class="py-1">
-                                                    <button @click="viewDepartment(dept.id)" class="flex w-full items-center px-4 py-2 text-sm text-gray-900 hover:bg-gray-100">
-                                                        <i data-lucide="eye" class="w-4 h-4 mr-2"></i>
-                                                        View Details
-                                                    </button>
-                                                    <button @click="editDepartment(dept)" class="flex w-full items-center px-4 py-2 text-sm text-gray-900 hover:bg-gray-100">
-                                                        <i data-lucide="edit" class="w-4 h-4 mr-2"></i>
-                                                        Edit
-                                                    </button>
-                                                    <button @click="deleteDepartment(dept.id)" class="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
-                                                        <i data-lucide="trash-2" class="w-4 h-4 mr-2"></i>
-                                                        Delete
-                                                    </button>
-                                                </div>
+                                        </td>
+                                        <td class="px-6 py-2">
+                                            <span x-text="dept.description || '-'" class="text-gray-600"></span>
+                                        </td>
+                                        <td class="px-6 py-2 text-center">
+                                            <span x-text="dept.tasks_count || 0" class="text-gray-900"></span>
+                                        </td>
+                                        <td class="px-6 py-2 text-center">
+                                            <span x-text="dept.assigned_users_count || 0" class="text-gray-900"></span>
+                                        </td>
+                                        <td class="px-6 py-2 whitespace-nowrap">
+                                            <span :class="dept.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'" 
+                                                  class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full border border-gray-200">
+                                                <span x-text="dept.is_active ? 'Active' : 'Inactive'"></span>
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-2 whitespace-nowrap text-center">
+                                            <div class="flex items-center justify-center gap-2">
+                                                <button @click="editDepartment(dept)" class="p-1 hover:bg-gray-100 rounded" title="Edit Department">
+                                                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                                                </button>
+                                                <button @click="archiveDepartment(dept.id, dept.is_active)" class="p-1 hover:bg-gray-100 rounded archive-dept-btn" :title="dept.is_active ? 'Archive Department' : 'Unarchive Department'">
+                                                    <i data-lucide="archive" class="w-4 h-4"></i>
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -296,6 +362,7 @@
         function departmentsManager() {
             return {
                 departments: [],
+                activeTab: 'active',
                 availableUsers: [],
                 selectedUserId: '',
                 loading: true,
@@ -307,6 +374,14 @@
                     description: '',
                     is_active: true,
                     assigned_users: []
+                },
+
+                get activeDepartments() {
+                    return this.departments.filter(dept => dept.is_active === 1 || dept.is_active === true);
+                },
+
+                get archivedDepartments() {
+                    return this.departments.filter(dept => dept.is_active === 0 || dept.is_active === false);
                 },
 
                 init() {
@@ -435,6 +510,39 @@
                     .catch(error => {
                         console.error('Error:', error);
                         this.showNotification('Failed to delete department', 'error');
+                    });
+                },
+
+                archiveDepartment(id, isActive) {
+                    const action = isActive ? 'archive' : 'unarchive';
+                    if (!confirm(`Are you sure you want to ${action} this department?`)) return;
+                    
+                    fetch(`/internal-tasks/departments/${id}/archive`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) {
+                            this.loadDepartments();
+                            this.showNotification(`Department ${action}d successfully!`, 'success');
+                            // Re-initialize Lucide icons after data refresh
+                            this.$nextTick(() => {
+                                if (typeof lucide !== 'undefined') {
+                                    lucide.createIcons();
+                                }
+                            });
+                        } else {
+                            this.showNotification(result.message || `Failed to ${action} department`, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        this.showNotification(`Failed to ${action} department`, 'error');
                     });
                 },
 

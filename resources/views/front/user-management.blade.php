@@ -32,6 +32,17 @@
         .modal input, .modal select, .modal textarea {
             padding: 0.5rem 0.75rem !important;
         }
+        
+        /* Make cropper circular */
+        .cropper-view-box,
+        .cropper-face {
+            border-radius: 50%;
+        }
+        
+        .cropper-view-box {
+            box-shadow: 0 0 0 1px #39f;
+            outline: 0;
+        }
     </style>
 </head>
 <body class="bg-gray-50" x-data="userManagement">
@@ -316,7 +327,7 @@
                     }" class="mb-4">
                     <label for="add-user-profile-picture" class="block text-sm font-medium text-gray-700">Profile Picture</label>
                     <input type="file" id="add-user-profile-picture" name="profile_picture_raw" accept="image/*"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+                        class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-black focus:ring-black px-3 py-2"
                         @change="handleFileChange">
                     <!-- Hidden input for cropped image -->
                     <input type="file" id="add-user-profile-picture-cropped" name="profile_picture" style="display:none;">
@@ -408,6 +419,20 @@
                                         this.cropper = new Cropper(image, {
                                             aspectRatio: 1,
                                             viewMode: 1,
+                                            dragMode: 'move',
+                                            cropBoxResizable: false,
+                                            cropBoxMovable: false,
+                                            ready: function() {
+                                                const cropBoxData = this.cropper.getCropBoxData();
+                                                const containerData = this.cropper.getContainerData();
+                                                const size = Math.min(cropBoxData.width, cropBoxData.height);
+                                                this.cropper.setCropBoxData({
+                                                    width: size,
+                                                    height: size,
+                                                    left: (containerData.width - size) / 2,
+                                                    top: (containerData.height - size) / 2
+                                                });
+                                            }
                                         });
                                     });
                                 };
@@ -416,7 +441,12 @@
                         },
                         cropImage() {
                             if (this.cropper) {
-                                this.cropper.getCroppedCanvas().toBlob(blob => {
+                                this.cropper.getCroppedCanvas({
+                                    width: 200,
+                                    height: 200,
+                                    imageSmoothingEnabled: true,
+                                    imageSmoothingQuality: 'high'
+                                }).toBlob(blob => {
                                     this.croppedBlob = blob;
                                     // Show preview
                                     this.imageUrl = URL.createObjectURL(blob);
@@ -432,7 +462,7 @@
                     }" x-ref="editUserImageCropperAlpine" class="mb-4">
                     <label for="edit-user-profile-picture" class="block text-sm font-medium text-gray-700">Profile Picture</label>
                     <input type="file" id="edit-user-profile-picture" name="profile_picture_raw" accept="image/*"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black"
+                        class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-black focus:ring-black px-3 py-2"
                         @change="handleFileChange">
                     <!-- Hidden input for cropped image -->
                     <input type="file" id="edit-user-profile-picture-cropped" name="profile_picture" style="display:none;">
