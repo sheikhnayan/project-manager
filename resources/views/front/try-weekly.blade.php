@@ -585,6 +585,28 @@
 .gantt_layout_cell{
             border-width: 0px !important;
 }
+
+/* Task bar styling */
+.gantt_task_line {
+    background-color: #4A5568 !important;
+    border: 1px solid #fff !important;
+    border-radius: 5px;
+}
+
+.gantt_task_content {
+    color: white;
+    font-size: 12px;
+    text-align: center;
+}
+
+/* Remove default task bar borders/shadows */
+.gantt_task_line.gantt_selected {
+    box-shadow: none;
+}
+
+.gantt_task_row {
+    border-bottom: 1px solid #ebebeb;
+}
     </style>
 
     <!-- Fonts -->
