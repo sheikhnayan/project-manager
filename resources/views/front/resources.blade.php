@@ -1664,17 +1664,23 @@ $(document).ready(function() {
         // Get the order of data-ids from sorted items BEFORE removing them
         let sortedDataIds = items.map(item => $(item).attr('class').match(/data-id-(\d+)/)[1]);
         
-        // Remove all .task-item elements and their associated .member-projects from left table
-        $leftContainer.children('.task-item, .member-projects').remove();
+        // Store all member-projects divs BEFORE removing them
+        let memberProjectsMap = {};
+        $leftContainer.children('.member-projects').each(function() {
+            let userId = $(this).attr('data-user-id');
+            memberProjectsMap[userId] = $(this).detach(); // Use detach to keep data and events
+        });
+        
+        // Remove all .task-item elements from left table
+        $leftContainer.children('.task-item').remove();
         
         // Append sorted items to left table along with their member-projects
         $.each(items, function(i, item) {
             let userId = $(item).attr('data-user-id');
             $leftContainer.append(item);
             // Also append the associated member-projects div right after the task-item
-            let memberProjectsDiv = $(`.task-list .member-projects[data-user-id="${userId}"]`);
-            if (memberProjectsDiv.length) {
-                $leftContainer.append(memberProjectsDiv);
+            if (memberProjectsMap[userId]) {
+                $leftContainer.append(memberProjectsMap[userId]);
             }
         });
         
