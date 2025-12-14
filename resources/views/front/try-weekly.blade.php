@@ -2256,15 +2256,25 @@ $(document).on('input change', '.member-time-input', function() {
             ]
         };
         
+        // Custom week formatter to handle week 53 as week 1 of next year
+        gantt.date.week_format = function(date) {
+            var weekNum = gantt.date.date_to_str("%W")(date);
+            var year = date.getFullYear();
+            
+            // If week is 53, convert to week 1 of next year
+            if (weekNum == 53) {
+                return "W1";
+            }
+            return "W" + weekNum;
+        };
+        
         // Timeline configuration - WEEKLY VIEW (Month + Week numbers at 24px each)
 gantt.config.scales = [
     { unit: "month", step: 1, format: "%F %Y", height: 32 }, // Top row: Month Year
     { 
         unit: "week", 
         step: 1, 
-        format: function(date) {
-            return "W" + gantt.date.date_to_str("%W")(date);
-        }, 
+        format: gantt.date.week_format, 
         height: 20
     }
 ];
