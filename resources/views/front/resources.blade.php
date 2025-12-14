@@ -202,8 +202,9 @@
             padding-right: 0px;
         }
 
+        /* Border-radius for last task-item is now handled dynamically via JavaScript */
         .task-item:last-child{
-            border-bottom-left-radius: 4px;
+            /* border-bottom-left-radius: 4px; */
         }
 
         .task-item img {
@@ -515,14 +516,15 @@
     showArchivedUsers: false
 }">
     @include('front.nav')
-    <div class="mx-auto p-4 shadow rounded-lg border" style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15);">
-        <div class="content" style="display: block; margin-bottom: 40px;">
+    <div class="mx-auto p-4 shadow rounded-lg border" style="background: #fff !important; border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15);">
+        <div class="content p-2" style="padding-left: 0px !important; display: block; margin-bottom: 40px;">
             <div style="float: left; margin-top: 6px;">
                 <h5 style="font-size: 20px; font-weight: 600; padding-left: 10px;">Team Members</h5>
             </div>
             <div class="flex items-center " style="float: right;">
                         <button class="text-gray-600 hover:text-black" id="home" style="margin-right: 8px;">
-                            <img src="{{ asset('house.png') }}" style="border: 1px solid #000; color: #000; padding: 0.6rem 0.8rem;border-radius: 4px;border-color: #eee;">
+                            <i class="fas fa-home" style="border: 1px solid #000; padding:0.6rem 0.8rem; border-radius:4px; border-color:#eee; font-size: 0.8rem; color: #000;"></i>
+                            {{-- <img src="{{ asset('house.png') }}" style="border: 1px solid #000; color: #000; padding: 0.6rem 0.8rem;border-radius: 4px;border-color: #eee;"> --}}
                         </button>
                         {{-- <div style="border: 1px solid #eee; border-radius: 8px; padding: 5px 3px; margin-right: 8px;">
                             <a href="/projects" class="toggle-btn active">Daily</a>
@@ -562,10 +564,10 @@
                             });
                         </script>
 
-                        <a href="#" class="bg-black text-white px-4 py-2 rounded" style="font-size: 13px; padding:0.4rem 1rem;" @click="showAddUserModal = true">+  Add Member</a>
+                        {{-- <a href="#" class="bg-black text-white px-4 py-2 rounded" style="font-size: 13px; padding:0.4rem 1rem;" @click="showAddUserModal = true">+  Add Member</a> --}}
                         <button 
-                            @click="showArchivedUsers = !showArchivedUsers; setTimeout(() => updateTodayLine(showArchivedUsers), 300)" 
-                            class="ml-2 px-4 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-50"
+                            @click="showArchivedUsers = !showArchivedUsers; setTimeout(() => { updateTodayLine(showArchivedUsers); updateLastTaskItemBorder(); }, 300)" 
+                            class="ml-2 px-4 py-2 rounded bg-black text-white"
                             style="font-size: 13px; padding:0.4rem 1rem;"
                             x-text="showArchivedUsers ? 'Hide Archived Users' : 'Show Archived Users'"
                         ></button>
@@ -1330,6 +1332,7 @@ $(document).ready(function () {
     // Call the function after the DOM is ready
     document.addEventListener('DOMContentLoaded', function () {
         populateTimeTrackingData();
+        updateLastTaskItemBorder();
     });
 </script>
 
@@ -1618,6 +1621,28 @@ $(document).ready(function() {
         hours: true
     };
 
+    // Function to update border-radius on last visible task-item
+    function updateLastTaskItemBorder() {
+        // Remove border-radius from all task-items
+        $('.task-item').css('border-bottom-left-radius', '');
+        
+        // Find the last visible task-item in not-archived section
+        let lastNotArchived = $('.task-list .not-archived .task-item:visible').last();
+        if (lastNotArchived.length) {
+            lastNotArchived.css('border-bottom-left-radius', '4px');
+        }
+        
+        // If archived users are shown, find the last visible in archived section
+        if ($('.task-list .archied').is(':visible')) {
+            let lastArchived = $('.task-list .archied .task-item:visible').last();
+            if (lastArchived.length) {
+                // Remove border from not-archived last item if archived is shown
+                lastNotArchived.css('border-bottom-left-radius', '');
+                lastArchived.css('border-bottom-left-radius', '4px');
+            }
+        }
+    }
+
     function sortTaskItems(getKey, col, isNumeric = false) {
         // Get items from left table (task-list)
         let $leftContainer = $('.task-list .not-archived');
@@ -1639,13 +1664,22 @@ $(document).ready(function() {
         // Get the order of data-ids from sorted items BEFORE removing them
         let sortedDataIds = items.map(item => $(item).attr('class').match(/data-id-(\d+)/)[1]);
         
-        // Remove all .task-item elements from left table
-        $leftContainer.children('.task-item').remove();
+        // Remove all .task-item elements and their associated .member-projects from left table
+        $leftContainer.children('.task-item, .member-projects').remove();
         
-        // Append sorted items to left table
+        // Append sorted items to left table along with their member-projects
         $.each(items, function(i, item) {
+            let userId = $(item).attr('data-user-id');
             $leftContainer.append(item);
+            // Also append the associated member-projects div right after the task-item
+            let memberProjectsDiv = $(`.task-list .member-projects[data-user-id="${userId}"]`);
+            if (memberProjectsDiv.length) {
+                $leftContainer.append(memberProjectsDiv);
+            }
         });
+        
+        // Update last-child border-radius
+        updateLastTaskItemBorder();
 
         // Sort the right table (.second-input elements) in the same order
         let $rightContainer = $('.scroll-container .not-archived');

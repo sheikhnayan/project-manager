@@ -73,6 +73,13 @@
         .gantt_task_line.gantt_selected {
             box-shadow: none;
         }
+
+        .gantt_layout_cell{
+            border-width: 0px !important;
+            border-bottom-right-radius: 4px !important;
+        }
+
+
         
         /* Grid column lines */
         .gantt_task_cell {
@@ -227,6 +234,7 @@
             border-right: 1px solid #ccc;
             padding: 10px;
             padding-bottom: 0px;
+            border-bottom-left-radius: 4px;
         }
         .task-header {
             display: flex;
@@ -308,19 +316,20 @@
 <body class="">
     @include('front.nav')
 
-    <div class="mx-auto p-4 overflow-hidden rounded-lg shadow border" style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15);">
+    <div class="mx-auto p-4 overflow-hidden rounded-lg shadow border" style="background: #fff !important; border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15);">
         {{-- <a class="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800" href="/projects/weekly/{{ $data->id }}" style="float: right">Weekly</a> --}}
-        <div class="content" style="display: block; margin-bottom: 40px;">
-            <div style="float: left; margin-top: 6px;">
+        <div class="content p-2" style="padding-left: 0px; display: block; margin-bottom: 40px;">
+            <div style="float: left; margin-top: 2px;">
                 <h5 style="font-size: 20px; font-weight: 600;">Projects</h5>
             </div>
             <div class="flex items-center " style="float: right;">
                         <button class="text-gray-600 hover:text-black" id="home" style="margin-right: 8px;">
-                            <img src="{{ asset('house.png') }}" style="border: 1px solid #000;padding: 10px 12px;border-radius: 4px;border-color: #eee; ">
+                            <i class="fas fa-home" style="border: 1px solid #000; padding:0.6rem 0.8rem; border-radius:4px; border-color:#eee; font-size: 0.8rem; color: #000;"></i>
+                            {{-- <img src="{{ asset('house.png') }}" style="border: 1px solid #000;padding: 10px 12px;border-radius: 4px;border-color: #eee; "> --}}
                         </button>
                         <div style="border: 1px solid #eee; border-radius: 4px;  margin-right: 8px; height: 34px;width: 170px; display:flex;justify-content: center;">
-                            <a href="/projects" class="toggle-btn active">Daily</a>
-                            <a href="/projects/weekly" class="toggle-btn">Weekly</a>
+                            <a href="/projects" style="border-bottom-left-radius: 4px;border-top-left-radius: 4px;" class="toggle-btn active">Daily</a>
+                            <a href="/projects/weekly" style="border-bottom-right-radius: 4px;border-top-right-radius: 4px;" class="toggle-btn">Weekly</a>
                         </div>
                         <style>
                             .toggle-btn {
@@ -328,7 +337,7 @@
                                 color: #fff;
                                 border: 1px solid #000;
                                 border-radius: 2px;
-                                padding: 7px 19px;
+                                padding: 5px 19px;
                                 font-size: 13px;
                                 font-weight: 500;
                                 margin-right: 0;

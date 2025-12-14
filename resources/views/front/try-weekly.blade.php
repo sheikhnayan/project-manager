@@ -582,6 +582,9 @@
 .gantt_scale_line:not(:first-child) .gantt-weekday-cell span {
     color: #000 !important;
 }
+.gantt_layout_cell{
+            border-width: 0px !important;
+}
     </style>
 
     <!-- Fonts -->
@@ -605,10 +608,10 @@
 <body class="bg-gray-50">
     @include('front.nav')
     <div class="mx-auto shadow border rounded-lg overflow-hidden">
-        <div class="p-4 rounded-lg" style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15);">
-            <div class="content" style="display: block; margin-bottom: 40px;">
+        <div class="p-4 rounded-lg" style="background: #fff !important; border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15);">
+            <div class="content p-2" style="padding-left: 0px !important; display: block; margin-bottom: 40px;">
                 <div style="float: left; margin-top: 6px;">
-                    <h5 style="font-size: 20px; font-weight: 600; margin-left: 7px;">{{ $data->name }}</h5>
+                    <h5 style="font-size: 20px; font-weight: 600;">{{ $data->name }}</h5>
                 </div>
                 <div class="flex items-center " style="float: right;">
                             <!-- Undo/Redo Buttons -->
@@ -620,7 +623,8 @@
                             </button>
                             
                             <button class="text-gray-600 hover:text-black" id="home" style="margin-right: 8px;">
-                                <img src="{{ asset('house.png') }}" style="border: 1px solid #000;padding: 10px 12px;border-radius: 4px;border-color: #eee; ">
+                               <i class="fas fa-home" style="border: 1px solid #000; padding:0.6rem 0.8rem; border-radius:4px; border-color:#eee; font-size: 0.8rem; color: #000;"></i>
+                                {{-- <img src="{{ asset('house.png') }}" style="border: 1px solid #000;padding: 10px 12px;border-radius: 4px;border-color: #eee; "> --}}
                             </button>
                             <div style="border: 1px solid #eee; border-radius: 4px;  margin-right: 8px; height: 34px;width: 170px; display:flex;justify-content: center;">
                                 <a href="/projects/{{ $data->id }}" class="toggle-btn" style="border-top-left-radius: 4px;border-bottom-left-radius: 4px;">Daily</a>
@@ -632,7 +636,7 @@
                                         color: #fff;
                                         border: 1px solid #000;
 
-                                        padding: 7px 19px;
+                                        padding: 5px 19px;
                                         font-size: 13px;
                                         font-weight: 500;
                                         margin-right: 0;
@@ -1136,7 +1140,10 @@
                     const weekStartYear = weekStartDate.getFullYear();
                     const weekNumber = getISOWeekNumber(currentDate3);
                     
-                    const weekCell = $(`<div class="calendar-day" data-date="${weekStartYear}-${weekStartMonth}-${weekStartDay}" data-week="${weekNumber}">W${weekNumber}</div>`);
+                    // Convert week 53 to week 1 for display
+                    const displayWeekNumber = weekNumber === 53 ? 1 : weekNumber;
+                    
+                    const weekCell = $(`<div class="calendar-day" data-date="${weekStartYear}-${weekStartMonth}-${weekStartDay}" data-week="${weekNumber}">W${displayWeekNumber}</div>`);
                     weekCellRow.append(weekCell);
                     
                     currentDate3.setDate(currentDate3.getDate() + 7);
