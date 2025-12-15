@@ -152,6 +152,7 @@ Route::get('/reports', [ReportController::class,'index'])->name('reports')->midd
 Route::get('/reports/{id}', [ReportController::class,'index_project'])->name('report')->middleware('permission:view_reports');
 
 Route::get('/resources', [UserController::class, 'resources'])->name('resources')->middleware('permission:view_users');
+Route::get('/resources/weekly', [UserController::class, 'resources_weekly'])->name('resources.weekly')->middleware('permission:view_users');
 
 Route::get('/settings', [SettingController::class, 'index'])->name('settings.index')->middleware('permission:view_settings');
 

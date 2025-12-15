@@ -149,6 +149,16 @@ class UserController extends Controller
     }
 
     /**
+     * Show weekly view of resources
+     */
+    public function resources_weekly( )
+    {
+        $data = User::get();
+
+        return view('front.resources-weekly',compact('data'));
+    }
+
+    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, $id)

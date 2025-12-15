@@ -526,21 +526,24 @@
                             <i class="fas fa-home" style="border: 1px solid #000; padding:0.6rem 0.8rem; border-radius:4px; border-color:#eee; font-size: 0.8rem; color: #000;"></i>
                             {{-- <img src="{{ asset('house.png') }}" style="border: 1px solid #000; color: #000; padding: 0.6rem 0.8rem;border-radius: 4px;border-color: #eee;"> --}}
                         </button>
-                        {{-- <div style="border: 1px solid #eee; border-radius: 8px; padding: 5px 3px; margin-right: 8px;">
-                            <a href="/projects" class="toggle-btn active">Daily</a>
-                            <a href="/projects/weekly" class="toggle-btn">Weekly</a>
-                        </div> --}}
+                        <div style="border: 1px solid #eee; border-radius: 4px; margin-right: 8px; height: 34px; width: 170px; display:flex; justify-content: center;">
+                            <a href="/resources" class="toggle-btn active" style="border-top-left-radius: 4px;border-bottom-left-radius: 4px;">Daily</a>
+                            <a href="/resources/weekly" class="toggle-btn" style="border-top-right-radius: 4px;border-bottom-right-radius: 4px;">Weekly</a>
+                        </div>
                         <style>
                             .toggle-btn {
                                 background: #000;
                                 color: #fff;
-                                border: 2px solid #fff;
-                                border-radius: 8px;
-                                padding: 4px 18px;
-                                font-size: 15px;
+                                border: 1px solid #000;
+                                padding: 5px 19px;
+                                font-size: 13px;
                                 font-weight: 500;
                                 margin-right: 0;
                                 transition: background 0.2s, color 0.2s;
+                                align-items: center;
+                                text-align: center;
+                                height: 33px;
+                                width: 170px;
                             }
                             .toggle-btn:not(.active) {
                                 background: transparent;
@@ -549,20 +552,12 @@
                             .toggle-btn.active {
                                 background: #000;
                                 color: #fff;
-                                border: 2px solid #fff;
+                                border: 1px solid #000;
                             }
                             .toggle-btn:focus {
                                 outline: none;
                             }
                         </style>
-                        <script>
-                            // Toggle active class on click
-                            $('#toggleDaily, #toggleWeekly').on('click', function() {
-                                $('.toggle-btn').removeClass('active');
-                                $(this).addClass('active');
-                                // Add your view switching logic here if needed
-                            });
-                        </script>
 
                         {{-- <a href="#" class="bg-black text-white px-4 py-2 rounded" style="font-size: 13px; padding:0.4rem 1rem;" @click="showAddUserModal = true">+  Add Member</a> --}}
                         <button 
@@ -1119,6 +1114,21 @@ $(document).ready(function () {
         $(scrollContainer).find('.calendar-container.second-calender, .second-input, inputss').on('mousedown', startDrag);
         $(scrollContainer).on('mousemove', duringDrag);
         $(scrollContainer).on('mouseup mouseleave', endDrag);
+    });
+    
+    // Mouse wheel scroll handler - convert vertical scroll to horizontal
+    $('.scroll-container').on('wheel', function(e) {
+        const deltaY = e.originalEvent.deltaY;
+        const deltaX = e.originalEvent.deltaX;
+        
+        // If vertical scrolling is dominant, convert to horizontal
+        if (Math.abs(deltaY) > Math.abs(deltaX)) {
+            e.preventDefault();
+            const scrollAmount = deltaY * 0.8; // 0.8x speed
+            const currentScroll = $(this).scrollLeft();
+            const newScroll = currentScroll + scrollAmount;
+            $(this).scrollLeft(newScroll);
+        }
     });
 });
 </script>
