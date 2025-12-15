@@ -292,7 +292,7 @@
                             value="{{ $data->manual_progress ?? 0 }}" 
                             min="0" 
                             max="100" 
-                            step="0.01"
+                            step="1"
                             style="display: none; position: absolute; top: 0; left: 0; width: 50px; height: 50px; border-radius: 50%; text-align: center; font-size: 13px; border: none; background: rgb(111, 134, 124); color: white; font-weight: bold; outline: none; padding: 0;"
                             data-project-id="{{ $data->id }}"
                         />
