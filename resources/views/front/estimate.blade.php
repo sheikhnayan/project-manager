@@ -127,7 +127,7 @@
                   @if($pe <  $data->expected_profit)
                   style="background: red; font-size: 13px; margin-right: 0px; margin: 0px; margin-top: 1rem;"
                   @else
-                  style="background: green; font-size: 13px; margin-right: 0px; margin: 0px; margin-top: 1rem;"
+                  style="background: rgb(111, 134, 124); font-size: 13px; margin-right: 0px; margin: 0px; margin-top: 1rem;"
                   @endif
                   >{{ round($pe) }}%</span>
                   <span class="circle" style="background: orange; font-size: 13px; margin-right: 0px; margin: 0px; margin-top: 1rem; margin-left: 1rem;">{{ $data->expected_profit }}%</span>
@@ -175,17 +175,17 @@
   
                           <style>
                               .progress-{{ $data->id }}::-webkit-progress-value {
-                                  background-color: #22c55e !important; /* Green color for the progress value */
+                                  background-color: rgb(111, 134, 124) !important; /* Green color for the progress value */
                                   border-radius: 10px;
                               }
   
                               .progress-{{ $data->id }}::-moz-progress-bar {
-                                  background-color: #22c55e !important; /* Green color for the progress value for Firefox */
+                                  background-color: rgb(111, 134, 124) !important; /* Green color for the progress value for Firefox */
                               }
                           </style>
                           @endif
   
-                          <progress class="rounded-full h-2.5 progress-{{ $data->id }}" id="progress-bar" style="width:100%; @if($percentage > 100) accent-color: red; @else accent-color: #22c55e; @endif" value="{{ $percentage }}" max="100"></progress>
+                          <progress class="rounded-full h-2.5 progress-{{ $data->id }}" id="progress-bar" style="width:100%; @if($percentage > 100) accent-color: red; @else accent-color: rgb(111, 134, 124); @endif" value="{{ $percentage }}" max="100"></progress>
                       </div>
                   </div>
   
@@ -238,16 +238,16 @@
   
                       <style>
                           .progress-{{ $key }}::-webkit-progress-value {
-                              background-color: #22c55e; /* Green color for the progress value */
+                              background-color: rgb(111, 134, 124); /* Green color for the progress value */
                               border-radius: 10px;
                           }
   
                           .progress-{{ $key }}::-moz-progress-bar {
-                              background-color: #22c55e; /* Green color for the progress value for Firefox */
+                              background-color: rgb(111, 134, 124); /* Green color for the progress value for Firefox */
                           }
                       </style>
                       @endif
-                      <progress class="rounded-full h-2.5 progress-{{ $key }}" id="progress-bar" style="accent-color:#22c55e; width:100%" value="{{ $percentage }}" max="100"></progress>
+                      <progress class="rounded-full h-2.5 progress-{{ $key }}" id="progress-bar" style="accent-color:rgb(111, 134, 124); width:100%" value="{{ $percentage }}" max="100"></progress>
                   </div>
                   @endforeach
               </div>
@@ -259,7 +259,7 @@
             <div class="p-4" style="padding-top: 1rem; padding-bottom: 0px;">
                 <h6 style="font-size: 20px; font-weight: bold;;">Actual Spend</h6>
                 {{-- <p>Includes all billable and non-billable works</p> --}}
-                <div style="display: flex">
+                <div style="display: flex; align-items: center;">
                     @php
                         $actualSpent = 0;
                         foreach ($data->timeEntries as  $value) {
@@ -275,10 +275,28 @@
                     @if($pe <  $data->expected_profit)
                     style="background: red; font-size: 13px; margin-right: 0px; margin: 0px; margin-top: 1rem;"
                     @else
-                    style="background: green; font-size: 13px; margin-right: 0px; margin: 0px; margin-top: 1rem;"
+                    style="background: rgb(111, 134, 124); font-size: 13px; margin-right: 0px; margin: 0px; margin-top: 1rem;"
                     @endif
                     >{{ round($pe) }}%</span>
                     <span class="circle" style="background: orange; font-size: 13px; margin-right: 0px; margin: 0px; margin-top: 1rem; margin-left: 1rem;">{{ $data->expected_profit }}%</span>
+                    
+                    <!-- Manual Progress Circle with Input -->
+                    <div style="position: relative; display: inline-block; margin-left: 1rem; margin-top: 1rem;">
+                        <span class="circle manual-progress-circle" id="manualProgressCircle" style="background: rgb(111, 134, 124); font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0; width: 50px; height: 50px;">
+                            <span id="manualProgressDisplay">{{ $data->manual_progress ?? 0 }}%</span>
+                        </span>
+                        <input 
+                            type="number" 
+                            id="manualProgressInput" 
+                            class="manual-progress-input" 
+                            value="{{ $data->manual_progress ?? 0 }}" 
+                            min="0" 
+                            max="100" 
+                            step="0.01"
+                            style="display: none; position: absolute; top: 0; left: 0; width: 50px; height: 50px; border-radius: 50%; text-align: center; font-size: 13px; border: none; background: rgb(111, 134, 124); color: white; font-weight: bold; outline: none; padding: 0;"
+                            data-project-id="{{ $data->id }}"
+                        />
+                    </div>
                 </div>
                 <div class="form-group" style="margin-top: 1rem; font-size: 12px;">
                     <div>
@@ -307,17 +325,17 @@
                             @else
                             <style>
                                 .actual-progresss-{{ $data->id }}::-webkit-progress-value {
-                                    background-color: #22c55e; /* Green color for the progress value */
+                                    background-color: rgb(111, 134, 124); /* Green color for the progress value */
                                     border-radius: 10px;
                                 }
 
                                 .actual-progresss-{{ $data->id }}::-moz-progress-bar {
-                                    background-color: #22c55e; /* Green color for the progress value for Firefox */
+                                    background-color: rgb(111, 134, 124); /* Green color for the progress value for Firefox */
                                 }
                             </style>
                             @endif
 
-                            <progress class="rounded-full h-2.5 actual-progresss-{{ $data->id }}" id="actual-progress-bar" style="accent-color:#22c55e; width:100%" value="{{ $percentage }}" max="100"></progress>
+                            <progress class="rounded-full h-2.5 actual-progresss-{{ $data->id }}" id="actual-progress-bar" style="accent-color:rgb(111, 134, 124); width:100%" value="{{ $percentage }}" max="100"></progress>
                         </div>
                     </div>
 
@@ -358,16 +376,16 @@
                         @else
                         <style>
                             .actual-progress-{{ $key }}::-webkit-progress-value {
-                                background-color: #22c55e; /* Green color for the progress value */
+                                background-color: rgb(111, 134, 124); /* Green color for the progress value */
                                 border-radius: 10px;
                             }
 
                             .actual-progress-{{ $key }}::-moz-progress-bar {
-                                background-color: #22c55e; /* Green color for the progress value for Firefox */
+                                background-color: rgb(111, 134, 124); /* Green color for the progress value for Firefox */
                             }
                         </style>
                         @endif
-                        <progress class="rounded-full h-2.5 actual-progress-{{ $key }}" id="actual-progress-bar" style="accent-color:#22c55e; width:100%" value="{{ $percentage }}" max="100"></progress>
+                        <progress class="rounded-full h-2.5 actual-progress-{{ $key }}" id="actual-progress-bar" style="accent-color:rgb(111, 134, 124); width:100%" value="{{ $percentage }}" max="100"></progress>
                     </div>
                     @endforeach
                 </div>
@@ -425,17 +443,17 @@
                             @else
                             <style>
                                 .employee-progress-all::-webkit-progress-value {
-                                    background-color: #22c55e; /* Green color for the progress value */
+                                    background-color: rgb(111, 134, 124); /* Green color for the progress value */
                                     border-radius: 10px;
                                 }
 
                                 .employee-progress-all::-moz-progress-bar {
-                                    background-color: #22c55e; /* Green color for the progress value for Firefox */
+                                    background-color: rgb(111, 134, 124); /* Green color for the progress value for Firefox */
                                 }
                             </style>
                             @endif
 
-                            <progress class="rounded-full h-2.5 employee-progress-all" id="employee-all-progress" style="accent-color:#22c55e; width:100%" value="{{ min($percentage, 100) }}" max="100"></progress>
+                            <progress class="rounded-full h-2.5 employee-progress-all" id="employee-all-progress" style="accent-color:rgb(111, 134, 124); width:100%" value="{{ min($percentage, 100) }}" max="100"></progress>
                         </div>
                     </div>
 
@@ -483,16 +501,16 @@
                             @else
                             <style>
                                 .employee-task-progress-{{ $key }}::-webkit-progress-value {
-                                    background-color: #22c55e; /* Green color for the progress value */
+                                    background-color: rgb(111, 134, 124); /* Green color for the progress value */
                                     border-radius: 10px;
                                 }
 
                                 .employee-task-progress-{{ $key }}::-moz-progress-bar {
-                                    background-color: #22c55e; /* Green color for the progress value for Firefox */
+                                    background-color: rgb(111, 134, 124); /* Green color for the progress value for Firefox */
                                 }
                             </style>
                             @endif
-                            <progress class="rounded-full h-2.5 employee-task-progress-{{ $key }} employee-task-progress" data-task-id="{{ $task->id }}" style="accent-color:#22c55e; width:100%" value="{{ min($taskPercentage, 100) }}" max="100"></progress>
+                            <progress class="rounded-full h-2.5 employee-task-progress-{{ $key }} employee-task-progress" data-task-id="{{ $task->id }}" style="accent-color:rgb(111, 134, 124); width:100%" value="{{ min($taskPercentage, 100) }}" max="100"></progress>
                         </div>
                         @endforeach
                     </div>
@@ -895,7 +913,7 @@ $(document).ready(function() {
         const variance = currentData.actual - currentData.estimated;
         const variancePercent = currentData.estimated > 0 ? ((variance / currentData.estimated) * 100).toFixed(1) : 0;
         const status = variance > 0 ? 'Over Budget' : variance < 0 ? 'Under Budget' : 'On Budget';
-        const statusColor = variance > 0 ? '#000' : variance < 0 ? '#22c55e' : '#dadada';
+        const statusColor = variance > 0 ? '#000' : variance < 0 ? 'rgb(111, 134, 124)' : '#dadada';
         
         document.getElementById('chartSummary').innerHTML = `
             <div style="text-align: right;">
@@ -1308,6 +1326,60 @@ $(document).ready(function() {
     // Handle employee selector change
     document.getElementById('employeeSelector').addEventListener('change', function() {
         updateEmployeeHours(this.value);
+    });
+});
+</script>
+
+<script>
+// Manual Progress Circle functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const circle = document.getElementById('manualProgressCircle');
+    const display = document.getElementById('manualProgressDisplay');
+    const input = document.getElementById('manualProgressInput');
+    
+    if (!circle || !input) return;
+    
+    // Click on circle to show input
+    circle.addEventListener('click', function() {
+        display.style.display = 'none';
+        input.style.display = 'block';
+        input.focus();
+        input.select();
+    });
+    
+    // Save on blur or Enter key
+    function saveProgress() {
+        const value = parseFloat(input.value) || 0;
+        const projectId = input.getAttribute('data-project-id');
+        
+        // Update display
+        display.textContent = value + '%';
+        display.style.display = 'block';
+        input.style.display = 'none';
+        
+        // Save to database via AJAX
+        fetch(`/projects/${projectId}/update-manual-progress`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ manual_progress: value })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Manual progress updated successfully');
+            }
+        })
+        .catch(error => console.error('Error updating manual progress:', error));
+    }
+    
+    input.addEventListener('blur', saveProgress);
+    input.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            saveProgress();
+        }
     });
 });
 </script>

@@ -83,6 +83,7 @@ Route::post('/projects/save-dates', [ProjectController::class, 'save_dates'])->n
 Route::post('/projects/update-progress', [ProjectController::class, 'update_progress'])->name('projects.update-progress');
 Route::post('/projects/{project}/save-member-order', [ProjectController::class, 'saveMemberOrder'])->name('projects.save-member-order');
 Route::get('/projects/{project}/get-member-order', [ProjectController::class, 'getMemberOrder'])->name('projects.get-member-order');
+Route::post('/projects/{project}/update-manual-progress', [ProjectController::class, 'updateManualProgress'])->name('projects.update-manual-progress');
 Route::get('/api/tasks/{id}', [ProjectController::class, 'getTaskDetails'])->name('api.tasks.details');
 
 Route::get('/estimated-time-tracking/{id}/get',[TimeSheetController::class, 'index_estimate'])->name('estimated-time-tracking.index');

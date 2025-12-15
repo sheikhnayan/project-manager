@@ -247,6 +247,23 @@
         .content{
             margin-top: 0px !important;
         }
+
+        /* Hide number input spin buttons */
+        .inputss::-webkit-outer-spin-button,
+        .inputss::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .inputss[type=number] {
+            -moz-appearance: textfield;
+        }
+        
+        /* Disable focus on readonly inputs */
+        .inputss[readonly] {
+            pointer-events: none;
+            cursor: default;
+        }
     </style>
 
     <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap' rel='stylesheet'>
@@ -569,7 +586,7 @@
                         }
                     });
 
-                    inp += `<input type="number" min="1" max="56" step="1" class="calendar-day inputss" style="min-width: 32px;" data-date="${weekStartYear}-${weekStartMonth}-${weekStartDay}" data-week="${weekNumber}">`;
+                    inp += `<input readonly type="text" class="calendar-day inputss" style="min-width: 32px;" data-date="${weekStartYear}-${weekStartMonth}-${weekStartDay}" data-week="${weekNumber}">`;
                     
                     currentDate.setDate(currentDate.getDate() + 7);
                 }
@@ -625,6 +642,7 @@
                 calendarContainer.append(monthHeaderRow);
                 calendarContainer.append(weekCellRow);
 
+                // Populate user-level calendar rows
                 $('.second-input:not(.project-calendar-row)').each(function() {
                     const userId = $(this).attr('data-user-id');
                     let rowInp = inp;
@@ -633,9 +651,115 @@
                     }
                     $(this).append(rowInp);
                 });
+                
+                // Populate project-level calendar rows
+                $('.second-input.project-calendar-row').each(function() {
+                    const userId = $(this).attr('data-user-id');
+                    const projectId = $(this).attr('data-project-id');
+                    let rowInp = inp;
+                    if (userId && projectId) {
+                        rowInp = rowInp.replace(/data-date="/g, `data-user-id="${userId}" data-project-id="${projectId}" data-date="`);
+                    }
+                    $(this).append(rowInp);
+                });
             }
 
             renderCalendar();
+            
+            // Function to populate time tracking data from database
+            async function populateTimeTrackingData() {
+                try {
+                    const response = await fetch('/estimated-time-tracking/get', {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        },
+                    });
+
+                    if (!response.ok) {
+                        console.error('Failed to fetch time tracking data:', response.statusText);
+                        return;
+                    }
+
+                    const data = await response.json();
+
+                    // Create a map to store weekly totals
+                    const weeklyTotals = {};
+
+                    // Iterate over the data and aggregate hours by week
+                    data.forEach(item => {
+                        const { user_id, date, time, project_id } = item;
+                        
+                        // Parse the date and get the week start date
+                        const itemDate = new Date(date);
+                        const weekNumber = getISOWeekNumber(itemDate);
+                        
+                        // Get Monday of this week
+                        const dayOfWeek = itemDate.getDay();
+                        const diff = itemDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+                        const monday = new Date(itemDate.setDate(diff));
+                        const weekStartDay = monday.getDate().toString().padStart(2, '0');
+                        const weekStartMonth = (monday.getMonth() + 1).toString().padStart(2, '0');
+                        const weekStartYear = monday.getFullYear();
+                        const weekKey = `${weekStartYear}-${weekStartMonth}-${weekStartDay}`;
+
+                        // Convert time from "H:MM" format to decimal
+                        const decimalTime = convertTimeToDecimal(time);
+                        if (decimalTime === 0) return;
+
+                        // Create unique keys for different aggregation levels
+                        const userKey = `${user_id}-${weekKey}`;
+                        const projectKey = `${user_id}-${project_id}-${weekKey}`;
+
+                        // Aggregate for user level (no project filter)
+                        if (!weeklyTotals[userKey]) {
+                            weeklyTotals[userKey] = { total: 0, userId: user_id, weekKey: weekKey };
+                        }
+                        weeklyTotals[userKey].total += decimalTime;
+
+                        // Aggregate for project level
+                        if (project_id) {
+                            if (!weeklyTotals[projectKey]) {
+                                weeklyTotals[projectKey] = { total: 0, userId: user_id, projectId: project_id, weekKey: weekKey };
+                            }
+                            weeklyTotals[projectKey].total += decimalTime;
+                        }
+                    });
+
+                    // Populate the input fields with weekly totals
+                    Object.values(weeklyTotals).forEach(weekData => {
+                        const selector = weekData.projectId 
+                            ? `.inputss[data-user-id="${weekData.userId}"][data-project-id="${weekData.projectId}"][data-date="${weekData.weekKey}"]`
+                            : `.inputss[data-user-id="${weekData.userId}"][data-date="${weekData.weekKey}"]:not([data-project-id])`;
+                        
+                        const inputField = document.querySelector(selector);
+                        if (inputField && weekData.total > 0) {
+                            inputField.value = weekData.total.toFixed(2);
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error fetching time tracking data:', error);
+                }
+            }
+
+            // Helper function to convert time from H:MM to decimal
+            function convertTimeToDecimal(time) {
+                if (!time || time === '0:00') return 0;
+                const [hours, minutes] = time.split(':').map(Number);
+                return hours + (minutes / 60);
+            }
+
+            // Helper function to get ISO week number
+            function getISOWeekNumber(date) {
+                const tempDate = new Date(date.getTime());
+                tempDate.setDate(tempDate.getDate() + 3 - (tempDate.getDay() + 6) % 7);
+                const week1 = new Date(tempDate.getFullYear(), 0, 4);
+                return 1 + Math.round(((tempDate.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+            }
+
+            // Call populate function after calendar is rendered
+            populateTimeTrackingData();
             
             function scrollToCurrentMonth() {
                 const today = new Date();
@@ -678,14 +802,18 @@
             
             if (targetClass === 'member-projects') {
                 const projectsDiv = $(`.member-projects[data-user-id="${targetId}"]`);
-                const projectCalendarRows = $(`.member-project-${targetId}`);
+                const projectCalendarRows = $(`.project-calendar-row.member-project-${targetId}`);
                 
                 if (isExpanded) {
                     projectsDiv.slideUp(300);
-                    projectCalendarRows.slideUp(300);
+                    projectCalendarRows.slideUp(300, function() {
+                        $(this).hide();
+                    });
                 } else {
                     projectsDiv.slideDown(300);
-                    projectCalendarRows.slideDown(300);
+                    projectCalendarRows.slideDown(300, function() {
+                        $(this).show();
+                    });
                 }
             }
         });

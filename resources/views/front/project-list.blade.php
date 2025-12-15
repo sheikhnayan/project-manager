@@ -456,14 +456,7 @@
                         {{ round($pre) }}%
                         </span>
                         <span style="width: 15%; font-size: 12px; padding-top: 6px; padding-bottom: 6px; text-align: center;">
-                            @php
-                                $estimated_hours = $item->estimatedtimeEntries->sum('hours') < 1 ? 1 : $item->estimatedtimeEntries->sum('hours');
-
-                                $spent_hours = $item->timeEntries->sum('hours') < 1 ? 1 : $item->timeEntries->sum('hours');
-
-                                $p = ( $spent_hours / $estimated_hours )*100;
-                            @endphp
-                                {{ round($p) }}%
+                            {{ $item->manual_progress ?? 0 }}%
                         </span>
                     </div>
                 @endforeach

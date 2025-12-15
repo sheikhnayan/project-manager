@@ -606,12 +606,15 @@
                 </div>
                 <div class="flex items-center " style="float: right;">
                             <!-- Undo/Redo Buttons -->
-                            <button class="text-gray-600 hover:text-black" id="undoBtn" style="margin-right: 8px;" title="Undo" disabled>
-                                <i class="fas fa-undo" style="border: 1px solid #eee; padding: 10px 12px; border-radius: 4px; font-size: 14px;"></i>
-                            </button>
-                            <button class="text-gray-600 hover:text-black" id="redoBtn" style="margin-right: 8px;" title="Redo" disabled>
-                                <i class="fas fa-redo" style="border: 1px solid #eee; padding: 10px 12px; border-radius: 4px; font-size: 14px;"></i>
-                            </button>
+                            <div style="border: 1px solid #eee; border-radius: 4px; margin-right: 8px;">
+                                <button class="text-gray-600 hover:text-black" id="undoBtn" title="Undo" disabled>
+                                    <i class="fas fa-undo" style="padding: 0.6rem 0.8rem; font-size: 0.8rem; color: #000;"></i>
+                                </button>
+                                <span style='content: ""; height: 24px; width: 1px; background: #eee; display: inline-block; padding-top: 0px; margin-top: 5px; margin-bottom: -5px;'></span>
+                                <button class="text-gray-600 hover:text-black" id="redoBtn" title="Redo" disabled>
+                                    <i class="fas fa-redo" style="padding: 0.6rem 0.8rem; font-size: 0.8rem; color: #000;"></i>
+                                </button>
+                            </div>
                             
                             <button class="text-gray-600 hover:text-black" id="home" style="margin-right: 8px;">
                                 <i class="fas fa-home" style="border: 1px solid #000; padding:0.6rem 0.8rem; border-radius:4px; border-color:#eee; font-size: 0.8rem; color: #000;"></i>

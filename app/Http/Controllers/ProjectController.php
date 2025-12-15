@@ -674,6 +674,40 @@ class ProjectController extends Controller
         }
     }
 
+    public function updateManualProgress(Request $request, $project)
+    {
+        try {
+            $project = Project::findOrFail($project);
+            
+            // Check authorization
+            $user = auth()->user();
+            if ($user->role_id != 8 && $project->company_id != $user->company_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized'
+                ], 403);
+            }
+            
+            $request->validate([
+                'manual_progress' => 'required|numeric|min:0|max:100'
+            ]);
+            
+            $project->manual_progress = $request->manual_progress;
+            $project->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Manual progress updated successfully',
+                'data' => $project
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating manual progress: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function update_progress(Request $request)
     {
         try {

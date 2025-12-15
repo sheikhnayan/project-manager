@@ -226,6 +226,12 @@
             background: #ebebeb !important;
             color: #dc2626 !important;
         }
+        
+        /* Disable focus on readonly inputs */
+        .inputss[readonly] {
+            pointer-events: none;
+            cursor: default;
+        }
 
         /* Team member drag and drop styles */
         .team-member-row {
@@ -977,6 +983,11 @@
             // Initial render
             renderCalendar();
             
+            // Populate time tracking data after calendar is rendered
+            setTimeout(function() {
+                populateTimeTrackingData();
+            }, 100);
+            
             // Scroll to current month after rendering
             scrollToCurrentMonth();
             // alignGanttBars();
@@ -1288,11 +1299,18 @@ $(document).ready(function () {
             }
 
             const data = await response.json(); // Parse the JSON response
-
+            console.log('Fetched data:', data);
+            console.log('Total input fields:', document.querySelectorAll('.inputss').length);
 
             // Iterate over the data and populate the input fields
             data.forEach(item => {
-                const { task_id, user_id, date, time, project_id } = item;
+                const { task_id, user_id, project_id } = item;
+                let { date, time } = item;
+                
+                // Extract just the date part (YYYY-MM-DD) from ISO timestamp
+                if (date.includes('T')) {
+                    date = date.split('T')[0];
+                }
 
                 // Find the input field with the matching task_id and date
                 const inputFields = document.querySelectorAll('.inputss');
@@ -1309,6 +1327,7 @@ $(document).ready(function () {
                             // Convert time from "H:MM" format to decimal format
                             const decimalTime = convertTimeToDecimal(time);
                             inputField.value = decimalTime; // Populate the input field with the decimal time
+                            console.log('Populated user field:', date, user_id, decimalTime);
                         }
                     }
                     
@@ -1317,6 +1336,7 @@ $(document).ready(function () {
                         if (time !== '0:00') {
                             const decimalTime = convertTimeToDecimal(time);
                             inputField.value = decimalTime;
+                            console.log('Populated project field:', date, user_id, project_id, decimalTime);
                         }
                     }
                     
@@ -1325,6 +1345,7 @@ $(document).ready(function () {
                         if (time !== '0:00') {
                             const decimalTime = convertTimeToDecimal(time);
                             inputField.value = decimalTime;
+                            console.log('Populated task field:', date, user_id, project_id, task_id, decimalTime);
                         }
                     }
                 });
@@ -1338,12 +1359,6 @@ $(document).ready(function () {
             console.error('Error fetching time tracking data:', error);
         }
     }
-
-    // Call the function after the DOM is ready
-    document.addEventListener('DOMContentLoaded', function () {
-        populateTimeTrackingData();
-        updateLastTaskItemBorder();
-    });
 </script>
 
 

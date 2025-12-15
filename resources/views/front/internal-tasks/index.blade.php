@@ -92,7 +92,7 @@
                     <div class="px-6 py-4">
                         <div class="flex gap-2">
                             <button @click="activeTab = 'active'" :class="activeTab === 'active' ? 'bg-black text-white' : 'bg-gray-200 text-black'" class="px-4 py-2 rounded">Active Departments</button>
-                            <button @click="activeTab = 'archived'" :class="activeTab === 'archived' ? 'bg-black text-white' : 'bg-gray-200 text-black'" class="px-4 py-2 rounded">Archived Departments</button>
+                            <button @click="activeTab = 'archived'" :class="activeTab === 'archived' ? 'bg-black text-white' : 'bg-gray-200 text-black'" class="px-4 py-2 rounded" style="  font-size: 13px !important;">Archived Departments</button>
                         </div>
                     </div>
                     

@@ -340,7 +340,7 @@
                         <div class="bg-white p-4 rounded shadow-lg">
                             <img :src="imageUrl" x-ref="cropperImage" class="max-w-xs max-h-80">
                             <div class="mt-4 flex justify-end gap-2">
-                                <button type="button" class="bg-gray-300 px-3 py-1 rounded" @click="showCropper=false; cropper.destroy();">Cancel</button>
+                                <button type="button" class="bg-gray-300 px-3 py-1 rounded" @click="showCropper=false; cropper.destroy(); cropper=null; imageUrl=''; croppedBlob=null; document.getElementById('add-user-profile-picture').value='';">Cancel</button>
                                 <button type="button" class="bg-black text-white px-3 py-1 rounded" @click="cropImage">Crop & Use</button>
                             </div>
                         </div>
@@ -476,7 +476,7 @@
                         <div class="bg-white p-4 rounded shadow-lg">
                             <img :src="imageUrl" x-ref="cropperImage" class="max-w-xs max-h-80">
                             <div class="mt-4 flex justify-end gap-2">
-                                <button type="button" class="bg-gray-300 px-3 py-1 rounded" @click="showCropper=false; cropper.destroy();">Cancel</button>
+                                <button type="button" class="bg-gray-300 px-3 py-1 rounded" @click="showCropper=false; cropper.destroy(); cropper=null; imageUrl=document.getElementById('edit-user-profile-picture-url').value || ''; croppedBlob=null; document.getElementById('edit-user-profile-picture').value=''; document.getElementById('edit-user-profile-picture-cropped').value='';">Cancel</button>
                                 <button type="button" class="bg-black text-white px-3 py-1 rounded" @click="cropImage">Crop & Use</button>
                             </div>
                         </div>

@@ -437,6 +437,17 @@
                         <h5 style="font-size: 20px; font-weight: 600; margin-left: 7px;">{{ $data->name }}</h5>
                     </div>
                     <div class="flex items-center " style="float: right;">
+                                <!-- Undo/Redo Buttons -->
+                                <div style="border: 1px solid #eee; border-radius: 4px; margin-right: 8px;">
+                                    <button class="text-gray-600 hover:text-black" id="undoBtn" title="Undo" disabled>
+                                        <i class="fas fa-undo" style="padding: 0.6rem 0.8rem; font-size: 0.8rem; color: #000;"></i>
+                                    </button>
+                                    <span style='content: ""; height: 24px; width: 1px; background: #eee; display: inline-block; padding-top: 0px; margin-top: 5px; margin-bottom: -5px;'></span>
+                                    <button class="text-gray-600 hover:text-black" id="redoBtn" title="Redo" disabled>
+                                        <i class="fas fa-redo" style="padding: 0.6rem 0.8rem; font-size: 0.8rem; color: #000;"></i>
+                                    </button>
+                                </div>
+                                
                                 <button class="text-gray-600 hover:text-black" id="home" style="margin-right: 8px;">
                                     <img src="{{ asset('house.png') }}" style="border: 1px solid #000;padding: 10px 12px;border-radius: 4px;border-color: #eee; ">
                                 </button>

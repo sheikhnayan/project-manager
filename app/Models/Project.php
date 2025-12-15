@@ -23,6 +23,7 @@ class Project extends Model
         'budget',
         'is_archived',
         'expected_profit',
+        'manual_progress',
     ];
 
     protected $casts = [
