@@ -598,7 +598,7 @@
 </head>
 <body class="bg-gray-50">
     @include('front.nav')
-    <div class="mx-auto shadow border rounded-lg overflow-hidden">
+    <div class="mx-auto shadow border rounded-lg overflow-hidden" style="height: 100vh !important;">
         <div class="p-4 rounded-lg" style="background: #fff !important;; border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15);">
             <div class="content p-2" style="padding-left: 0px !important; display: block; margin-bottom: 40px;">
                 <div style="float: left; margin-top: 6px;">
