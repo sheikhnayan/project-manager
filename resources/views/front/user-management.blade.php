@@ -58,6 +58,34 @@
                 </button>
             </div>
 
+            <!-- Success Message -->
+            @if (session('success'))
+                <div class="mt-4 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-md">
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <div class="flex-1">
+                            <p class="font-medium">{{ session('success') }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            <!-- Error Message -->
+            @if (session('error'))
+                <div class="mt-4 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md">
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293z" clip-rule="evenodd"/>
+                        </svg>
+                        <div class="flex-1">
+                            <p class="font-medium">{{ session('error') }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <div class="mt-6">
                 <div class="bg-white rounded-lg shadow">
                     <div class="p-6">
@@ -254,8 +282,28 @@
     <div x-show="showAddUserModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50" x-cloak>
         <div class="bg-white rounded-lg shadow-lg p-8 w-1/3">
             <h2 class="text-2xl font-bold mb-4">Add User</h2>
+            
+            <!-- Error Messages for Add User -->
+            @if ($errors->any() && old('_modal') == 'add')
+                <div class="mb-4 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md">
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293z" clip-rule="evenodd"/>
+                        </svg>
+                        <div class="flex-1">
+                            <ul class="list-disc list-inside text-sm">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            @endif
+            
             <form method="POST" action="{{ route('users.store') }}" enctype="multipart/form-data">
                 @csrf
+                <input type="hidden" name="_modal" value="add">
                 <div class="mb-4">
                     <label for="add-user-name" class="block text-sm font-medium text-gray-700">Name</label>
                     <input type="text" id="add-user-name" name="name" class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black" required>
@@ -358,9 +406,28 @@
     <div x-show="showEditUserModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50" x-cloak>
         <div class="bg-white rounded-lg shadow-lg p-8 w-1/3">
             <h2 class="text-2xl font-bold mb-4">Edit User</h2>
+            
+            <!-- Error Messages for Edit User -->
+            @if ($errors->any() && old('_modal') == 'edit')
+                <div class="mb-4 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md">
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293z" clip-rule="evenodd"/>
+                        </svg>
+                        <div class="flex-1">
+                            <ul class="list-disc list-inside text-sm">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            @endif
+            
             <form id="editUserForm" method="POST" enctype="multipart/form-data">
                 @csrf
-
+                <input type="hidden" name="_modal" value="edit">
                 <input type="hidden" id="edit-user-id" name="id">
                 <div class="mb-4">
                     <label for="edit-user-name" class="block text-sm font-medium text-gray-700">Name</label>
@@ -511,6 +578,48 @@
     </script>
 
     <script>
+        // Auto-open modal and preserve values if there are validation errors
+        document.addEventListener('DOMContentLoaded', function() {
+            @if ($errors->any() && old('_modal') == 'add')
+                // Open Add User modal and preserve values
+                Alpine.store('userManagement') || (window.Alpine && Alpine.data('userManagement', () => ({
+                    showAddUserModal: true,
+                    showEditUserModal: false
+                })));
+                
+                // Set the showAddUserModal to true after Alpine initializes
+                setTimeout(() => {
+                    const addUserBtn = document.querySelector('[\\@click="showAddUserModal = true"]');
+                    if (addUserBtn && addUserBtn.__x) {
+                        addUserBtn.__x.$data.showAddUserModal = true;
+                    }
+                }, 100);
+                
+                // Preserve form values
+                document.getElementById('add-user-name').value = "{{ old('name') }}";
+                document.getElementById('add-user-email').value = "{{ old('email') }}";
+                document.getElementById('add-user-role').value = "{{ old('role_id') }}";
+                document.getElementById('add-user-hourly-rate').value = "{{ old('hourly_rate') }}";
+            @endif
+            
+            @if ($errors->any() && old('_modal') == 'edit')
+                // Open Edit User modal and preserve values
+                setTimeout(() => {
+                    const editUserBtn = document.querySelector('[\\@click="showAddUserModal = true"]');
+                    if (editUserBtn && editUserBtn.__x) {
+                        editUserBtn.__x.$data.showEditUserModal = true;
+                    }
+                }, 100);
+                
+                // Preserve form values
+                document.getElementById('edit-user-id').value = "{{ old('id') }}";
+                document.getElementById('edit-user-name').value = "{{ old('name') }}";
+                document.getElementById('edit-user-email').value = "{{ old('email') }}";
+                document.getElementById('edit-user-role').value = "{{ old('role_id') }}";
+                document.getElementById('edit-user-hourly-rate').value = "{{ old('hourly_rate') }}";
+                document.getElementById('editUserForm').action = `/users/{{ old('id') }}`;
+            @endif
+        });
 
         // Sort table functionality
         let sortDirection = {}; // Track sort direction for each column
