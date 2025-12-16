@@ -331,20 +331,25 @@ class TimeSheetController extends Controller
         $startDate = date('Y-m-d', strtotime($dates[0]));
         $endDate = date('Y-m-d', strtotime($dates[1]));
 
-        // Loop through the data and save each entry
-        foreach ($request['data'] as $entry) {
-            foreach (['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as $index => $day) {
-                if (!empty($entry[$day]) && $entry[$day] > 0) {
-                    // Validate max 24 hours per day
-                    if ($entry[$day] > 24) {
-                        return response()->json(['error' => 'Time entry cannot exceed 24 hours per day.'], 422);
-                    }
-                    
-                    // Calculate the entry date by adding the day index to the start date
-                    // Monday = 0, Tuesday = 1, etc.
-                    $entryDate = date('Y-m-d', strtotime($startDate . ' +' . $index . ' days'));
+        try {
+            // STEP 1: Delete all existing time entries for this user within the date range
+            TimeEntry::where('user_id', $request['user'])
+                ->whereBetween('entry_date', [$startDate, $endDate])
+                ->delete();
 
-                    try {
+            // STEP 2: Insert all new entries fresh
+            foreach ($request['data'] as $entry) {
+                foreach (['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as $index => $day) {
+                    if (!empty($entry[$day]) && $entry[$day] > 0) {
+                        // Validate max 24 hours per day
+                        if ($entry[$day] > 24) {
+                            return response()->json(['error' => 'Time entry cannot exceed 24 hours per day.'], 422);
+                        }
+                        
+                        // Calculate the entry date by adding the day index to the start date
+                        // Monday = 0, Tuesday = 1, etc.
+                        $entryDate = date('Y-m-d', strtotime($startDate . ' +' . $index . ' days'));
+
                         // Determine if this is a project or internal task entry
                         $taskType = $entry['task_type'] ?? 'project'; // Default to project for backward compatibility
                         
@@ -356,61 +361,35 @@ class TimeSheetController extends Controller
                                 continue; // Skip this entry
                             }
                             
-                            // Handle internal task entries
-                            $check = TimeEntry::where('user_id', $request['user'])
-                                ->where('task_type', 'internal')
-                                ->where('internal_task_id', $entry['task'])
-                                ->where('entry_date', $entryDate)
-                                ->first();
-
-                            if ($check) {
-                                $check->hours = $entry[$day];
-                                $check->description = $entry['description'] ?? null;
-                                $check->update();
-                            } else {
-                                // Create new internal task entry
-                                $d = new TimeEntry;
-                                $d->user_id = $request['user'];
-                                $d->task_type = 'internal';
-                                $d->internal_task_id = $entry['task'];
-                                $d->project_id = null;
-                                $d->task_id = null;
-                                $d->entry_date = $entryDate;
-                                $d->hours = $entry[$day];
-                                $d->description = $entry['description'] ?? null;
-                                $d->save();
-                            }
+                            // Create new internal task entry
+                            $d = new TimeEntry;
+                            $d->user_id = $request['user'];
+                            $d->task_type = 'internal';
+                            $d->internal_task_id = $entry['task'];
+                            $d->project_id = null;
+                            $d->task_id = null;
+                            $d->entry_date = $entryDate;
+                            $d->hours = $entry[$day];
+                            $d->description = $entry['description'] ?? null;
+                            $d->save();
                         } else {
-                            // Handle project task entries (existing logic - unchanged)
-                            $check = TimeEntry::where('user_id', $request['user'])
-                                ->where('task_type', 'project')
-                                ->where('project_id', $entry['project'])
-                                ->where('task_id', $entry['task'])
-                                ->where('entry_date', $entryDate)
-                                ->first();
-
-                            if ($check) {
-                                $check->hours = $entry[$day];
-                                $check->update();
-                            } else {
-                                // Create new project task entry (existing logic - unchanged)
-                                $d = new TimeEntry;
-                                $d->user_id = $request['user'];
-                                $d->task_type = 'project';
-                                $d->project_id = $entry['project'];
-                                $d->task_id = $entry['task'];
-                                $d->internal_task_id = null;
-                                $d->entry_date = $entryDate;
-                                $d->hours = $entry[$day];
-                                $d->save();
-                            }
+                            // Create new project task entry
+                            $d = new TimeEntry;
+                            $d->user_id = $request['user'];
+                            $d->task_type = 'project';
+                            $d->project_id = $entry['project'];
+                            $d->task_id = $entry['task'];
+                            $d->internal_task_id = null;
+                            $d->entry_date = $entryDate;
+                            $d->hours = $entry[$day];
+                            $d->save();
                         }
-                    } catch (\Throwable $th) {
-                        \Log::error('Time entry save error: ' . $th->getMessage());
-                        return response()->json(['error' => 'Failed to save time entry: ' . $th->getMessage()], 500);
                     }
                 }
             }
+        } catch (\Throwable $th) {
+            \Log::error('Time entry save error: ' . $th->getMessage());
+            return response()->json(['error' => 'Failed to save time entry: ' . $th->getMessage()], 500);
         }
 
         return response()->json(['message' => 'Time entries saved successfully.']);

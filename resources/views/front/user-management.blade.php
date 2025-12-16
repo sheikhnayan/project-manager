@@ -86,6 +86,24 @@
                 </div>
             @endif
 
+            <!-- Error Messages for Add User -->
+            @if ($errors->any() && old('_modal') == 'add')
+                <div class="mb-4 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md">
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293z" clip-rule="evenodd"/>
+                        </svg>
+                        <div class="flex-1">
+                            <ul class="list-disc list-inside text-sm">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <div class="mt-6">
                 <div class="bg-white rounded-lg shadow">
                     <div class="p-6">
@@ -282,24 +300,6 @@
     <div x-show="showAddUserModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50" x-cloak>
         <div class="bg-white rounded-lg shadow-lg p-8 w-1/3">
             <h2 class="text-2xl font-bold mb-4">Add User</h2>
-            
-            <!-- Error Messages for Add User -->
-            @if ($errors->any() && old('_modal') == 'add')
-                <div class="mb-4 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md">
-                    <div class="flex items-start">
-                        <svg class="w-5 h-5 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293z" clip-rule="evenodd"/>
-                        </svg>
-                        <div class="flex-1">
-                            <ul class="list-disc list-inside text-sm">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            @endif
             
             <form method="POST" action="{{ route('users.store') }}" enctype="multipart/form-data">
                 @csrf
