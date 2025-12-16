@@ -333,9 +333,16 @@ class TimeSheetController extends Controller
 
         // Loop through the data and save each entry
         foreach ($request['data'] as $entry) {
-            foreach (['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as $day) {
+            foreach (['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as $index => $day) {
                 if (!empty($entry[$day]) && $entry[$day] > 0) {
-                    $entryDate = date('Y-m-d', strtotime("{$day} this week", strtotime($startDate)));
+                    // Validate max 24 hours per day
+                    if ($entry[$day] > 24) {
+                        return response()->json(['error' => 'Time entry cannot exceed 24 hours per day.'], 422);
+                    }
+                    
+                    // Calculate the entry date by adding the day index to the start date
+                    // Monday = 0, Tuesday = 1, etc.
+                    $entryDate = date('Y-m-d', strtotime($startDate . ' +' . $index . ' days'));
 
                     try {
                         // Determine if this is a project or internal task entry

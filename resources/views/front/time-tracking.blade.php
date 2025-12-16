@@ -76,6 +76,12 @@
             border-radius: 4px;
             font-size: 12px;
         }
+        
+        .input-field::-webkit-outer-spin-button,
+        .input-field::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
 
         .editable {
                 cursor: pointer;
@@ -772,6 +778,21 @@
                         }
                         
                         let val = this.value.trim().replace(',', '.');
+                        
+                        // Validate max 24 hours
+                        const parsedValue = parseTime(val);
+                        if (parsedValue > 24) {
+                            $('.alert-message').text('Time entry cannot exceed 24 hours per day.');
+                            successAlert.classList.remove('hidden');
+                            setTimeout(() => {
+                                successAlert.classList.add('hidden');
+                            }, 3000);
+                            this.value = this.dataset.lastValid || '';
+                            updateTotal(newRow);
+                            updateDailyTotals();
+                            return;
+                        }
+                        
                         // Allow empty or HH:MM format
                         if (val === '' || val.includes(':')) {
                             this.dataset.lastValid = val;

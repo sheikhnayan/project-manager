@@ -469,7 +469,6 @@
                                 $taskHours = 0;
                                 foreach ($data->timeEntries as $entry) {
                                     if ($entry->task_id == $task->id) {
-                                        echo $entry->hours;
                                         $taskHours += $entry->hours;
                                     }
                                 }
