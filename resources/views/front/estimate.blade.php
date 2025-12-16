@@ -411,7 +411,6 @@
                             <h6 class="mt-4 mb-3" style="float: right;" id="employeeAllPhaseHours">
                                 @php
                                     $totalHours = 0;
-                                    dd($data->timeEntries);
                                     foreach ($data->timeEntries as $entry) {
                                         $totalHours += $entry->hours;
                                     }
@@ -470,6 +469,7 @@
                                 $taskHours = 0;
                                 foreach ($data->timeEntries as $entry) {
                                     if ($entry->task_id == $task->id) {
+                                        echo $entry->hours;
                                         $taskHours += $entry->hours;
                                     }
                                 }
