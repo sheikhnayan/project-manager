@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Resources Weekly - Project Management</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='2' y='6' fill='%23000'/><rect width='24' height='2' y='11' fill='%23000'/><rect width='24' height='2' y='16' fill='%23000'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
@@ -106,15 +107,18 @@
 
         .content {
             display: flex;
+            border-bottom-left-radius: 0px !important;
+            border-bottom-right-radius: 0px !important;
         }
         
         .task-list {
             width: 600px;
             background-color: #f7fafc;
             border-right: 1px solid #ccc;
-            padding: 10px;
+            /* padding: 10px; */
             padding-bottom: 0px;
             border-bottom-left-radius: 4px;
+            border-bottom-left-radius: 0px !important;
         }
         
         .task-header {
@@ -210,7 +214,7 @@
 
         .hierarchy-level-1 {
             background-color: #f8f9fa;
-            border-left: 3px solid #3b82f6;
+            border-left: 3px solid #000;
         }
 
         /* Calendar styling for expanded rows */
@@ -276,12 +280,12 @@
 <body class="bg-gray-50" x-data="{
     showAddUserModal: false,
     showArchivedUsers: false
-}">
+}" x-init="$watch('showArchivedUsers', value => { setTimeout(() => { if (typeof updateLastTaskItemBorder === 'function') updateLastTaskItemBorder(); }, 400); });">
     @include('front.nav')
     <div class="mx-auto p-4 shadow rounded-lg border" style="background: #fff !important; border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15);">
         <div class="content p-2" style="padding-left: 0px !important; display: block; margin-bottom: 40px;">
             <div style="float: left; margin-top: 6px;">
-                <h5 style="font-size: 20px; font-weight: 600; padding-left: 10px;">Team Members</h5>
+                <h5 style="font-size: 20px; font-weight: 600; padding-left: 0px;">Team Members</h5>
             </div>
             <div class="flex items-center " style="float: right;">
                 <button class="text-gray-600 hover:text-black" id="home" style="margin-right: 8px;">
@@ -380,8 +384,8 @@
                                 @foreach ($item->projects as $project)
                                     @if ($project->project->is_archived == 0)                                            
                                         <div class="task-item project-row hierarchy-level-1" data-project-id="{{ $project->project_id }}" data-user-id="{{ $item->id }}">
-                                            <span style="padding-left: 8px; width: 40%; font-size: 11px; display: inline-flex; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; align-items: center;">
-                                                <span style="width: 8px; height: 8px; background-color: black; border-radius: 50%; margin-right: 8px; display: inline-block;"></span>{{ $project->project->name ?? 'Unknown Project' }}
+                                            <span style="padding-left: 17px; width: 40%; font-size: 11px; display: inline-flex; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; align-items: center;">
+                                                {{ $project->project->name ?? 'Unknown Project' }}
                                             </span>
                                             <span style="width: 22%; font-size: 11px; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; text-align: center;">Project</span>
                                             <span style="width: 15%; font-size: 11px; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; text-align: center;">
@@ -444,8 +448,8 @@
                             @foreach ($item->projects as $project)
                                 @if ($project->project->is_archived == 0)                                            
                                     <div class="task-item project-row hierarchy-level-1" data-project-id="{{ $project->project_id }}" data-user-id="{{ $item->id }}">
-                                        <span style="padding-left: 8px; width: 40%; font-size: 11px; display: inline-flex; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; align-items: center;">
-                                            <span style="width: 8px; height: 8px; background-color: black; border-radius: 50%; margin-right: 8px; display: inline-block;"></span>{{ $project->project->name ?? 'Unknown Project' }}
+                                        <span style="padding-left: 17px; width: 40%; font-size: 11px; display: inline-flex; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; align-items: center;">
+                                            {{ $project->project->name ?? 'Unknown Project' }}
                                         </span>
                                         <span style="width: 22%; font-size: 11px; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; text-align: center;">Project</span>
                                         <span style="width: 15%; font-size: 11px; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; text-align: center;">
@@ -805,12 +809,16 @@
                 const projectCalendarRows = $(`.project-calendar-row.member-project-${targetId}`);
                 
                 if (isExpanded) {
-                    projectsDiv.slideUp(300);
+                    projectsDiv.slideUp(300, function() {
+                        updateLastTaskItemBorder();
+                    });
                     projectCalendarRows.slideUp(300, function() {
                         $(this).hide();
                     });
                 } else {
-                    projectsDiv.slideDown(300);
+                    projectsDiv.slideDown(300, function() {
+                        updateLastTaskItemBorder();
+                    });
                     projectCalendarRows.slideDown(300, function() {
                         $(this).show();
                     });
@@ -866,6 +874,80 @@
             });
         });
 
+        // Function to update border-radius and border-bottom on last visible task-item
+        function updateLastTaskItemBorder() {
+            // Remove border-radius and border-bottom from all task-items
+            $('.task-item').css({
+                'border-bottom-left-radius': '',
+                'border-bottom': '1px solid #eee'
+            });
+            
+            // Find the last visible team-member-row in not-archived section
+            let lastNotArchived = $('.task-list .not-archived > .team-member-row:visible').last();
+            
+            // Check if there are any expanded projects after the last team member
+            if (lastNotArchived.length) {
+                let userId = lastNotArchived.data('user-id');
+                let memberProjects = $(`.member-projects[data-user-id="${userId}"]`);
+                
+                // If projects are expanded and visible, find the last project row
+                if (memberProjects.is(':visible') && memberProjects.find('.project-row:visible').length > 0) {
+                    let lastProject = memberProjects.find('.project-row:visible').last();
+                    lastProject.css({
+                        'border-bottom-left-radius': '4px',
+                        'border-bottom': 'none'
+                    });
+                } else {
+                    // No expanded projects, so the team member row is last
+                    lastNotArchived.css({
+                        'border-bottom-left-radius': '4px',
+                        'border-bottom': 'none'
+                    });
+                }
+            }
+            
+            // If archived users are shown, find the last visible in archived section
+            if ($('.task-list .archied').is(':visible')) {
+                let lastArchived = $('.task-list .archied > .team-member-row:visible').last();
+                
+                if (lastArchived.length) {
+                    let userId = lastArchived.data('user-id');
+                    let memberProjects = $(`.archied .member-projects[data-user-id="${userId}"]`);
+                    
+                    // Reset the not-archived section since archived is showing
+                    if (lastNotArchived.length) {
+                        let notArchivedUserId = lastNotArchived.data('user-id');
+                        let notArchivedProjects = $(`.not-archived .member-projects[data-user-id="${notArchivedUserId}"]`);
+                        if (notArchivedProjects.is(':visible') && notArchivedProjects.find('.project-row:visible').length > 0) {
+                            notArchivedProjects.find('.project-row:visible').last().css({
+                                'border-bottom-left-radius': '',
+                                'border-bottom': '1px solid #eee'
+                            });
+                        } else {
+                            lastNotArchived.css({
+                                'border-bottom-left-radius': '',
+                                'border-bottom': '1px solid #eee'
+                            });
+                        }
+                    }
+                    
+                    // Check if archived section has expanded projects
+                    if (memberProjects.is(':visible') && memberProjects.find('.project-row:visible').length > 0) {
+                        let lastProject = memberProjects.find('.project-row:visible').last();
+                        lastProject.css({
+                            'border-bottom-left-radius': '4px',
+                            'border-bottom': 'none'
+                        });
+                    } else {
+                        lastArchived.css({
+                            'border-bottom-left-radius': '4px',
+                            'border-bottom': 'none'
+                        });
+                    }
+                }
+            }
+        }
+
         $('#home').on('click', function() {
             const today = new Date();
             const scrollContainer = $('.scroll-container');
@@ -881,6 +963,11 @@
                     scrollLeft: Math.max(0, scrollPosition)
                 }, 400);
             }
+        });
+
+        // Call updateLastTaskItemBorder after page loads
+        $(document).ready(function() {
+            setTimeout(updateLastTaskItemBorder, 100);
         });
     </script>
 </body>

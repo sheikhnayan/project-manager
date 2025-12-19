@@ -4,6 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Time Tracking</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='2' y='6' fill='%23000'/><rect width='24' height='2' y='11' fill='%23000'/><rect width='24' height='2' y='16' fill='%23000'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 
@@ -25,7 +26,7 @@
     <style>
         /* Fix border-top for Edge browser compatibility */
         table thead th {
-            border-top: 1px solid #eee !important;
+            border-top: unset !important;
             border-left: 1px solid #eee !important;
             border-right: 1px solid #eee !important;
             border-bottom: 1px solid #eee !important;
@@ -51,7 +52,20 @@
             border: 1px solid #D1D5DB !important;
             border-radius: 4px !important;
             border-collapse: separate;
+            border-spacing: 0;
             width: 100%;
+            overflow: visible;
+            box-shadow: 0 0 0 1px #D1D5DB;
+        }
+        
+        /* Additional Edge browser fix - ensure first row shows top border */
+        table thead tr:first-child th {
+            border-top: unset !important;
+        }
+        
+        /* Wrapper to handle border-radius clipping */
+        .overflow-x-auto {
+            border-radius: 4px;
             overflow: hidden;
         }
 
@@ -74,7 +88,7 @@
             padding: 0;
             margin: 0;
             border-radius: 4px;
-            font-size: 12px;
+            font-size: 14px;
         }
         
         .input-field::-webkit-outer-spin-button,
@@ -170,34 +184,34 @@
             <div class="overflow-x-auto border-b border-gray-200">
                 <table id="time-table" class="min-w-full bg-white" style="border: 1px solid #D1D5DB; border-radius: 4px;">
                     <thead style="height: 52px;">
-                        <tr class="w-full bg-gray-100 text-left text-gray-600 leading-normal" style="font-size: 12px;">
-                            <th class="py-1" style="background: #000 !important; color: #fff;padding-left: 1rem; font-size: 12px; font-weight: 600;">Type</th>
-                            <th class="py-1" style="background: #000 !important; color: #fff;padding-left: 1rem; font-size: 12px; font-weight: 600;">Project/Task</th>
-                            <th class="py-1" style="width: 70px; text-align: center; font-size: 12px; font-weight: 600; color: #000">Monday</th>
-                            <th class="py-1" style="width: 70px; text-align: center; font-size: 12px; font-weight: 600; color: #000">Tuesday</th>
-                            <th class="py-1" style="width: 70px; text-align: center; font-size: 12px; font-weight: 600; color: #000">Wednesday</th>
-                            <th class="py-1" style="width: 70px; text-align: center; font-size: 12px; font-weight: 600; color: #000">Thursday</th>
-                            <th class="py-1" style="width: 70px; text-align: center; font-size: 12px; font-weight: 600; color: #000">Friday</th>
-                            <th class="py-1 holiday" style="width: 70px; text-align: center; font-size: 12px; font-weight: 600;">Saturday</th>
-                            <th class="py-1 holiday" style="width: 70px; text-align: center; font-size: 12px; font-weight: 600;">Sunday</th>
-                            <th class="py-1" style="width: 80px; text-align: center; font-size: 12px; font-weight: 600; color: #000">Total</th>
-                            <th class="py-1" style="width: 100px; text-align: center; font-size: 12px; font-weight: 600; color: #000">Actions</th>
+                        <tr class="w-full bg-gray-100 text-left text-gray-600 leading-normal" style="font-size: 14px;">
+                            <th class="py-1" style="background: #000 !important; color: #fff;padding-left: 1rem; font-size: 14px; font-weight: 600;">Type</th>
+                            <th class="py-1" style="background: #000 !important; color: #fff;padding-left: 1rem; font-size: 14px; font-weight: 600;">Project/Task</th>
+                            <th class="py-1" style="width: 70px; text-align: center; font-size: 14px; font-weight: 600; color: #000">Monday</th>
+                            <th class="py-1" style="width: 70px; text-align: center; font-size: 14px; font-weight: 600; color: #000">Tuesday</th>
+                            <th class="py-1" style="width: 70px; text-align: center; font-size: 14px; font-weight: 600; color: #000">Wednesday</th>
+                            <th class="py-1" style="width: 70px; text-align: center; font-size: 14px; font-weight: 600; color: #000">Thursday</th>
+                            <th class="py-1" style="width: 70px; text-align: center; font-size: 14px; font-weight: 600; color: #000">Friday</th>
+                            <th class="py-1 holiday" style="width: 70px; text-align: center; font-size: 14px; font-weight: 600;">Saturday</th>
+                            <th class="py-1 holiday" style="width: 70px; text-align: center; font-size: 14px; font-weight: 600;">Sunday</th>
+                            <th class="py-1" style="width: 80px; text-align: center; font-size: 14px; font-weight: 600; color: #000">Total</th>
+                            <th class="py-1" style="width: 100px; text-align: center; font-size: 14px; font-weight: 600; color: #000">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="text-gray-600 font-light" style="font-size: 12px;">
+                    <tbody class="text-gray-600 font-light" style="font-size: 14px;">
                         <!-- Dynamic rows will be added here -->
                     </tbody>
                     <tfoot>
                         <tr class="bg-gray-50">
-                            <td class="px-4 font-semibold" colspan="2" style="font-size: 12px; padding: 10px 16px;">Daily Total:</td>
-                            <td class="px-4 daily-total" data-day="mon" style="width: 118px; text-align: center; font-size: 12px; padding: 10px;"></td>
-                            <td class="px-4 daily-total" data-day="tue" style="width: 118px; text-align: center; font-size: 12px; padding: 10px;"></td>
-                            <td class="px-4 daily-total" data-day="wed" style="width: 118px; text-align: center; font-size: 12px; padding: 10px;"></td>
-                            <td class="px-4 daily-total" data-day="thu" style="width: 118px; text-align: center; font-size: 12px; padding: 10px;"></td>
-                            <td class="px-4 daily-total" data-day="fri" style="width: 118px; text-align: center; font-size: 12px; padding: 10px;"></td>
-                            <td class="px-4 daily-total holiday" data-day="sat" style="width: 118px; text-align: center; font-size: 12px; padding: 10px;"></td>
-                            <td class="px-4 daily-total holiday" data-day="sun" style="width: 118px; text-align: center; font-size: 12px; padding: 10px;"></td>
-                            <td class="px-4 font-semibold total-total" style="width: 80px; text-align: center; font-size: 12px; padding: 10px;">0:00</td>
+                            <td class="px-4 font-semibold" colspan="2" style="font-size: 14px; padding: 10px 16px;">Daily Total:</td>
+                            <td class="px-4 daily-total" data-day="mon" style="width: 118px; text-align: center; font-size: 14px; padding: 10px;"></td>
+                            <td class="px-4 daily-total" data-day="tue" style="width: 118px; text-align: center; font-size: 14px; padding: 10px;"></td>
+                            <td class="px-4 daily-total" data-day="wed" style="width: 118px; text-align: center; font-size: 14px; padding: 10px;"></td>
+                            <td class="px-4 daily-total" data-day="thu" style="width: 118px; text-align: center; font-size: 14px; padding: 10px;"></td>
+                            <td class="px-4 daily-total" data-day="fri" style="width: 118px; text-align: center; font-size: 14px; padding: 10px;"></td>
+                            <td class="px-4 daily-total holiday" data-day="sat" style="width: 118px; text-align: center; font-size: 14px; padding: 10px;"></td>
+                            <td class="px-4 daily-total holiday" data-day="sun" style="width: 118px; text-align: center; font-size: 14px; padding: 10px;"></td>
+                            <td class="px-4 font-semibold total-total" style="width: 80px; text-align: center; font-size: 14px; padding: 10px;">0:00</td>
                             <td class="px-4" style="padding: 10px;"></td>
                         </tr>
                     </tfoot>

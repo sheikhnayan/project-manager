@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Projects - Project Management</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='2' y='6' fill='%23000'/><rect width='24' height='2' y='11' fill='%23000'/><rect width='24' height='2' y='16' fill='%23000'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
@@ -47,7 +48,7 @@
         
         /* Weekend styling */
         .gantt-weekend-cell {
-            background-color: #EBEBEB !important;
+            background-color: #f7f7f7 !important;
             color: #D9534F !important;
         }
         
@@ -84,6 +85,11 @@
         /* Grid column lines */
         .gantt_task_cell {
             border-right: 1px solid #ebebeb;
+        }
+        
+        /* Weekend task cell background */
+        .gantt_task_cell.weekend {
+            background-color: #f7f7f7 !important;
         }
 
         .sss .task-header{
@@ -227,6 +233,8 @@
         }
         .content {
             display: flex;
+            border-bottom-left-radius: 0px !important;
+            border-bottom-right-radius: 0px !important;
         }
         .task-list {
             width: 600px;
@@ -235,6 +243,7 @@
             padding: 10px;
             padding-bottom: 0px;
             border-bottom-left-radius: 4px;
+            border-bottom-left-radius: 0px !important;
         }
         .task-header {
             display: flex;
@@ -277,11 +286,12 @@
 
         .today-line {
             position: absolute;
-            top: -20px;
+            top: 0;
             bottom: 0;
             width: 2px;
             background-color: #D9534F; /* Red color for the today line */
-            z-index: 100; /* Ensure it appears above other elements */
+            z-index: 1000; /* Ensure it appears above other elements */
+            pointer-events: none;
         }
 
         /* Highlight holidays in the Gantt chart */
@@ -373,7 +383,7 @@
             </div>
         </div>
         <div class="content" style="border: 1px solid #D1D5DB; border-radius: 4px;">
-            <div class="task-list" style="padding: 0px; margin-top: 0px;">
+            <div class="task-list" style="padding: 0px; margin-top: 0px; border-top-left-radius: 4px;">
                 <div class="task-header" style="margin-bottom: 0px; border-top-left-radius: 4px;">
                     <span style="width: 40%; font-size: 12px; cursor:pointer; display: inherit; border-right: 1px solid #eee; padding-top: 17px; padding-bottom: 17px;" id="sortProject">
                         Project
@@ -463,7 +473,7 @@
             </div>
 
             <div class="scroll-container" style="border-top-right-radius: 4px;">
-                <div id="gantt_here" data-check-height="{{ (count($data) * 32) + 52 }}" style="width: 100% !important; height: {{ (count($data) * 32) + 52 + 15 }}px;"></div>
+                <div id="gantt_here" data-check-height="{{ (count($data) * 32) + 52 }}" style="width: 100% !important; height: {{ (count($data) * 32) + 52 + 15 }}px; position: relative;"></div>
             </div>
         </div>
     </div>
@@ -517,6 +527,15 @@
             gantt.config.min_column_width = 24;
             gantt.config.max_column_width = 24;
             
+            // Add weekend class to task cells
+            gantt.templates.task_cell_class = function(task, date) {
+                const dayOfWeek = date.getDay();
+                if (dayOfWeek === 0 || dayOfWeek === 6) {
+                    return "weekend";
+                }
+                return "";
+            };
+            
             // Hide the grid completely
             gantt.config.grid_width = 0;
             
@@ -557,6 +576,53 @@
             // Initialize gantt
             gantt.init("gantt_here");
             gantt.parse(tasks);
+            
+            // Add today line to DHTMLX gantt using the .gantt_task container
+            function addTodayLine() {
+                const today = new Date();
+                const startDate = new Date('2025-01-01');
+                
+                // Calculate days from start to today
+                const daysFromStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+                
+                // Get the column width from gantt config
+                const columnWidth = gantt.config.min_column_width;
+                
+                // Calculate left position
+                const todayPosition = daysFromStart * columnWidth;
+                
+                // Find the gantt task container (DHTMLX's internal DOM structure)
+                const ganttTask = document.querySelector('.gantt_task');
+                if (ganttTask) {
+                    // Remove existing line if any
+                    const existingLine = ganttTask.querySelector('.today-marker-line');
+                    if (existingLine) existingLine.remove();
+                    
+                    // Create the today line
+                    const todayLine = document.createElement('div');
+                    todayLine.className = 'today-marker-line';
+                    todayLine.style.position = 'absolute';
+                    todayLine.style.left = todayPosition + 'px';
+                    todayLine.style.top = '52px';
+                    todayLine.style.width = '2px';
+                    todayLine.style.height = '100%';
+                    todayLine.style.backgroundColor = '#D9534F';
+                    todayLine.style.zIndex = '10';
+                    todayLine.style.pointerEvents = 'none';
+                    
+                    // Append to gantt_task container
+                    ganttTask.appendChild(todayLine);
+                }
+            }
+            
+            // Call after gantt is initialized
+            setTimeout(addTodayLine, 200);
+            
+            // Re-add today line after gantt renders
+            gantt.attachEvent("onGanttRender", function() {
+                setTimeout(addTodayLine, 50);
+                return true;
+            });
             
             // Scroll to today's position
             setTimeout(function() {

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Resources - Project Management</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='2' y='6' fill='%23000'/><rect width='24' height='2' y='11' fill='%23000'/><rect width='24' height='2' y='16' fill='%23000'/></svg>">
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -171,12 +172,15 @@
         .content {
             margin-top: 50px; /* Adjust based on header height */
             display: flex;
+            border-bottom-left-radius: 0px !important;
+            border-bottom-right-radius: 0px !important;
         }
         .task-list {
             width: 600px;
             background-color: #f7fafc;
             border-right: 1px solid #ccc;
             border-radius: 4px;
+            border-bottom-left-radius: 0px !important;
         }
         .task-header {
             display: flex;
@@ -218,12 +222,12 @@
         }
 
         .holiday {
-            background: #ebebeb;
+            background: #f7f7f7 !important;
             color: #dc2626;
         }
 
         .second-input .holiday {
-            background: #ebebeb !important;
+            background: #f7f7f7 !important;
             color: #dc2626 !important;
         }
         
@@ -237,6 +241,12 @@
         .team-member-row {
             position: relative;
             cursor: move;
+            border-right: 1px solid #eee;
+        }
+        
+        .not-archived > .team-member-row:first-child,
+        .archied > .team-member-row:first-child {
+            border-top: 1px solid #eee;
         }
 
         .team-member-row.ui-sortable-helper {
@@ -303,17 +313,17 @@
 
         .hierarchy-level-1 {
             background-color: #f8f9fa;
-            border-left: 3px solid #3b82f6;
+            border-left: 3px solid #000;
         }
 
         /* Calendar styling for expanded rows */
         .project-calendar-row {
-            background-color: rgba(59, 130, 246, 0.05);
+            background-color: #f8f9fa;
             /* border-left: 3px solid #3b82f6; */
         }
 
         .project-calendar-row.archived {
-            background-color: rgba(156, 163, 175, 0.1);
+            background-color: #f8f9fa;
             border-left-color: #9ca3af;
         }
 
@@ -520,12 +530,12 @@
 <body class="bg-gray-50" x-data="{
     showAddUserModal: false,
     showArchivedUsers: false
-}">
+}" x-init="$watch('showArchivedUsers', value => { setTimeout(() => { if (typeof updateLastTaskItemBorder === 'function') updateLastTaskItemBorder(); }, 400); });">
     @include('front.nav')
     <div class="mx-auto p-4 shadow rounded-lg border" style="background: #fff !important; border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15);">
         <div class="content p-2" style="padding-left: 0px !important; display: block; margin-bottom: 40px;">
             <div style="float: left; margin-top: 6px;">
-                <h5 style="font-size: 20px; font-weight: 600; padding-left: 10px;">Team Members</h5>
+                <h5 style="font-size: 20px; font-weight: 600; padding-left: 0px;">Team Members</h5>
             </div>
             <div class="flex items-center " style="float: right;">
                         <button class="text-gray-600 hover:text-black" id="home" style="margin-right: 8px;">
@@ -629,7 +639,7 @@
                                     <span style="width: 15%; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;" class="user-hour-{{ $item->id }}">
                                         {{ number_format($es) }}
                                     </span>
-                                    <span style="width: 8%; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;">
+                                    <span style="width: 8%; font-size: 12px;  padding-top: 6px; padding-bottom: 6px; text-align: center;">
                                         <div class="approval-status-circle" data-user-id="{{ $item->id }}" style="width: 12px; height: 12px; border-radius: 50%; margin: 0 auto; background-color: #ccc;"></div>
                                     </span>
                                     {{-- @if ($item->is_archived == 0)
@@ -645,8 +655,8 @@
                                         <!-- Project Row -->
                                         @if ($project->project->is_archived == 0)                                            
                                                 <div class="task-item project-row hierarchy-level-1" data-project-id="{{ $project->project_id }}" data-user-id="{{ $item->id }}">
-                                                    <span style="padding-left: 8px; width: 40%; font-size: 11px; display: inline-flex; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; align-items: center;">
-                                                        <span style="width: 8px; height: 8px; background-color: black; border-radius: 50%; margin-right: 8px; display: inline-block;"></span>{{ $project->project->name ?? 'Unknown Project' }}
+                                                    <span style="padding-left: 17px; width: 40%; font-size: 11px; display: inline-flex; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; align-items: center;">
+                                                        {{ $project->project->name ?? 'Unknown Project' }}
                                                     </span>
                                                     <span style="width: 22%; font-size: 11px; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; text-align: center;">Project</span>
                                                     <span style="width: 15%; font-size: 11px; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; text-align: center;">
@@ -717,8 +727,8 @@
                                         <!-- Project Row -->
                                         @if ($project->project->is_archived == 0)                                            
                                                 <div class="task-item project-row hierarchy-level-1" data-project-id="{{ $project->project_id }}" data-user-id="{{ $item->id }}">
-                                                    <span style="padding-left: 8px; width: 35%; font-size: 11px; display: inline-flex; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; align-items: center;">
-                                                        <span style="width: 8px; height: 8px; background-color: black; border-radius: 50%; margin-right: 8px; display: inline-block;"></span>{{ $project->project->name ?? 'Unknown Project' }}
+                                                    <span style="padding-left: 17px; width: 35%; font-size: 11px; display: inline-flex; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; align-items: center;">
+                                                        {{ $project->project->name ?? 'Unknown Project' }}
                                                     </span>
                                                     <span style="width: 20%; font-size: 11px; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; text-align: center;">Project</span>
                                                     <span style="width: 18%; font-size: 11px; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; text-align: center;">
@@ -1555,7 +1565,11 @@ $(document).ready(function () {
                 visibleUserCount = parseInt(visibleUserCount) + parseInt($('#archieved_users').val());
             }
 
+            // Count visible project rows (expanded projects)
+            const visibleProjectRows = $('.project-calendar-row:visible').length;
+
             console.log('Visible User Count:', visibleUserCount);
+            console.log('Visible Project Rows:', visibleProjectRows);
             
             // Calculate the number of days from the start date to today
             const daysFromStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
@@ -1563,8 +1577,8 @@ $(document).ready(function () {
             // Calculate the left position for the today line
             const todayPosition = daysFromStart * dayWidth;
             
-            // Calculate dynamic height: header (52px) + (visible users * 30px)
-            const totalHeight = 21 + (visibleUserCount * 30);
+            // Calculate dynamic height: header (21px) + (visible users * 30px) + (visible project rows * 30px)
+            const totalHeight = 21 + (visibleUserCount * 30) + (visibleProjectRows * 30);
             
             // Add the today line to the Gantt chart
             const todayLine = $('<div class="today-line"></div>');
@@ -1583,6 +1597,7 @@ $(document).ready(function () {
         // Call the function after the DOM is ready
         $(document).ready(function () {
             highlightToday();
+            updateLastTaskItemBorder();
         });
     </script>
 
@@ -1637,6 +1652,80 @@ $(document).ready(function () {
 //     });
 // });
 
+// Function to update border-radius and border-bottom on last visible task-item (GLOBAL)
+function updateLastTaskItemBorder() {
+    // Remove border-radius and border-bottom from all task-items
+    $('.task-item').css({
+        'border-bottom-left-radius': '',
+        'border-bottom': '1px solid #eee'
+    });
+    
+    // Find the last visible team-member-row in not-archived section
+    let lastNotArchived = $('.task-list .not-archived > .team-member-row:visible').last();
+    
+    // Check if there are any expanded projects after the last team member
+    if (lastNotArchived.length) {
+        let userId = lastNotArchived.data('user-id');
+        let memberProjects = $(`.member-projects[data-user-id="${userId}"]`);
+        
+        // If projects are expanded and visible, find the last project row
+        if (memberProjects.is(':visible') && memberProjects.find('.project-row:visible').length > 0) {
+            let lastProject = memberProjects.find('.project-row:visible').last();
+            lastProject.css({
+                'border-bottom-left-radius': '4px',
+                'border-bottom': 'none'
+            });
+        } else {
+            // No expanded projects, so the team member row is last
+            lastNotArchived.css({
+                'border-bottom-left-radius': '4px',
+                'border-bottom': 'none'
+            });
+        }
+    }
+    
+    // If archived users are shown, find the last visible in archived section
+    if ($('.task-list .archied').is(':visible')) {
+        let lastArchived = $('.task-list .archied > .team-member-row:visible').last();
+        
+        if (lastArchived.length) {
+            let userId = lastArchived.data('user-id');
+            let memberProjects = $(`.archied .member-projects[data-user-id="${userId}"]`);
+            
+            // Reset the not-archived section since archived is showing
+            if (lastNotArchived.length) {
+                let notArchivedUserId = lastNotArchived.data('user-id');
+                let notArchivedProjects = $(`.not-archived .member-projects[data-user-id="${notArchivedUserId}"]`);
+                if (notArchivedProjects.is(':visible') && notArchivedProjects.find('.project-row:visible').length > 0) {
+                    notArchivedProjects.find('.project-row:visible').last().css({
+                        'border-bottom-left-radius': '',
+                        'border-bottom': '1px solid #eee'
+                    });
+                } else {
+                    lastNotArchived.css({
+                        'border-bottom-left-radius': '',
+                        'border-bottom': '1px solid #eee'
+                    });
+                }
+            }
+            
+            // Check if archived section has expanded projects
+            if (memberProjects.is(':visible') && memberProjects.find('.project-row:visible').length > 0) {
+                let lastProject = memberProjects.find('.project-row:visible').last();
+                lastProject.css({
+                    'border-bottom-left-radius': '4px',
+                    'border-bottom': 'none'
+                });
+            } else {
+                lastArchived.css({
+                    'border-bottom-left-radius': '4px',
+                    'border-bottom': 'none'
+                });
+            }
+        }
+    }
+}
+
 $(document).ready(function() {
     // Track sort direction for each column
     let sortDirections = {
@@ -1645,28 +1734,6 @@ $(document).ready(function() {
         cost: true,
         hours: true
     };
-
-    // Function to update border-radius on last visible task-item
-    function updateLastTaskItemBorder() {
-        // Remove border-radius from all task-items
-        $('.task-item').css('border-bottom-left-radius', '');
-        
-        // Find the last visible task-item in not-archived section
-        let lastNotArchived = $('.task-list .not-archived .task-item:visible').last();
-        if (lastNotArchived.length) {
-            lastNotArchived.css('border-bottom-left-radius', '4px');
-        }
-        
-        // If archived users are shown, find the last visible in archived section
-        if ($('.task-list .archied').is(':visible')) {
-            let lastArchived = $('.task-list .archied .task-item:visible').last();
-            if (lastArchived.length) {
-                // Remove border from not-archived last item if archived is shown
-                lastNotArchived.css('border-bottom-left-radius', '');
-                lastArchived.css('border-bottom-left-radius', '4px');
-            }
-        }
-    }
 
     function sortTaskItems(getKey, col, isNumeric = false) {
         // Get items from left table (task-list)
@@ -2052,11 +2119,21 @@ document.addEventListener('DOMContentLoaded', function() {
             const projectCalendarRows = $(`.member-project-${targetId}`);
             
             if (isExpanded) {
-                projectsDiv.slideUp(300);
-                projectCalendarRows.slideUp(300);
+                projectsDiv.slideUp(300, function() {
+                    updateLastTaskItemBorder();
+                    updateTodayLine($('.archied').is(':visible'));
+                });
+                projectCalendarRows.slideUp(300, function() {
+                    updateTodayLine($('.archied').is(':visible'));
+                });
             } else {
-                projectsDiv.slideDown(300);
-                projectCalendarRows.slideDown(300);
+                projectsDiv.slideDown(300, function() {
+                    updateLastTaskItemBorder();
+                    updateTodayLine($(('.archied')).is(':visible'));
+                });
+                projectCalendarRows.slideDown(300, function() {
+                    updateTodayLine($('.archied').is(':visible'));
+                });
             }
         }
     });

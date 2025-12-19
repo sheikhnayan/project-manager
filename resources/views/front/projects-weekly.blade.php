@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Projects - Project Management</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='2' y='6' fill='%23000'/><rect width='24' height='2' y='11' fill='%23000'/><rect width='24' height='2' y='16' fill='%23000'/></svg>">
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -161,12 +162,15 @@
         .content {
             margin-top: 50px; /* Adjust based on header height */
             display: flex;
+            border-bottom-left-radius: 0px !important;
+            border-bottom-right-radius: 0px !important;
         }
         .task-list {
             width: 600px;
             background-color: #f7fafc;
             border-right: 1px solid #ccc;
             border-radius: 4px;
+            border-bottom-left-radius: 0px !important;
         }
         .task-header {
             display: flex;

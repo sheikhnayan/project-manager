@@ -198,12 +198,15 @@
         .content {
             margin-top: 50px; /* Adjust based on header height */
             display: flex;
+            border-bottom-left-radius: 0px !important;
+            border-bottom-right-radius: 0px !important;
         }
         .task-list {
             width: 600px;
             background-color: #f7fafc;
             border-right: 1px solid #ccc;
             border-radius: 4px;
+            border-bottom-left-radius: 0px !important;
         }
         .task-header {
             display: flex;

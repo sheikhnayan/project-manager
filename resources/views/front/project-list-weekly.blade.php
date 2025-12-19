@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Projects - Project Management</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='2' y='6' fill='%23000'/><rect width='24' height='2' y='11' fill='%23000'/><rect width='24' height='2' y='16' fill='%23000'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
@@ -72,6 +73,11 @@
         /* Grid column lines */
         .gantt_task_cell {
             border-right: 1px solid #ebebeb;
+        }
+        
+        /* Weekend task cell background */
+        .gantt_task_cell.weekend {
+            background-color: #f7f7f7 !important;
         }
 
         .sss .task-header{
@@ -215,6 +221,8 @@
         }
         .content {
             display: flex;
+            border-bottom-left-radius: 0px !important;
+            border-bottom-right-radius: 0px !important;
         }
         .task-list {
             width: 600px;
@@ -222,7 +230,7 @@
             border-right: 1px solid #ccc;
             padding: 10px;
             padding-bottom: 0px;
-            border-bottom-left-radius: 4px;
+            border-bottom-left-radius: 0px;
         }
         .task-header {
             display: flex;
@@ -237,7 +245,7 @@
         }
         .task-item {
             padding: 10px;
-            border-radius: 4px;
+            /* border-radius: 4px; */
             position: relative;
             display: flex;
             align-items: center;
@@ -265,7 +273,8 @@
             width: 2px;
             height: 55px;
             background-color: #D9534F; /* Red color for the today line */
-            z-index: 100; /* Ensure it appears above other elements */
+            z-index: 1000; /* Ensure it appears above other elements */
+            pointer-events: none;
         }
 
         .today-line::before {
@@ -373,7 +382,7 @@
             </div>
         </div>
         <div class="content" style="border: 1px solid #D1D5DB; border-radius: 4px;">
-            <div class="task-list" style="padding: 0px; margin-top: 0px;">
+            <div class="task-list" style="padding: 0px; margin-top: 0px; border-top-left-radius: 4px;">
                 <div class="task-header" style="margin-bottom: 0px; border-top-left-radius: 4px;">
                     <span style="width: 40%; font-size: 12px; cursor:pointer; display: inherit; padding-left: 10px; border-right: 1px solid #eee; padding-top: 17px; padding-bottom: 17px;" id="sortProject">
                         Project
@@ -452,7 +461,7 @@
             </div>
 
             <div class="scroll-container" style="border-top-right-radius: 4px;">
-                <div id="gantt_here" data-check-height="{{ (count($data) * 32) + 52 }}" style="width: 100% !important; height: {{ (count($data) * 32) + 52 + 15 }}px;"></div>
+                <div id="gantt_here" data-check-height="{{ (count($data) * 32) + 52 }}" style="width: 100% !important; height: {{ (count($data) * 32) + 52 + 15 }}px; position: relative;"></div>
             </div>
         </div>
     </div>
@@ -518,13 +527,37 @@
             
             // Custom week formatter to handle week 53 as week 1 of next year
             gantt.date.week_format = function(date) {
-                var weekNum = gantt.date.date_to_str("%W")(date);
+                var weekNum = parseInt(gantt.date.date_to_str("%W")(date));
                 var year = date.getFullYear();
+                var month = date.getMonth(); // 0-11 (0=Jan, 11=Dec)
                 
-                // If week is 53, convert to week 1 of next year
-                if (weekNum == 53) {
+                // If week is 53 in December, show as W1 (transition to next year)
+                if (weekNum == 53 && month === 11) {
                     return "W1";
                 }
+                
+                // If we're in early January and it's week 1, check if previous year had week 53
+                // by looking at Dec 28 of previous year (always in last week of year)
+                if (weekNum == 1 && month === 0) { // January
+                    var lastYearDate = new Date(year - 1, 11, 28); // Dec 28 of previous year
+                    var lastYearWeek = parseInt(gantt.date.date_to_str("%W")(lastYearDate));
+                    
+                    // If previous year had 53 weeks, increment this week number
+                    if (lastYearWeek == 53) {
+                        return "W2";
+                    }
+                }
+                
+                // For other weeks in January after week 1, also check and increment if needed
+                if (month === 0 && weekNum > 1) { // January, weeks 2+
+                    var lastYearDate = new Date(year - 1, 11, 28);
+                    var lastYearWeek = parseInt(gantt.date.date_to_str("%W")(lastYearDate));
+                    
+                    if (lastYearWeek == 53) {
+                        return "W" + (weekNum + 1);
+                    }
+                }
+                
                 return "W" + weekNum;
             };
             
@@ -542,6 +575,15 @@
             gantt.config.scale_height = 52;
             gantt.config.min_column_width = 32;
             gantt.config.max_column_width = 32;
+            
+            // Add weekend class to task cells
+            gantt.templates.task_cell_class = function(task, date) {
+                const dayOfWeek = date.getDay();
+                if (dayOfWeek === 0 || dayOfWeek === 6) {
+                    return "weekend";
+                }
+                return "";
+            };
             
             // Hide the grid completely
             gantt.config.grid_width = 0;
