@@ -273,7 +273,7 @@ class ProjectController extends Controller
         $new->client_id = $request->client_id;
         $new->expected_profit = $request->expected_profit;
         $new->start_date = Carbon::now()->format('Y-m-d');
-        $new->end_date = Carbon::now()->addDays(365)->format('Y-m-d');
+        $new->end_date = Carbon::now()->addDays(7)->format('Y-m-d');
         $new->budget_total = 0;
         
         // Set company_id for new projects (from authenticated user)

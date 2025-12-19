@@ -318,12 +318,12 @@
 
         /* Calendar styling for expanded rows */
         .project-calendar-row {
-            background-color: #f8f9fa;
+            background-color: #f8f9fa !important;
             /* border-left: 3px solid #3b82f6; */
         }
 
         .project-calendar-row.archived {
-            background-color: #f8f9fa;
+            background-color: #f8f9fa !important;
             border-left-color: #9ca3af;
         }
 
