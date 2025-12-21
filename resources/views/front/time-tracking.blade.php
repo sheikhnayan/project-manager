@@ -436,6 +436,36 @@
                 updateDailyTotals();
             }
 
+            // Function to check for duplicate project/task combinations
+            function checkDuplicateProjectTask(currentRow) {
+                const currentProjectSelect = currentRow.querySelector('.project-select');
+                const currentTaskSelect = currentRow.querySelector('.task-select');
+                
+                if (!currentProjectSelect?.value || !currentTaskSelect?.value) {
+                    return false; // No selection yet, not a duplicate
+                }
+                
+                const currentProjectValue = currentProjectSelect.value;
+                const currentTaskValue = currentTaskSelect.value;
+                
+                // Check all other rows
+                const tbody = timeTable.querySelector('tbody');
+                const allRows = Array.from(tbody.querySelectorAll('tr'));
+                
+                for (let row of allRows) {
+                    if (row === currentRow) continue; // Skip current row
+                    
+                    const projectSelect = row.querySelector('.project-select');
+                    const taskSelect = row.querySelector('.task-select');
+                    
+                    if (projectSelect?.value === currentProjectValue && taskSelect?.value === currentTaskValue) {
+                        return true; // Duplicate found
+                    }
+                }
+                
+                return false; // No duplicate
+            }
+
             async function saveData() {
                 // Prevent saving if the week is already approved
                 if (isCurrentWeekApproved) {
@@ -734,6 +764,22 @@
                 projectSelect.addEventListener('change', function () {
                     const selectedValue = this.value;
                     
+                    // Check for duplicate when project changes
+                    if (selectedValue && taskSelect.value) {
+                        if (checkDuplicateProjectTask(newRow)) {
+                            $('.alert-message').text('This project and task combination already exists for this week.');
+                            successAlert.classList.remove('hidden');
+                            setTimeout(() => {
+                                successAlert.classList.add('hidden');
+                            }, 3000);
+                            projectSelect.value = '';
+                            taskSelect.innerHTML = '<option value="">Select Project First</option>';
+                            taskSelect.disabled = true;
+                            validateTaskSelection(newRow);
+                            return;
+                        }
+                    }
+                    
                     if (selectedValue.startsWith('internal_dept_')) {
                         // Handle department selection - fetch internal tasks for this department
                         taskSelect.disabled = false;
@@ -763,6 +809,20 @@
 
                 // Event listener for task selection
                 taskSelect.addEventListener('change', function () {
+                    // Check for duplicate when task changes
+                    if (projectSelect.value && this.value) {
+                        if (checkDuplicateProjectTask(newRow)) {
+                            $('.alert-message').text('This project and task combination already exists for this week.');
+                            successAlert.classList.remove('hidden');
+                            setTimeout(() => {
+                                successAlert.classList.add('hidden');
+                            }, 3000);
+                            this.value = '';
+                            validateTaskSelection(newRow);
+                            return;
+                        }
+                    }
+                    
                     validateTaskSelection(newRow);
                 });
 
@@ -783,6 +843,17 @@
                 // Add event listeners to input fields for updating totals
                 newRow.querySelectorAll('.input-field').forEach(input => {
                     input.addEventListener('input', function () {
+                        // Prevent editing if week is approved
+                        if (isCurrentWeekApproved) {
+                            $('.alert-message').text('Cannot edit approved time entries.');
+                            successAlert.classList.remove('hidden');
+                            setTimeout(() => {
+                                successAlert.classList.add('hidden');
+                            }, 3000);
+                            this.value = this.dataset.originalValue || '';
+                            return;
+                        }
+                        
                         // Check if task is selected before allowing new input (but allow existing values to remain)
                         const taskSelect = this.closest('tr').querySelector('.task-select');
                         if (!taskSelect.value && this.value !== this.dataset.originalValue) {
