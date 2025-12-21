@@ -127,6 +127,7 @@ Route::controller(ProjectController::class)->prefix('/projects')->group(function
     Route::post('/update-project/{id}', 'update')->name('projects.update')->middleware('permission:edit_projects');
     Route::post('/{id}', 'store_task')->name('projects.task.store')->middleware('permission:create_tasks');
     Route::post('/update/{id}', 'update_task')->name('projects.task.update')->middleware('permission:edit_tasks');
+    Route::delete('/task/{id}', 'delete_task')->name('projects.task.delete')->middleware('permission:delete_tasks');
     Route::post('/member-store/{id}', 'store_member')->name('projects.member.store')->middleware('permission:manage_project_team');
     Route::put('/{id}', 'update')->name('projects.update')->middleware('permission:edit_projects');
     Route::delete('/{id}', 'destroy')->name('projects.destroy')->middleware('permission:delete_projects');

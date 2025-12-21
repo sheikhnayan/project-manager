@@ -77,10 +77,11 @@
                 </div>
                 <div class="mb-4">
                     <label for="budget_total" class="block text-sm font-medium text-gray-700">Budget</label>
-                    <input type="number" id="budget_totaledit" name="budget_total" class="w-full rounded-md border-gray-300 focus:border-black focus:ring-black" value="0" required>
+                    <input type="text" id="budget_totaledit" name="budget_total" class="w-full rounded-md border-gray-300 focus:border-black focus:ring-black budget-input" value="0" required>
                 </div>
             </div>
             <div class="modal-footer">
+                <button id="deleteTaskButton" type="button" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" style="margin-right: auto;">Delete Task</button>
                 <button id="cancelEditTaskButton" type="button" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancel</button>
                 <button id="saveTaskButton" type="submit" class="bg-black text-white px-4 py-2 rounded hover:bg-blue-600">Save</button>
             </div>
@@ -135,7 +136,7 @@
               <div class="form-group" style="margin-top: 1rem; font-size: 12px;">
                   <div>
                       <div class="heading">
-                          <h6 class="mt-4 mb-3" style="float: left; width: 50%">All Phase</h6>
+                          <h6 class="mt-4 mb-3" style="float: left; width: 25%">All Phase</h6>
                           <h6 class="mt-4 mb-3" style="float: right;">
                               @php
                               // $time = DB::table('time_entries')->where('project_id',$data->id)->get();
@@ -153,39 +154,23 @@
                           @endphp
                               {{ formatCurrency($spent) }} OF {{ formatCurrency($data->tasks->sum('budget_total')) }}</h6>
                       </div>
-                      <div class="progress-bar__wrapper">
+                      <div class="progress-bar__wrapper" style="position: relative;">
                           @php
                               $budget = $data->tasks->sum('budget_total') < 1 ? 1 : $data->tasks->sum('budget_total');
                               $percentage = ($spent / $budget) * 100;
+                              // Check if profit is below expected profit threshold
+                              $isOverBudget = $pe < $data->expected_profit;
+                              $profitThresholdPosition = 100 - $data->expected_profit;
                           @endphp
   
-                          @if ($percentage > 100)
-  
-                          <style>
-                              .progress-{{ $data->id }}::-webkit-progress-value {
-                                  background-color: red !important; /* Color of the progress value */
-                                  border-radius: 10px;
-                              }
-  
-                              .progress-{{ $data->id }}::-moz-progress-bar {
-                                  background-color: red !important; /* Color of the progress value for Firefox */
-                              }
-                          </style>
-                          @else
-  
-                          <style>
-                              .progress-{{ $data->id }}::-webkit-progress-value {
-                                  background-color: rgb(111, 134, 124) !important; /* Green color for the progress value */
-                                  border-radius: 10px;
-                              }
-  
-                              .progress-{{ $data->id }}::-moz-progress-bar {
-                                  background-color: rgb(111, 134, 124) !important; /* Green color for the progress value for Firefox */
-                              }
-                          </style>
-                          @endif
-  
-                          <progress class="rounded-full h-2.5 progress-{{ $data->id }}" id="progress-bar" style="width:100%; @if($percentage > 100) accent-color: red; @else accent-color: rgb(111, 134, 124); @endif" value="{{ $percentage }}" max="100"></progress>
+                          <!-- Progress bar container with orange profit zone -->
+                          <div style="position: relative; width: 100%; height: 10px; background-color: #e5e7eb; border-radius: 10px; overflow: hidden;">
+                              <!-- Orange profit zone (the last X% of the bar) -->
+                              <div style="position: absolute; right: 0; top: 0; width: {{ $data->expected_profit }}%; height: 100%; background-color: orange;"></div>
+                              
+                              <!-- Actual progress bar -->
+                              <div style="position: absolute; left: 0; top: 0; width: {{ min($percentage, 100) }}%; height: 100%; background-color: @if($isOverBudget) red @else rgb(111, 134, 124) @endif; border-radius: 10px; transition: width 0.3s ease;"></div>
+                          </div>
                       </div>
                   </div>
   
@@ -283,7 +268,7 @@
                     <!-- Manual Progress Circle with Input -->
                     <div style="position: relative; display: inline-block; margin-left: 1rem; margin-top: 1rem;">
                         <span class="circle manual-progress-circle" id="manualProgressCircle" style="background: rgb(111, 134, 124); font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0; width: 50px; height: 50px;">
-                            <span id="manualProgressDisplay">{{ $data->manual_progress ?? 0 }}%</span>
+                            <span id="manualProgressDisplay">{{ floor($data->manual_progress ?? 0) == ($data->manual_progress ?? 0) ? (int)($data->manual_progress ?? 0) : $data->manual_progress ?? 0 }}%</span>
                         </span>
                         <input 
                             type="number" 
@@ -301,41 +286,26 @@
                 <div class="form-group" style="margin-top: 1rem; font-size: 12px;">
                     <div>
                         <div class="heading">
-                            <h6 class="mt-4 mb-3" style="float: left; width: 50%">All Phase</h6>
+                            <h6 class="mt-4 mb-3" style="float: left; width: 25%">All Phase</h6>
                             <h6 class="mt-4 mb-3" style="float: right;">
                                 {{ formatCurrency($actualSpent) }} OF {{ formatCurrency($totalBudget) }}</h6>
                         </div>
-                        <div class="progress-bar__wrapper">
+                        <div class="progress-bar__wrapper" style="position: relative;">
                             @php
                                 $budget = $totalBudget < 1 ? 1 : $totalBudget;
                                 $percentage = ($actualSpent / $budget) * 100;
+                                // Check if profit is below expected profit threshold
+                                $isActualOverBudget = $pe < $data->expected_profit;
                             @endphp
 
-                            @if ($percentage > 100)
-                            <style>
-                                .actual-progresss-{{ $data->id }}::-webkit-progress-value {
-                                    background-color: red; /* Color of the progress value */
-                                    border-radius: 10px;
-                                }
-
-                                .actual-progresss-{{ $data->id }}::-moz-progress-bar {
-                                    background-color: red; /* Color of the progress value for Firefox */
-                                }
-                            </style>
-                            @else
-                            <style>
-                                .actual-progresss-{{ $data->id }}::-webkit-progress-value {
-                                    background-color: rgb(111, 134, 124); /* Green color for the progress value */
-                                    border-radius: 10px;
-                                }
-
-                                .actual-progresss-{{ $data->id }}::-moz-progress-bar {
-                                    background-color: rgb(111, 134, 124); /* Green color for the progress value for Firefox */
-                                }
-                            </style>
-                            @endif
-
-                            <progress class="rounded-full h-2.5 actual-progresss-{{ $data->id }}" id="actual-progress-bar" style="accent-color:rgb(111, 134, 124); width:100%" value="{{ $percentage }}" max="100"></progress>
+                            <!-- Progress bar container with orange profit zone -->
+                            <div style="position: relative; width: 100%; height: 10px; background-color: #e5e7eb; border-radius: 10px; overflow: hidden;">
+                                <!-- Orange profit zone (the last X% of the bar) -->
+                                <div style="position: absolute; right: 0; top: 0; width: {{ $data->expected_profit }}%; height: 100%; background-color: orange;"></div>
+                                
+                                <!-- Actual progress bar -->
+                                <div style="position: absolute; left: 0; top: 0; width: {{ min($percentage, 100) }}%; height: 100%; background-color: @if($isActualOverBudget) red @else rgb(111, 134, 124) @endif; border-radius: 10px; transition: width 0.3s ease;"></div>
+                            </div>
                         </div>
                     </div>
 
@@ -407,7 +377,7 @@
                 <div class="form-group" style="margin-top: 2rem; font-size: 12px;">
                     <div>
                         <div class="heading">
-                            <h6 class="mt-4 mb-3" style="float: left; width: 63%">All Phase</h6>
+                            <h6 class="mt-4 mb-3" style="float: left; width: 25%">All Phase</h6>
                             <h6 class="mt-4 mb-3" style="float: right;" id="employeeAllPhaseHours">
                                 @php
                                     $totalHours = 0;
@@ -575,7 +545,7 @@
                                 </div>
                                 <div class="mb-4">
                                     <label for="budget_total" class="block text-sm font-medium text-gray-700">Budget</label>
-                                    <input type="number" id="budget_total" name="budget_total" class="w-full rounded-md border-gray-300 focus:border-black focus:ring-black" value="0" required>
+                                    <input type="text" id="budget_total" name="budget_total" class="w-full rounded-md border-gray-300 focus:border-black focus:ring-black budget-input" value="0" required>
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -625,17 +595,17 @@
         userIdToHide = $(this).data('id'); // Get the user ID
         $currentElement = $(this); // Store the current element
         
-        // Check if user is currently hidden (has fa-eye class) or visible (has fa-eye-slash class)
-        const isCurrentlyHidden = $currentElement.hasClass('fa-eye');
+        // Check if user is currently visible (has fa-eye class) or hidden (has fa-eye-slash class)
+        const isCurrentlyVisible = $currentElement.hasClass('fa-eye');
         
-        if (isCurrentlyHidden) {
-            // User is hidden, so we're showing them
-            $('#confirmationModalHeader').text('Confirm Showing Employee');
-            $('#confirmationModalText').text('Are you sure you want to show this employee?');
-        } else {
+        if (isCurrentlyVisible) {
             // User is visible, so we're hiding them
             $('#confirmationModalHeader').text('Confirm Hiding Employee');
             $('#confirmationModalText').text('Are you sure you want to hide this employee?');
+        } else {
+            // User is hidden, so we're showing them
+            $('#confirmationModalHeader').text('Confirm Showing Employee');
+            $('#confirmationModalText').text('Are you sure you want to show this employee?');
         }
         
         $('#confirmationModal').fadeIn(); // Show the modal
@@ -707,6 +677,9 @@
 
 <script>
 $(document).ready(function() {
+    // Hide delete button initially (it will only show when editing a task)
+    $('#deleteTaskButton').hide();
+
     // Open modal and fill data
     $('.open-edit-task-modal').on('click', function() {
         console.log($(this).data('task-date'));
@@ -721,8 +694,41 @@ $(document).ready(function() {
         $('#budget_totaledit').val($(this).data('task-budget'));
         // Change modal header for edit
         $('#editTaskModal .modal-header').text('Edit Task');
+        // Show delete button when editing
+        $('#deleteTaskButton').show();
         // Show modal
         $('#editTaskModal').fadeIn();
+    });
+
+    // Delete task button handler
+    $('#deleteTaskButton').on('click', function(e) {
+        e.preventDefault();
+        const taskId = $('#editTaskId').val();
+        
+        if (!taskId) {
+            alert('No task selected');
+            return;
+        }
+        
+        if (confirm('Are you sure you want to delete this task? This will also delete all time entries and estimated time entries for this task.')) {
+            $.ajax({
+                url: `/projects/task/${taskId}`,
+                type: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    $('#editTaskModal').fadeOut();
+                    $('#addTaskForm')[0].reset();
+                    $('#editTaskId').val('');
+                    $('#editTaskModal .modal-header').text('Add Task');
+                    location.reload();
+                },
+                error: function(xhr) {
+                    alert('Error deleting task: ' + (xhr.responseJSON?.message || 'Unknown error'));
+                }
+            });
+        }
     });
 
     // Cancel button closes modal and resets form
@@ -732,6 +738,7 @@ $(document).ready(function() {
         $('#addTaskForm')[0].reset();
         $('#editTaskId').val('');
         $('#editTaskModal .modal-header').text('Add Task');
+        $('#deleteTaskButton').hide();
 
         return false;
     });
@@ -761,7 +768,85 @@ $(document).ready(function() {
             $('#addTaskForm')[0].reset();
             $('#editTaskId').val('');
             $('#editTaskModal .modal-header').text('Add Task');
+            $('#deleteTaskButton').hide();
         }
+    });
+});
+</script>
+
+<script>
+// Format number with thousand separators
+function formatNumberWithCommas(value) {
+    // Remove all non-digit characters except decimal point
+    let num = value.toString().replace(/[^0-9.]/g, '');
+    
+    // Split into integer and decimal parts
+    let parts = num.split('.');
+    
+    // Format integer part with commas
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    
+    // Return formatted number (limit to 2 decimal places if decimal exists)
+    return parts.length > 1 ? parts[0] + '.' + parts[1].substring(0, 2) : parts[0];
+}
+
+// Remove thousand separators to get raw number
+function parseFormattedNumber(value) {
+    return value.toString().replace(/,/g, '');
+}
+
+$(document).ready(function() {
+    // Format budget input fields on input
+    $('.budget-input').on('input', function() {
+        let cursorPosition = this.selectionStart;
+        let oldValue = $(this).val();
+        let oldLength = oldValue.length;
+        
+        // Get raw number and format it
+        let rawValue = parseFormattedNumber(oldValue);
+        let formattedValue = formatNumberWithCommas(rawValue);
+        
+        // Update the field
+        $(this).val(formattedValue);
+        
+        // Adjust cursor position based on formatting changes
+        let newLength = formattedValue.length;
+        let lengthDiff = newLength - oldLength;
+        let newPosition = cursorPosition + lengthDiff;
+        
+        // Set cursor position
+        this.setSelectionRange(newPosition, newPosition);
+    });
+    
+    // Format on blur (cleanup)
+    $('.budget-input').on('blur', function() {
+        let value = $(this).val();
+        let rawValue = parseFormattedNumber(value);
+        
+        // If empty or 0, set to 0
+        if (!rawValue || rawValue === '' || parseFloat(rawValue) === 0) {
+            $(this).val('0');
+        } else {
+            $(this).val(formatNumberWithCommas(rawValue));
+        }
+    });
+    
+    // Before form submission, convert formatted values to raw numbers
+    $('#addTaskForm').on('submit', function(e) {
+        $('.budget-input').each(function() {
+            let rawValue = parseFormattedNumber($(this).val());
+            $(this).val(rawValue);
+        });
+    });
+    
+    // Format initial values when edit modal opens
+    $('.open-edit-task-modal').on('click', function() {
+        setTimeout(function() {
+            $('.budget-input').each(function() {
+                let value = $(this).val();
+                $(this).val(formatNumberWithCommas(value));
+            });
+        }, 100);
     });
 });
 </script>
@@ -1352,8 +1437,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const value = parseFloat(input.value) || 0;
         const projectId = input.getAttribute('data-project-id');
         
-        // Update display
-        display.textContent = value + '%';
+        // Update display - no decimals for whole numbers
+        const displayValue = value % 1 === 0 ? Math.round(value) : value;
+        display.textContent = displayValue + '%';
         display.style.display = 'block';
         input.style.display = 'none';
         

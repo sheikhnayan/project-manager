@@ -119,8 +119,55 @@ if (!function_exists('formatCurrency')) {
             'DKK' => 'kr',
         ];
         
+        // European currencies use period for thousands, comma for decimals
+        $europeanCurrencies = ['EUR', 'DKK', 'CHF', 'NOK', 'SEK', 'PLN', 'CZK', 'HUF', 'RON', 'BGN', 'HRK'];
+        $isEuropean = in_array($currency, $europeanCurrencies);
+        
         $symbol = $symbols[$currency] ?? $currency . ' ';
         
-        return $symbol . number_format($amount, 0);
+        // Check if amount has decimals
+        $hasDecimals = floor($amount) != $amount;
+        $decimals = $hasDecimals ? 2 : 0;
+        
+        if ($isEuropean) {
+            // European format: 1.000.000,50 or 1.000.000
+            return $symbol . number_format($amount, $decimals, ',', '.');
+        } else {
+            // US format: 1,000,000.50 or 1,000,000
+            return $symbol . number_format($amount, $decimals, '.', ',');
+        }
+    }
+}
+
+if (!function_exists('formatHours')) {
+    /**
+     * Format hours according to currency locale
+     *
+     * @param float $hours
+     * @return string
+     */
+    function formatHours($hours)
+    {
+        try {
+            $currency = globalSettings('currency') ?: 'USD';
+        } catch (\Exception $e) {
+            $currency = 'USD';
+        }
+        
+        // European currencies use comma for decimal separator
+        $europeanCurrencies = ['EUR', 'DKK', 'CHF', 'NOK', 'SEK', 'PLN', 'CZK', 'HUF', 'RON', 'BGN', 'HRK'];
+        $isEuropean = in_array($currency, $europeanCurrencies);
+        
+        // Check if hours has decimals
+        $hasDecimals = floor($hours) != $hours;
+        $decimals = $hasDecimals ? 1 : 0;
+        
+        if ($isEuropean) {
+            // European format: 25,5 or 25 (comma for decimals, no thousands separator)
+            return number_format($hours, $decimals, ',', '');
+        } else {
+            // US format: 25.5 or 25 (period for decimals)
+            return number_format($hours, $decimals, '.', '');
+        }
     }
 }

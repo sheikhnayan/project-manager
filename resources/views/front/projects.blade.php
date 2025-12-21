@@ -69,7 +69,7 @@
             width: 24px !important;
             height: 20px !important;
             text-align: center;
-            border: 1px solid #ccc;
+            border: 1px solid #f0f0f0;
             box-sizing: border-box;
         }
 
@@ -113,7 +113,7 @@
         .calendar-day {
             display: inline-block;
             vertical-align: top;
-            border: 1px solid #ccc;
+            border: unset;
             padding-top: 1px;
             font-size: 10px;
             box-sizing: border-box;
@@ -122,6 +122,7 @@
             width: 24px !important;
             height: 20px !important;
             text-align: center;
+            border-right: 1px solid #f0f0f0;
         }
         .scroll-container {
             overflow-x: scroll;
@@ -218,10 +219,26 @@
                         .task-circle {
             width: 15px;
             height: 15px;
-            border-radius: 50%;
-            background-color: #000;
             margin-right: 10px;
-            display: inline-block;
+            display: inline-flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .task-circle::before,
+        .task-circle::after {
+            content: '';
+            width: 100%;
+            height: 2px;
+            background-color: #000;
+            display: block;
+        }
+        
+        .task-circle span {
+            width: 100%;
+            height: 2px;
+            background-color: #000;
+            display: block;
         }
 
         .team-member-row {
@@ -339,7 +356,7 @@
         }
 
         .gantt-weekend-cell{
-            border-bottom: 1px solid #ccc !important;
+            /* Border handled by span element */
         }
         
         /* Weekend styling for gantt scale cells */
@@ -526,7 +543,11 @@
             background: #000 !important;
         }
 
-         .gantt_scale_line:first-child .gantt_scale_cell span{
+        .gantt_scale_cell{
+            border-bottom: 1px solid #f0f0f0 !important;
+        }
+
+        .gantt_scale_line:first-child .gantt_scale_cell span{
             color: #fff !important;
             font-size: 14px;
         }
@@ -534,12 +555,11 @@
         .gantt_scale_line:not(:first-child) .gantt_scale_cell span{
             display: inline-block;
             vertical-align: top;
-            border: 1px solid #ccc;
-            /* padding-top: 1px; */
+            border: unset;
+            border-right: 1px solid #f0f0f0;
             font-size: 10px;
             box-sizing: border-box;
             margin: 0;
-            border-top: unset;
             width: 24px !important;
             height: 20px !important;
             text-align: center;
@@ -720,7 +740,7 @@
                             Title
                             <img style="margin-left: 5px;" src="{{ asset('sort.svg') }}" id="sortProjectIcon" alt="">
                         </span>
-                        <span style="width: 25%; font-size: 12px; border-right: 1px solid #eee; padding-top: 17px; padding-bottom: 17px; text-align: center;">Date</span>
+                        <span style="width: 25%; font-size: 12px; border-right: 1px solid #eee; padding-top: 17px; padding-bottom: 17px; text-align: center;">Days</span>
                         <span style="width: 15%; font-size: 12px; border-right: 1px solid #eee; padding-top: 17px; padding-bottom: 17px; text-align: center;">Budget</span>
                         <span class="text-center add-task" style="font-size: 12px; width: 10%; padding-top: 17px; padding-bottom: 17px; text-align: center" id="addTaskButton"><i class="fas fa-plus"></i></span>
                     </div>
@@ -729,10 +749,15 @@
                             <div class="task-item" data-task="task{{ $key + 1 }}" style="margin-bottom: 0px; border-bottom: 1px solid #eee; margin-left: 0px; background: #fff;">
                                 {{-- <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="User 1"> --}}
                                 <span style="width: 50%; font-size: 12px; display: inline-flex; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px;">
-                                    <div class="task-circle"></div>
+                                    <div class="task-circle"><span></span></div>
                                     {{ $item->name }}
                                 </span>
-                                <span class="start-{{ $item->id }}" style="width: 25%; font-size: 12px; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;">{{ formatDate($item->start_date) }} </span>
+                                <span class="start-{{ $item->id }}" style="width: 25%; font-size: 12px; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;">
+                                    @php
+                                        $days = \Carbon\Carbon::parse($item->start_date)->diffInDays(\Carbon\Carbon::parse($item->end_date)) + 1;
+                                    @endphp
+                                    {{ $days }}
+                                </span>
                                 <span style="width: 15%; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;">
                                     <input type="text" name="budget_total" data-task-id="{{ $item->id }}" value="{{ formatCurrency(round($item->budget_total)) }}" class="budget_total" style="width: 100%; font-size: 12px; text-align: center;">
                                 </span>
@@ -799,7 +824,7 @@
                                         @endphp
                                     <span style="width: 25%; font-size: 12px; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;" class="user-cost-{{ $item->user_id }}">{{ formatCurrency($item->user->hourly_rate*$es) }}</span>
                                     <span style="width: 15%; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;" class="user-hour-{{ $item->user_id }}">
-                                        {{ number_format($es) }}
+                                        {{ formatHours($es) }}
                                     </span>
                                     @if ($item->archieve == 0)
                                     <span style="display: block; width:10%; padding-top: 6px; padding-bottom: 6px; text-align: center;"> <i class="fas fa-eye  hide-user" data-id="{{ $item->id }}" style="color: #4B5563; font-size: 13px;"></i> </span>
@@ -813,7 +838,11 @@
                                     <!-- Summary row showing time entries with actual data -->
                                     <div class="task-item time-entry-row" data-user-id="{{ $item->user_id }}">
                                         <span style="padding-left: 20px; width: 50%; font-size: 11px; display: inline-flex; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; align-items: center;">
-                                            <span style="width: 6px; height: 6px; background-color: #6b7280; border-radius: 50%; margin-right: 8px; display: inline-block;"></span>
+                                            <span style="width: 12px; height: 12px; margin-right: 8px; display: inline-flex; flex-direction: column; justify-content: space-between;">
+                                                <span style="width: 100%; height: 2px; background-color: #6b7280;"></span>
+                                                <span style="width: 100%; height: 2px; background-color: #6b7280;"></span>
+                                                <span style="width: 100%; height: 2px; background-color: #6b7280;"></span>
+                                            </span>
                                             <!-- Blank space as requested -->
                                         </span>
                                         <span style="width: 25%; font-size: 11px; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; text-align: center;" class="member-time-cost-{{ $item->user_id }}">
@@ -832,7 +861,7 @@
                                             {{ formatCurrency($totalCost) }}
                                         </span>
                                         <span style="width: 15%; font-size: 11px; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; text-align: center;" class="member-time-hours-{{ $item->user_id }}">
-                                            {{ number_format($totalHours, 0) }}
+                                            {{ formatHours($totalHours) }}
                                         </span>
                                         <span style="width: 10%; font-size: 11px; padding-top: 4px; padding-bottom: 4px; text-align: center;"></span>
                                     </div>
@@ -854,7 +883,7 @@
                                     @endphp
                                 <span style="width: 25%; font-size: 12px; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;" class="user-cost-{{ $item->user_id }}">{{ formatCurrency($item->user->hourly_rate*$es) }}</span>
                                 <span style="width: 15%; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;" class="user-hour-{{ $item->user_id }}">
-                                    {{ number_format($es) }}
+                                    {{ formatHours($es) }}
                                 </span>
                                 @if ($item->archieve == 0)
                                 <span {{ $item->archieve }} style="display: block; width:10%; padding-top: 6px; padding-bottom: 6px; text-align: center;"> <i class="fas fa-eye hide-user" data-id="{{ $item->id }}" style="color: #4B5563; font-size: 13px;"></i> </span>
@@ -903,6 +932,7 @@
     <input type="hidden" id="task_count" value={{ count($data->tasks) }}>
     <input type="hidden" id="date_format" value="{{ globalSettings('date_format') }}">
     <input type="hidden" id="currency_symbol" value="{{ str_replace(number_format(0, 0), '', formatCurrency(0)) }}">
+    <input type="hidden" id="currency_code" value="{{ globalSettings('currency') ?? 'USD' }}">
 
     <script>
         // Function to format date according to user settings
@@ -936,13 +966,63 @@
 
         // Function to format currency with symbol
         function formatCurrency(amount) {
-            // Get dynamic currency symbol from backend settings
+            // Get dynamic currency symbol and code from backend settings
             const currencySymbol = document.getElementById('currency_symbol').value;
-            const formattedAmount = Number(amount).toLocaleString('en-US', {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 2
-            });
+            const currencyCode = document.getElementById('currency_code').value;
+            
+            // European currencies use period for thousands, comma for decimals
+            const europeanCurrencies = ['EUR', 'DKK', 'CHF', 'NOK', 'SEK', 'PLN', 'CZK', 'HUF', 'RON', 'BGN', 'HRK'];
+            const isEuropean = europeanCurrencies.includes(currencyCode);
+            
+            const num = Number(amount);
+            let formattedAmount;
+            
+            if (isEuropean) {
+                // European format: 1.000.000,50
+                formattedAmount = num.toFixed(2)
+                    .replace(/\d(?=(\d{3})+\.)/g, '$&.')
+                    .replace(/\.([^.]*)$/, ',$1');
+                // Remove decimal part if it's .00
+                formattedAmount = formattedAmount.replace(/,00$/, '');
+            } else {
+                // US format: 1,000,000.50
+                formattedAmount = num.toLocaleString('en-US', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 2
+                });
+            }
+            
             return currencySymbol + formattedAmount;
+        }
+        
+        // Function to format hours based on currency locale
+        function formatHours(hours) {
+            const currencyCode = document.getElementById('currency_code').value;
+            
+            // European currencies use comma for decimal separator
+            const europeanCurrencies = ['EUR', 'DKK', 'CHF', 'NOK', 'SEK', 'PLN', 'CZK', 'HUF', 'RON', 'BGN', 'HRK'];
+            const isEuropean = europeanCurrencies.includes(currencyCode);
+            
+            const num = Number(hours);
+            
+            // Check if there's a decimal part
+            const hasDecimals = num % 1 !== 0;
+            
+            if (isEuropean) {
+                // European format: 25,5 or 25 (comma for decimals)
+                if (hasDecimals) {
+                    return num.toFixed(1).replace('.', ',');
+                } else {
+                    return Math.round(num).toString();
+                }
+            } else {
+                // US format: 25.5 or 25 (period for decimals)
+                if (hasDecimals) {
+                    return num.toFixed(1);
+                } else {
+                    return Math.round(num).toString();
+                }
+            }
         }
         
 
@@ -1468,7 +1548,7 @@
                     if (response.ok) {
                         const responseData = await response.json();
 
-                        $('.user-hour-'+user_id).html(responseData.data.total);
+                        $('.user-hour-'+user_id).html(formatHours(responseData.data.total));
                         $('.user-cost-'+user_id).html(responseData.data.cost);
 
                         // Reload estimate section without skeleton loader
@@ -1519,7 +1599,7 @@
                     const responseData = await response.json();
 
                     // Update user-specific hours and cost
-                    $('.user-hour-'+user_id).html(Math.round(responseData.data.total));
+                    $('.user-hour-'+user_id).html(formatHours(responseData.data.total));
                     $('.user-cost-'+user_id).html(responseData.data.cost);
 
                     // Reload estimate section without skeleton loader
@@ -2114,7 +2194,7 @@ function updateMemberTimeSummary(userId, projectId) {
     
     // Update the summary display
     $(`.member-time-cost-${userId}`).text(formatCurrency(totalCost.toFixed(2)));
-    $(`.member-time-hours-${userId}`).text(totalHours);
+    $(`.member-time-hours-${userId}`).text(formatHours(totalHours));
 }
 
 // Add event listener for input changes
@@ -2358,7 +2438,11 @@ gantt.config.max_column_width = 24;
                         _token: '{{ csrf_token() }}'
                     }
                 });
-                $(`.start-${item.id}`).html(formatDateForDisplay(item.start_date));
+                // Calculate days difference
+                const startDate = new Date(item.start_date);
+                const endDate = new Date(item.end_date);
+                const days = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+                $(`.start-${item.id}`).html(days);
             });
         }
 
@@ -2626,7 +2710,9 @@ gantt.config.max_column_width = 24;
                 },
                 success: async function(response) {
                     console.log('✓ Task dates saved to server');
-                    $(`.start-${id}`).html(formatDateForDisplay(gantt.date.date_to_str("%Y-%m-%d")(task.start_date)));
+                    // Calculate days difference
+                    const days = Math.floor((task.end_date - task.start_date) / (1000 * 60 * 60 * 24)) + 1;
+                    $(`.start-${id}`).html(days);
                     
                     // Update project totals dynamically without page reload
                     const project_id = {{ $project_id ?? 'null' }};

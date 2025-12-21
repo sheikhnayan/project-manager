@@ -333,6 +333,28 @@ class ProjectController extends Controller
             return !empty(trim($member));
         });
 
+        // Get existing team member IDs before deletion
+        $existingMemberIds = DB::table('project_team_members')
+            ->where('project_id', $new->id)
+            ->pluck('user_id')
+            ->toArray();
+
+        // Determine which members are being removed
+        $removedMemberIds = array_diff($existingMemberIds, $members);
+
+        // Delete time entries and estimated time entries for removed members
+        foreach($removedMemberIds as $removedUserId) {
+            DB::table('time_entries')
+                ->where('project_id', $new->id)
+                ->where('user_id', $removedUserId)
+                ->delete();
+            
+            DB::table('estimated_time_entries')
+                ->where('project_id', $new->id)
+                ->where('user_id', $removedUserId)
+                ->delete();
+        }
+
         // Remove all existing team members for this project
         DB::table('project_team_members')->where('project_id', $new->id)->delete();
 
@@ -466,6 +488,32 @@ class ProjectController extends Controller
 
 
         return redirect()->route('projects.show', $id)->with('success', 'Task added successfully.');
+    }
+
+    public function delete_task($id)
+    {
+        try {
+            $task = Task::findOrFail($id);
+            
+            // Delete all time entries for this task
+            \DB::table('time_entries')->where('task_id', $id)->delete();
+            
+            // Delete all estimated time entries for this task
+            \DB::table('estimated_time_entries')->where('task_id', $id)->delete();
+            
+            // Delete the task
+            $task->delete();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Task and all related entries deleted successfully.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error deleting task: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function store_member(Request $request, $id)
