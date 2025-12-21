@@ -749,7 +749,7 @@
                             <div class="task-item" data-task="task{{ $key + 1 }}" style="margin-bottom: 0px; border-bottom: 1px solid #eee; margin-left: 0px; background: #fff;">
                                 {{-- <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="User 1"> --}}
                                 <span style="width: 50%; font-size: 12px; display: inline-flex; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px;">
-                                    <i class="fas fa-bars" style="margin-right: 10px; font-size: 14px; color: #000;"></i>
+                                    <i class="fas fa-bars" style="margin-top: 2px; margin-right: 10px; font-size: 14px; color: #000;"></i>
                                     {{ $item->name }}
                                 </span>
                                 <span class="start-{{ $item->id }}" style="width: 25%; font-size: 12px; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;">
@@ -838,7 +838,7 @@
                                     <!-- Summary row showing time entries with actual data -->
                                     <div class="task-item time-entry-row" data-user-id="{{ $item->user_id }}">
                                         <span style="padding-left: 20px; width: 50%; font-size: 11px; display: inline-flex; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; align-items: center;">
-                                            <i class="fas fa-bars" style="margin-right: 8px; font-size: 12px; color: #6b7280;"></i>
+                                            <i class="fas fa-bars" style="margin-top: 2px; margin-right: 8px; font-size: 12px; color: #6b7280;"></i>
                                             <!-- Blank space as requested -->
                                         </span>
                                         <span style="width: 25%; font-size: 11px; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; text-align: center;" class="member-time-cost-{{ $item->user_id }}">
