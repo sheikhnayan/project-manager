@@ -267,7 +267,7 @@
                     
                     <!-- Manual Progress Circle with Input -->
                     <div style="position: relative; display: inline-block; margin-left: 1rem; margin-top: 1rem;">
-                        <span class="circle manual-progress-circle" id="manualProgressCircle" style="background: rgb(111, 134, 124); font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0; width: 50px; height: 50px;">
+                        <span class="circle manual-progress-circle" id="manualProgressCircle" style="background: #bbb; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: 0; width: 50px; height: 50px;">
                             <span id="manualProgressDisplay">{{ floor($data->manual_progress ?? 0) == ($data->manual_progress ?? 0) ? (int)($data->manual_progress ?? 0) : $data->manual_progress ?? 0 }}%</span>
                         </span>
                         <input 
