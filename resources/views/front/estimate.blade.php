@@ -166,7 +166,7 @@
                           <!-- Progress bar container with orange profit zone -->
                           <div style="position: relative; width: 100%; height: 10px; background-color: #e5e7eb; border-radius: 10px; overflow: hidden;">
                               <!-- Orange profit zone (the last X% of the bar) -->
-                              <div style="position: absolute; right: 0; top: 0; width: {{ $data->expected_profit }}%; height: 100%; background-color: orange;"></div>
+                              <div style="border-top-left-radius: 10px; border-bottom-left-radius: 10px;position: absolute; right: 0; top: 0; width: {{ $data->expected_profit }}%; height: 100%; background-color: orange;"></div>
                               
                               <!-- Actual progress bar -->
                               <div style="position: absolute; left: 0; top: 0; width: {{ min($percentage, 100) }}%; height: 100%; background-color: @if($isOverBudget) red @else rgb(111, 134, 124) @endif; border-radius: 10px; transition: width 0.3s ease;"></div>
@@ -301,7 +301,7 @@
                             <!-- Progress bar container with orange profit zone -->
                             <div style="position: relative; width: 100%; height: 10px; background-color: #e5e7eb; border-radius: 10px; overflow: hidden;">
                                 <!-- Orange profit zone (the last X% of the bar) -->
-                                <div style="position: absolute; right: 0; top: 0; width: {{ $data->expected_profit }}%; height: 100%; background-color: orange;"></div>
+                                <div style="border-top-left-radius: 10px; border-bottom-left-radius: 10px; position: absolute; right: 0; top: 0; width: {{ $data->expected_profit }}%; height: 100%; background-color: orange;"></div>
                                 
                                 <!-- Actual progress bar -->
                                 <div style="position: absolute; left: 0; top: 0; width: {{ min($percentage, 100) }}%; height: 100%; background-color: @if($isActualOverBudget) red @else rgb(111, 134, 124) @endif; border-radius: 10px; transition: width 0.3s ease;"></div>
