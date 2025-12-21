@@ -217,28 +217,8 @@
         }
 
                         .task-circle {
-            width: 15px;
-            height: 15px;
             margin-right: 10px;
-            display: inline-flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        
-        .task-circle::before,
-        .task-circle::after {
-            content: '';
-            width: 100%;
-            height: 2px;
-            background-color: #000;
-            display: block;
-        }
-        
-        .task-circle span {
-            width: 100%;
-            height: 2px;
-            background-color: #000;
-            display: block;
+            display: inline-block;
         }
 
         .team-member-row {
@@ -626,7 +606,7 @@
         <div class="p-4 rounded-lg" style="background: #fff !important;; border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15);">
             <div class="content p-2" style="padding-left: 0px !important; display: block; margin-bottom: 40px;">
                 <div style="float: left; margin-top: 6px;">
-                    <h5 style="font-size: 20px; font-weight: 600;">{{ $data->name }}</h5>
+                    <h5 style="font-size: 20px; font-weight: 600;">{{ $data->project_number }}_{{ $data->name }}</h5>
                 </div>
                 <div class="flex items-center " style="float: right;">
                             <!-- Undo/Redo Buttons -->
@@ -749,7 +729,7 @@
                             <div class="task-item" data-task="task{{ $key + 1 }}" style="margin-bottom: 0px; border-bottom: 1px solid #eee; margin-left: 0px; background: #fff;">
                                 {{-- <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="User 1"> --}}
                                 <span style="width: 50%; font-size: 12px; display: inline-flex; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px;">
-                                    <div class="task-circle"><span></span></div>
+                                    <i class="fas fa-bars" style="margin-right: 10px; font-size: 14px; color: #000;"></i>
                                     {{ $item->name }}
                                 </span>
                                 <span class="start-{{ $item->id }}" style="width: 25%; font-size: 12px; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;">
@@ -838,11 +818,7 @@
                                     <!-- Summary row showing time entries with actual data -->
                                     <div class="task-item time-entry-row" data-user-id="{{ $item->user_id }}">
                                         <span style="padding-left: 20px; width: 50%; font-size: 11px; display: inline-flex; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; align-items: center;">
-                                            <span style="width: 12px; height: 12px; margin-right: 8px; display: inline-flex; flex-direction: column; justify-content: space-between;">
-                                                <span style="width: 100%; height: 2px; background-color: #6b7280;"></span>
-                                                <span style="width: 100%; height: 2px; background-color: #6b7280;"></span>
-                                                <span style="width: 100%; height: 2px; background-color: #6b7280;"></span>
-                                            </span>
+                                            <i class="fas fa-bars" style="margin-right: 8px; font-size: 12px; color: #6b7280;"></i>
                                             <!-- Blank space as requested -->
                                         </span>
                                         <span style="width: 25%; font-size: 11px; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; text-align: center;" class="member-time-cost-{{ $item->user_id }}">
