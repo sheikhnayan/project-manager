@@ -180,7 +180,7 @@ class ProjectController extends Controller
     public function change_budget(Request $request)
     {
         $task = Task::find($request->id);
-        $task->budget_total = $request->value;
+        $task->budget_total = str_replace(',', '', $request->value);
         $task->update();
 
         $tasks_budget = Task::where('project_id',$task->project_id)->sum('budget_total');
@@ -431,7 +431,7 @@ class ProjectController extends Controller
 
         $task->start_date = $start_date;
         $task->end_date = $end_date;
-        $task->budget_total = $request->budget_total;
+        $task->budget_total = str_replace(',', '', $request->budget_total);
         $task->name = $request->name;
         $task->save();
 
@@ -478,7 +478,7 @@ class ProjectController extends Controller
         }
         $task->start_date = $start_date;
         $task->end_date = $end_date;
-        $task->budget_total = $request->budget_total;
+        $task->budget_total = str_replace(',', '', $request->budget_total);
         $task->name = $request->name;
         $task->update();
 
