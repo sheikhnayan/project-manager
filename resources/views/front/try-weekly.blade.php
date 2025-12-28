@@ -2605,7 +2605,7 @@ gantt.config.max_column_width = 32;
                 
                 // Get task count for height calculation
                 const taskCount = parseInt(document.getElementById('task_count').value) || 0;
-                const todayLineHeight = taskCount * 32; // 32px per task in weekly view
+                const todayLineHeight = taskCount * 28.5; // 32px per task in weekly view
                 
                 const todayLine = document.createElement('div');
                 todayLine.className = 'today-marker-line';
