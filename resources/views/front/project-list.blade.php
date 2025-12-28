@@ -580,16 +580,12 @@
             // Add today line to DHTMLX gantt using the .gantt_task container
             function addTodayLine() {
                 const today = new Date();
-                const startDate = new Date('2025-01-01');
                 
-                // Calculate days from start to today
-                const daysFromStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+                // Calculate days from calendar start to today
+                const daysFromStart = Math.floor((today - calendarStartDate) / (1000 * 60 * 60 * 24));
                 
-                // Get the column width from gantt config
-                const columnWidth = gantt.config.min_column_width;
-                
-                // Calculate left position
-                const todayPosition = daysFromStart * columnWidth;
+                // Calculate left position using EXACT_DAY_WIDTH
+                const todayPosition = daysFromStart * EXACT_DAY_WIDTH;
                 
                 // Find the gantt task container (DHTMLX's internal DOM structure)
                 const ganttTask = document.querySelector('.gantt_task');
@@ -605,7 +601,7 @@
                     todayLine.style.left = todayPosition + 'px';
                     todayLine.style.top = '52px';
                     todayLine.style.width = '2px';
-                    todayLine.style.height = '100%';
+                    todayLine.style.height = (28.5 * tasks.data.length) + 'px';
                     todayLine.style.backgroundColor = '#D9534F';
                     todayLine.style.zIndex = '10';
                     todayLine.style.pointerEvents = 'none';

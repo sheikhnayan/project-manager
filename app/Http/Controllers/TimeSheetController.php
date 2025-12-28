@@ -407,6 +407,8 @@ class TimeSheetController extends Controller
         // Parse the date from the request
         $date = Carbon::parse($request->date);
 
+        // dd($date);
+
         // If task_id is provided, use that specific task, otherwise find task by project and date range
         if ($request->has('task_id') && $request->task_id) {
             $task = Task::find($request->task_id);

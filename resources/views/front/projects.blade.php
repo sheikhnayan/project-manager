@@ -322,7 +322,6 @@
         .today-line {
             position: absolute;
             top: -25px;
-            bottom: 0;
             width: 2px;
             background-color: #D9534F; /* Red color for the today line */
             z-index: 100; /* Ensure it appears above other elements */
@@ -729,7 +728,7 @@
                             <div class="task-item" data-task="task{{ $key + 1 }}" style="margin-bottom: 0px; border-bottom: 1px solid #eee; margin-left: 0px; background: #fff;">
                                 {{-- <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="User 1"> --}}
                                 <span style="width: 50%; font-size: 12px; display: inline-flex; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px;">
-                                    <i class="fas fa-bars" style="margin-top: 2px; margin-right: 10px; font-size: 14px; color: #000;"></i>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width: 14px; height: 14px; margin-top: 2px; margin-right: 10px; flex-shrink: 0;"><rect width="24" height="2.5" y="5.5" fill="#000"/><rect width="24" height="2.5" y="10.75" fill="#000"/><rect width="24" height="2.5" y="16" fill="#000"/></svg>
                                     {{ $item->name }}
                                 </span>
                                 <span class="start-{{ $item->id }}" style="width: 25%; font-size: 12px; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;">
@@ -818,7 +817,7 @@
                                     <!-- Summary row showing time entries with actual data -->
                                     <div class="task-item time-entry-row" data-user-id="{{ $item->user_id }}">
                                         <span style="padding-left: 20px; width: 50%; font-size: 11px; display: inline-flex; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; align-items: center;">
-                                            <i class="fas fa-bars" style="margin-top: 2px;margin-right: 8px; font-size: 12px; color: #6b7280;"></i>
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width: 12px; height: 12px; margin-top: 2px; margin-right: 8px; flex-shrink: 0;"><rect width="24" height="2.5" y="5.5" fill="#6b7280"/><rect width="24" height="2.5" y="10.75" fill="#6b7280"/><rect width="24" height="2.5" y="16" fill="#6b7280"/></svg>
                                             <!-- Blank space as requested -->
                                         </span>
                                         <span style="width: 25%; font-size: 11px; border-right: 1px solid #eee; padding-top: 4px; padding-bottom: 4px; text-align: center;" class="member-time-cost-{{ $item->user_id }}">
@@ -1022,8 +1021,12 @@
                 }
                 
                 // Group by user_id and entry_date, then sum hours for each date
+                // IMPORTANT: Format the entry_date to Y-m-d to match JavaScript date format
                 $groupedTimeEntries = $allTimeEntries->groupBy('user_id')->map(function($userEntries) {
-                    return $userEntries->groupBy('entry_date')->map(function($dateEntries) {
+                    return $userEntries->groupBy(function($entry) {
+                        // Convert entry_date to Y-m-d format (remove timestamp)
+                        return \Carbon\Carbon::parse($entry->entry_date)->format('Y-m-d');
+                    })->map(function($dateEntries) {
                         return $dateEntries->sum('hours');
                     });
                 });
@@ -1152,7 +1155,12 @@
                     memberRow.empty();
                     
                     // Get time entry data for this user from the server-side rendered data
-                    const userTimeEntries = window.memberTimeEntries && window.memberTimeEntries[userId] ? window.memberTimeEntries[userId] : {};
+                    // Try both string and number keys since PHP might convert user_id differently
+                    const userTimeEntries = window.memberTimeEntries && (window.memberTimeEntries[userId] || window.memberTimeEntries[String(userId)]) ? 
+                                            (window.memberTimeEntries[userId] || window.memberTimeEntries[String(userId)]) : {};
+                    
+                    console.log(`[User ${userId}] Time entries:`, userTimeEntries);
+                    console.log(`[User ${userId}] Available keys in window.memberTimeEntries:`, Object.keys(window.memberTimeEntries || {}));
                     
                     // Create the same calendar structure but for member time entries
                     let memberInp = '';
@@ -1202,6 +1210,11 @@
 
             // Initial render
             renderCalendar();
+            
+            // Set today line height based on number of tasks
+            const taskCount = parseInt($('#task_count').val());
+            const todayLineHeight = taskCount * 28.5;
+            $('.today-line').css('height', todayLineHeight + 'px');
             
             // Scroll to 1 week before today - call directly after render
             scrollToOneWeekBefore();
@@ -2273,7 +2286,7 @@ gantt.config.max_column_width = 24;
             const endDate = new Date(end);
             
             const daysFromCalendarStart = Math.floor((startDate - calendarStartDate) / (1000 * 60 * 60 * 24)) + 1;
-            const taskDurationDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+            const taskDurationDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
             
             const left = daysFromCalendarStart * EXACT_DAY_WIDTH;
             const width = taskDurationDays * EXACT_DAY_WIDTH;
@@ -2305,7 +2318,7 @@ gantt.config.max_column_width = 24;
                     id: {{ $item->id }},
                     text: "T{{ $key + 1 }}",
                     start_date: "{{ \Carbon\Carbon::parse($item->start_date)->format('Y-m-d') }}",
-                    end_date: "{{ \Carbon\Carbon::parse($item->end_date)->format('Y-m-d') }}",
+                    end_date: "{{ \Carbon\Carbon::parse($item->end_date)->addDay()->format('Y-m-d') }}",
                     duration: {{ \Carbon\Carbon::parse($item->start_date)->diffInDays(\Carbon\Carbon::parse($item->end_date)) + 1 }},
                     progress: 0
                 },
@@ -2488,13 +2501,14 @@ gantt.config.max_column_width = 24;
                 const existingLine = ganttTask.querySelector('.today-marker-line');
                 if (existingLine) existingLine.remove();
                 
+                const taskCount = parseInt($('#task_count').val());
                 const todayLine = document.createElement('div');
                 todayLine.className = 'today-marker-line';
                 todayLine.style.position = 'absolute';
                 todayLine.style.left = todayPosition + 'px';
                 todayLine.style.top = '52px';
                 todayLine.style.width = '2px';
-                todayLine.style.height = '100%';
+                todayLine.style.height = (taskCount * 28.5) + 7 + 'px';
                 todayLine.style.backgroundColor = '#ff0000';
                 todayLine.style.zIndex = '10';
                 todayLine.style.pointerEvents = 'none';
@@ -2523,13 +2537,14 @@ gantt.config.max_column_width = 24;
                     const existingLine = ganttTask.querySelector('.today-marker-line');
                     if (existingLine) existingLine.remove();
                     
+                    const taskCount = parseInt($('#task_count').val());
                     const todayLine = document.createElement('div');
                     todayLine.className = 'today-marker-line';
                     todayLine.style.position = 'absolute';
                     todayLine.style.left = todayPosition + 'px';
                     todayLine.style.top = '52px';
                     todayLine.style.width = '2px';
-                    todayLine.style.height = '100%';
+                    todayLine.style.height = (taskCount * 28.5) + 'px';
                     todayLine.style.backgroundColor = '#ff0000';
                     todayLine.style.zIndex = '10';
                     todayLine.style.pointerEvents = 'none';
