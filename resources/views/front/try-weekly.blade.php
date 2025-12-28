@@ -2603,13 +2603,17 @@ gantt.config.max_column_width = 32;
                 const existingLine = ganttTask.querySelector('.today-marker-line');
                 if (existingLine) existingLine.remove();
                 
+                // Get task count for height calculation
+                const taskCount = parseInt(document.getElementById('task_count').value) || 0;
+                const todayLineHeight = taskCount * 32; // 32px per task in weekly view
+                
                 const todayLine = document.createElement('div');
                 todayLine.className = 'today-marker-line';
                 todayLine.style.position = 'absolute';
                 todayLine.style.left = todayPosition + 'px';
                 todayLine.style.top = '52px';
                 todayLine.style.width = '2px';
-                todayLine.style.height = '100%';
+                todayLine.style.height = todayLineHeight + 'px';
                 todayLine.style.backgroundColor = '#ff0000';
                 todayLine.style.zIndex = '10';
                 todayLine.style.pointerEvents = 'none';
@@ -2639,13 +2643,17 @@ gantt.config.max_column_width = 32;
                     const existingLine = ganttTask.querySelector('.today-marker-line');
                     if (existingLine) existingLine.remove();
                     
+                    // Get task count for height calculation
+                    const taskCount = parseInt(document.getElementById('task_count').value) || 0;
+                    const todayLineHeight = taskCount * 32; // 32px per task in weekly view
+                    
                     const todayLine = document.createElement('div');
                     todayLine.className = 'today-marker-line';
                     todayLine.style.position = 'absolute';
                     todayLine.style.left = todayPosition + 'px';
                     todayLine.style.top = '52px';
                     todayLine.style.width = '2px';
-                    todayLine.style.height = '100%';
+                    todayLine.style.height = todayLineHeight + 'px';
                     todayLine.style.backgroundColor = '#ff0000';
                     todayLine.style.zIndex = '10';
                     todayLine.style.pointerEvents = 'none';
