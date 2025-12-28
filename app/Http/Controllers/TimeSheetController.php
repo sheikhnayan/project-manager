@@ -565,8 +565,13 @@ class TimeSheetController extends Controller
         $dateArray = explode(',', $dates);
 
         // Update the approved status for the specified dates
+        // Use whereDate to compare only the date part (ignoring time)
         TimeEntry::where('user_id', $userId)
-            ->whereIn('entry_date', $dateArray)
+            ->where(function($query) use ($dateArray) {
+                foreach ($dateArray as $date) {
+                    $query->orWhereDate('entry_date', $date);
+                }
+            })
             ->update(['approved' => 1]);
 
         return response()->json(['success' => true, 'message' => 'Entries approved successfully']);
@@ -588,8 +593,13 @@ class TimeSheetController extends Controller
 
         $dateArray = explode(',', $dates);
 
+        // Use whereDate to compare only the date part (ignoring time)
         $status = TimeEntry::where('user_id', $id)
-            ->whereIn('entry_date', $dateArray)
+            ->where(function($query) use ($dateArray) {
+                foreach ($dateArray as $date) {
+                    $query->orWhereDate('entry_date', $date);
+                }
+            })
             ->where('approved', 1)
             ->exists();
 

@@ -250,14 +250,30 @@
                 return startOfWeek;
             }
 
-            // Format date range for display
+            // Format date range for display (human readable)
             function formatDateRange(date) {
                 const startDate = getStartOfWeek(date); // Get the start of the week
-                const endDate = new Date(date);
-                endDate.setDate(endDate.getDate() + 6); // Add 6 days to get the end of the week
+                const endDate = new Date(startDate); // Calculate end date based on start of week
+                endDate.setDate(startDate.getDate() + 6); // Add 6 days to get the end of the week (Sunday)
 
                 const options = { month: 'short', day: 'numeric' };
                 return `Mon, ${startDate.toLocaleDateString('en-US', options)} - Sun, ${endDate.toLocaleDateString('en-US', options)}`;
+            }
+
+            // Format date range for API (YYYY-MM-DD format)
+            function formatDateRangeForAPI(date) {
+                const startDate = getStartOfWeek(date);
+                const endDate = new Date(startDate);
+                endDate.setDate(startDate.getDate() + 6);
+
+                const formatDate = (d) => {
+                    const year = d.getFullYear();
+                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                    const day = String(d.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                };
+
+                return `${formatDate(startDate)} - ${formatDate(endDate)}`;
             }
 
             // Update the date range display
@@ -478,7 +494,7 @@
                 }
 
                 const user = userSelect.value;
-                const dateRange = dateRangeElement.textContent;
+                const dateRange = formatDateRangeForAPI(currentDate); // Use API format (YYYY-MM-DD)
 
                 if (!user) {
                     $('.alert-message').text('Please select a user.');
@@ -629,7 +645,7 @@
             // Load data from the backend
             async function loadData() {
                 const user = userSelect.value;
-                const dateRange = dateRangeElement.textContent;
+                const dateRange = formatDateRangeForAPI(currentDate); // Use API format (YYYY-MM-DD)
 
                 if (!user) {
                     $('.alert-message').text('Please select a user.');
@@ -682,6 +698,11 @@
 
                         // Check approval status after loading data
                         await checkApprovalStatus();
+                        
+                        // Update form editability after checking approval status
+                        setTimeout(() => {
+                            updateFormEditability();
+                        }, 150);
 
                 } catch (error) {
                     console.error('Error loading data:', error);
@@ -919,6 +940,20 @@
                         const value = input.value.trim();
                         if (value) {
                             const decimalHours = parseTime(value);
+                            
+                            // Validate max 24 hours on blur
+                            if (decimalHours > 24) {
+                                $('.alert-message').text('Time entry cannot exceed 24 hours per day.');
+                                successAlert.classList.remove('hidden');
+                                setTimeout(() => {
+                                    successAlert.classList.add('hidden');
+                                }, 3000);
+                                input.value = this.dataset.lastValid || '0:00';
+                                updateTotal(newRow);
+                                updateDailyTotals();
+                                return;
+                            }
+                            
                             input.value = formatTime(decimalHours); // Convert to "HH:MM" format
                         } else {
                             input.value = '0:00'; // Default to "0:00" if the input is empty
@@ -1201,12 +1236,25 @@
             });
 
             // Automatically select the first user and load its data
-            function initializeFirstUser() {
+            async function initializeFirstUser() {
                 const firstUserOption = userSelect.options[1]; // Skip the placeholder option
                 if (firstUserOption) {
                     userSelect.value = firstUserOption.value;
+                    currentDate = getStartOfWeek(currentDate); // Align to start of week (Monday)
                     updateDateRange();
-                    loadData();
+                    await loadData(); // Wait for data to load
+                    
+                    // Initialize row totals and form editability after data is loaded
+                    setTimeout(() => {
+                        const existingRows = document.querySelectorAll('#time-table tbody tr');
+                        existingRows.forEach(row => {
+                            updateTotal(row);
+                        });
+                        updateDailyTotals();
+                        
+                        // Ensure form editability is updated after everything is loaded
+                        updateFormEditability();
+                    }, 200);
                 } else {
                     // If no users available, still ensure empty row is shown
                     const tbody = timeTable.querySelector('tbody');
@@ -1220,7 +1268,6 @@
                 if (this.disabled) return;
                 
                 const user = userSelect.value;
-                const dateRange = dateRangeElement.textContent;
                 
                 if (!user) {
                     $('.alert-message').text('Please select a user before approving entries.');
@@ -1267,7 +1314,7 @@
                         updateApproveButtonState();
                         updateFormEditability();
                         
-                        $('.alert-message').text(`Entries approved for ${dateRange}`);
+                        $('.alert-message').text(`Entries approved for ${formatDateRange(currentDate)}`);
                         successAlert.classList.remove('hidden');
                         setTimeout(() => {
                             successAlert.classList.add('hidden');
@@ -1364,21 +1411,6 @@
 
             // Initialize first user and ensure empty row
             initializeFirstUser(); // Automatically select the first user
-            
-            // Initialize row totals for existing data
-            setTimeout(() => {
-                const existingRows = document.querySelectorAll('#time-table tbody tr');
-                existingRows.forEach(row => {
-                    updateTotal(row);
-                });
-                updateDailyTotals();
-            }, 100);
-            
-            // Also ensure empty row after a delay as a fallback
-            setTimeout(() => {
-                console.log('Fallback ensureEmptyRow called'); // Debug log
-                ensureEmptyRow();
-            }, 500);
         });
     </script>
 
