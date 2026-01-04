@@ -268,6 +268,21 @@
             pointer-events: none;
             cursor: default;
         }
+
+        /* Sortable styles */
+        .team-member-row.ui-sortable-helper {
+            background-color: #f9fafb;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            opacity: 0.9;
+            z-index: 1000;
+        }
+
+        .team-member-row.ui-sortable-placeholder {
+            background-color: #e5e7eb;
+            visibility: visible !important;
+            height: 50px;
+            border: 2px dashed #9ca3af;
+        }
     </style>
 
     <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap' rel='stylesheet'>
@@ -355,6 +370,9 @@
                         @if ($item->is_archived == 0)
                             <div class="task-item team-member-row data-id-{{ $item->id }}" data-user-id="{{ $item->id }}" style="position: unset">
                                 <span style="width: 40%; font-size: 12px; display: inline-flex; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; align-items: center;">
+                                    <span class="drag-handle" style="display: inline-flex; align-items: center; margin-right: 10px; margin-left: 3px; cursor: move;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width: 14px; height: 14px; flex-shrink: 0; display: block;"><rect width="24" height="2.5" y="5.5" fill="#000"/><rect width="24" height="2.5" y="10.75" fill="#000"/><rect width="24" height="2.5" y="16" fill="#000"/></svg>
+                                    </span>
                                     <img src="{{ $item->profile_image_url ? asset('storage/'.$item->profile_image_url) : 'https://randomuser.me/api/portraits/men/4.jpg' }}">
                                     @php
                                         $nameParts = explode(' ', $item->name);
@@ -419,6 +437,9 @@
                         @if ($item->is_archived == 1)
                         <div class="task-item team-member-row data-id-{{ $item->id }}" data-user-id="{{ $item->id }}" style="position: unset">
                             <span style="width: 40%; font-size: 12px; display: inline-flex; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; align-items: center;">
+                                <span class="drag-handle" style="display: inline-flex; align-items: center; margin-right: 10px; margin-left: 3px; cursor: move;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width: 14px; height: 14px; flex-shrink: 0; display: block;"><rect width="24" height="2.5" y="5.5" fill="#000"/><rect width="24" height="2.5" y="10.75" fill="#000"/><rect width="24" height="2.5" y="16" fill="#000"/></svg>
+                                </span>
                                 <img src="{{ $item->profile_image_url ? asset('storage/'.$item->profile_image_url) : 'https://randomuser.me/api/portraits/men/4.jpg' }}"> 
                                 @php
                                     $nameParts = explode(' ', $item->name);
@@ -968,6 +989,119 @@
         // Call updateLastTaskItemBorder after page loads
         $(document).ready(function() {
             setTimeout(updateLastTaskItemBorder, 100);
+        });
+
+        // Team member drag and drop functionality
+        $(document).ready(function() {
+            // Variable to prevent multiple simultaneous reorders
+            var reorderTimeout = null;
+            
+            // Make the team member lists sortable
+            $('.task-list .not-archived, .task-list .archied').sortable({
+                handle: '.drag-handle',
+                axis: 'y',
+                cursor: 'move',
+                helper: function(e, item) {
+                    // Create a clone for dragging
+                    return item.clone();
+                },
+                placeholder: 'ui-sortable-placeholder',
+                tolerance: 'pointer',
+                items: '> .team-member-row',
+                connectWith: '.task-list .not-archived, .task-list .archied',
+                start: function(event, ui) {
+                    // Store the member-projects element that follows this team member
+                    var userId = ui.item.data('user-id');
+                    var $memberProjects = $('.member-projects[data-user-id="' + userId + '"]');
+                    ui.item.data('memberProjects', $memberProjects);
+                    ui.item.data('memberProjectsParent', $memberProjects.parent());
+                },
+                stop: function(event, ui) {
+                    // Move the associated member-projects div after the team member
+                    var userId = ui.item.data('user-id');
+                    var $memberProjects = ui.item.data('memberProjects');
+                    
+                    if ($memberProjects && $memberProjects.length > 0) {
+                        // Detach and reattach the projects div right after the team member
+                        $memberProjects.detach().insertAfter(ui.item);
+                    } else {
+                        // Try to find it again in case it got lost
+                        $memberProjects = $('.member-projects[data-user-id="' + userId + '"]');
+                        if ($memberProjects.length > 0) {
+                            $memberProjects.detach().insertAfter(ui.item);
+                        }
+                    }
+                    
+                    // Debounce the reorder to avoid double-triggering
+                    clearTimeout(reorderTimeout);
+                    reorderTimeout = setTimeout(function() {
+                        performReorder();
+                    }, 150);
+                }
+            });
+            
+            // Function to perform the actual reordering
+            function performReorder() {
+                // Get the updated order of team members
+                var memberOrder = [];
+                
+                // Get order from non-archived section
+                $('.task-list .not-archived > .team-member-row').each(function() {
+                    var userId = $(this).data('user-id');
+                    memberOrder.push(userId);
+                });
+                
+                // Get order from archived section (if visible)
+                $('.task-list .archied > .team-member-row').each(function() {
+                    var userId = $(this).data('user-id');
+                    memberOrder.push(userId);
+                });
+                
+                // Reorder the calendar input rows accordingly
+                reorderCalendarInputs(memberOrder);
+            }
+            
+            // Function to reorder calendar inputs based on team member order
+            function reorderCalendarInputs(memberOrder) {
+                // Collect all calendar elements grouped by user
+                var inputGroups = {};
+                
+                // Collect from both archived and not-archived containers
+                var $notArchivedContainer = $('.scroll-container .not-archived');
+                var $archivedContainer = $('.scroll-container .archied');
+                
+                [$notArchivedContainer, $archivedContainer].forEach(function($container) {
+                    $container.children('.second-input').each(function() {
+                        var $element = $(this);
+                        var userId = $element.data('user-id');
+                        
+                        if (!userId) return;
+                        
+                        // Initialize group if not exists
+                        if (!inputGroups[userId]) {
+                            inputGroups[userId] = [];
+                        }
+                        
+                        // Add element to group
+                        inputGroups[userId].push($element.detach());
+                    });
+                });
+                
+                // Reorder elements according to memberOrder
+                memberOrder.forEach(function(userId) {
+                    if (inputGroups[userId]) {
+                        // Determine target container based on archived status
+                        var $teamMember = $('.task-list .team-member-row[data-user-id="' + userId + '"]');
+                        var isArchived = $teamMember.closest('.archied').length > 0;
+                        var $targetContainer = isArchived ? $archivedContainer : $notArchivedContainer;
+                        
+                        // Append all elements for this user
+                        inputGroups[userId].forEach(function($element) {
+                            $targetContainer.append($element);
+                        });
+                    }
+                });
+            }
         });
     </script>
 </body>

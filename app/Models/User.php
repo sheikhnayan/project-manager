@@ -30,6 +30,7 @@ class User extends Authenticatable
         'company_id',
         'first_name',
         'last_name',
+        'holidays_allowed',
     ];
 
     /**
@@ -68,6 +69,14 @@ class User extends Authenticatable
     public function projects()
     {
         return $this->hasMany(ProjectTeamMember::class);
+    }
+
+    /**
+     * Get the holidays for the user.
+     */
+    public function holidays()
+    {
+        return $this->hasMany(UserHoliday::class);
     }
 
     /**

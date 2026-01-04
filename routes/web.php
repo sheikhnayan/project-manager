@@ -41,11 +41,11 @@ Route::get('/', function () {
         }
         
         // If user is authenticated but no active subscription, show subscription page
-        return view('front.homepage');
+        return view('front.home');
     }
     
     // If not authenticated, show the public subscription page
-    return view('front.homepage');
+    return view('front.home');
 })->name('homepage');
 
 Route::post('/subscribe', [StripeController::class, 'subscribe'])->name('stripe.subscribe');
@@ -221,6 +221,14 @@ Route::middleware(['auth', 'permission:manage_settings'])->group(function () {
     Route::post('/internal-tasks/departments/{id}/archive', [InternalTaskController::class, 'archiveDepartment']);
     Route::post('/internal-tasks/departments/{id}/assign-user', [InternalTaskController::class, 'assignUser']);
     Route::post('/internal-tasks/departments/{id}/unassign-user', [InternalTaskController::class, 'unassignUser']);
+});
+
+// Holiday Management Routes (All authenticated users)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/holidays', [App\Http\Controllers\HolidayController::class, 'index'])->name('holidays.index');
+    Route::post('/holidays/toggle', [App\Http\Controllers\HolidayController::class, 'toggle'])->name('holidays.toggle');
+    Route::get('/holidays/get', [App\Http\Controllers\HolidayController::class, 'getHolidays'])->name('holidays.get');
+    Route::get('/team-holidays', [App\Http\Controllers\HolidayController::class, 'getTeamHolidays'])->name('holidays.team');
 });
 
 // Internal Tasks API for Time Tracking (All authenticated users)

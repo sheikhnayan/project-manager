@@ -59,7 +59,7 @@
                     </a>
                 </div>
                 <div class='flex items-center space-x-4 navv'>
-                    <a href='/' class='nav-link {{ Route::currentRouteName() == 'index' ? 'active':''}}'>
+                    <a href='/' class='nav-link {{ in_array(Route::currentRouteName(), ['index', 'dashboard']) ? 'active':''}}'>
                         <i data-lucide='layout-grid' class='w-4 h-4 mr-5'></i>
                         <span>Dashboard</span>
                     </a>
@@ -67,7 +67,7 @@
                         <i data-lucide='clock' class='w-4 h-4 mr-5'></i>
                         <span>Time Tracking</span>
                     </a>
-                    <a href='/projects' class='nav-link {{ Route::currentRouteName() == 'projects' ? 'active':''}}'>
+                    <a href='/projects' class='nav-link {{ in_array(Route::currentRouteName(), ['projects', 'projects.show', 'projects.weekly', 'projects-weekly', 'projects.try']) ? 'active':''}}'>
                         <i data-lucide='folder' class='w-4 h-4 mr-5'></i>
                         <span>Projects</span>
                     </a>
@@ -104,6 +104,7 @@
                         <a href='/client-management'>Client Management</a>
                         <a href='/project-management'>Project Management</a>
                         <a href='/internal-tasks'>Internal Tasks</a>
+                        <a href='/holidays'>My Holidays</a>
                         <a href='/settings'>Settings</a>
                         <hr class="my-1">
                         <form method="POST" action="{{ route('logout') }}" class="m-0">

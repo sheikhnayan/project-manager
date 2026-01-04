@@ -1387,21 +1387,28 @@
                 tbody.innerHTML = '';
 
                 // Add copied rows with proper async handling
-                let completedRows = 0;
-                copiedRows.forEach(async (rowData, index) => {
-                    await addRowWithProjects(rowData.project, rowData.task, '', '', '', '', '', '', '');
-                    completedRows++;
-                    
-                    // Show success message after all rows are processed
-                    if (completedRows === copiedRows.length) {
-                        $('.alert-message').text(`${copiedRows.length} entries pasted successfully (project/task structure copied, time entries cleared).`);
-                        successAlert.classList.remove('hidden');
-                        setTimeout(() => {
-                            successAlert.classList.add('hidden');
-                        }, 3000);
-                        saveData();
+                for (const rowData of copiedRows) {
+                    // Determine task type based on project value
+                    let taskType = 'project';
+                    if (rowData.project && rowData.project.startsWith('internal_dept_')) {
+                        taskType = 'internal';
                     }
-                });
+                    
+                    // Add row without time entries (empty strings)
+                    addRow(rowData.project, rowData.task, '', '', '', '', '', '', '', taskType);
+                }
+                
+                // Show success message after all rows are processed
+                $('.alert-message').text(`${copiedRows.length} entries pasted successfully (project/task structure copied, time entries cleared).`);
+                successAlert.classList.remove('hidden');
+                setTimeout(() => {
+                    successAlert.classList.add('hidden');
+                }, 3000);
+                
+                // Save the data after pasting
+                setTimeout(() => {
+                    saveData();
+                }, 500);
             });
 
             // Event listeners

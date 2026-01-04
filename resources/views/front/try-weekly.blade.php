@@ -127,7 +127,7 @@
         .calendar-day {
             display: inline-block;
             vertical-align: top;
-            border: 1px solid #ccc;
+            /* border: 1px solid #ccc; */
             padding-top: 1px;
             font-size: 10px;
             box-sizing: border-box;
@@ -139,6 +139,7 @@
             height: 20px !important;
             text-align: center;
             flex-shrink: 0;
+            border-bottom: 0px !important;
         }
         .scroll-container {
             overflow-x: scroll;
@@ -809,7 +810,7 @@
                             @if ($item->archieve == 0)
                                 <div class="task-item team-member-row data-id-{{ $item->id }}" data-task="task{{ $item->task_id }}" data-member-id="{{ $item->id }}" data-user-id="{{ $item->user_id }}" style="position: unset">
                                     <span style="width: 50%; font-size: 12px; display: inline-flex; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; align-items: center;">
-                                        <img class="drag-handle" src="{{ asset('dots.svg') }}" style="margin-right: 5px;">
+                                        <svg class="drag-handle" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width: 14px; height: 14px; margin-right: 10px; flex-shrink: 0; cursor: move;"><rect width="24" height="2.5" y="5.5" fill="#000"/><rect width="24" height="2.5" y="10.75" fill="#000"/><rect width="24" height="2.5" y="16" fill="#000"/></svg>
                                         <img src="{{ $item->user->profile_image_url ? asset('storage/'.$item->user->profile_image_url) : 'https://randomuser.me/api/portraits/men/4.jpg' }}">
                                         {{ $item->user->name }}
                                         <div class="expand-arrow" data-target="member-time-entries" data-id="{{ $item->user_id }}" data-project-id="{{ $data->id }}">▶</div>
@@ -890,7 +891,7 @@
                         <div class="calendar-container second-calender">
                             <!-- JavaScript will populate the months and dates here -->
                         </div>
-                        <div class="not-archived" style="margin-top: -4px" id="team-time-inputs">
+                        <div class="not-archived" id="team-time-inputs">
                             @foreach ($data->members as $item)
                             @if ($item->archieve == 0)
                                 <div class="second-input time-input-row data-id-{{ $item->id }}" data-task-id="{{ $item->task_id }}" data-user-id="{{ $item->user_id }}" data-member-id="{{ $item->id }}"></div>
@@ -903,7 +904,7 @@
                             @endif
                             @endforeach
                         </div>
-                        <div class="archied" style="margin-top: -4px">
+                        <div class="archied">
                             @foreach ($data->members as $item)
                                 <div class="second-input data-id-{{ $item->id }}" data-task-id="{{ $item->task_id }}" data-user-id="{{ $item->user_id }}"></div>
                             @endforeach

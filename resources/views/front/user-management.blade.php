@@ -185,7 +185,8 @@
         '{{ $item->role }}',
         {{ $item->role_id ?? 'null' }},
         {{ $item->hourly_rate }},
-        '{{ $item->profile_image_url ? asset('storage/' . $item->profile_image_url) : '' }}'
+        '{{ $item->profile_image_url ? asset('storage/' . $item->profile_image_url) : '' }}',
+        {{ $item->holidays_allowed ?? 20 }}
     )">
     <i data-lucide="pencil" class="w-4 h-4"></i>
 
@@ -264,7 +265,8 @@
                                                             '{{ $item->role }}',
                                                             {{ $item->role_id ?? 'null' }},
                                                             {{ $item->hourly_rate }},
-                                                            '{{ $item->profile_image_url ? asset('storage/' . $item->profile_image_url) : '' }}'
+                                                            '{{ $item->profile_image_url ? asset('storage/' . $item->profile_image_url) : '' }}',
+                                                            {{ $item->holidays_allowed ?? 20 }}
                                                         )">
                                                         <i data-lucide="pencil" class="w-4 h-4"></i>
 
@@ -325,6 +327,10 @@
                 <div class="mb-4">
                     <label for="add-user-hourly-rate" class="block text-sm font-medium text-gray-700">Hourly Rate</label>
                     <input type="number" id="add-user-hourly-rate" name="hourly_rate" class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black" required>
+                </div>
+                <div class="mb-4">
+                    <label for="add-user-holidays-allowed" class="block text-sm font-medium text-gray-700">Holidays Allowed</label>
+                    <input type="number" id="add-user-holidays-allowed" name="holidays_allowed" value="20" class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black" required>
                 </div>
                 <div x-data="{
                         imageUrl: '',
@@ -450,6 +456,10 @@
                 <div class="mb-4">
                     <label for="edit-user-hourly-rate" class="block text-sm font-medium text-gray-700">Hourly Rate</label>
                     <input type="number" id="edit-user-hourly-rate" name="hourly_rate" class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black" required>
+                </div>
+                <div class="mb-4">
+                    <label for="edit-user-holidays-allowed" class="block text-sm font-medium text-gray-700">Holidays Allowed</label>
+                    <input type="number" id="edit-user-holidays-allowed" name="holidays_allowed" value="20" class="mt-1 block w-full px-3 py-2 rounded-md border-gray-300 shadow-sm focus:border-black focus:ring-black" required>
                 </div>
 
                 <div x-data="{
@@ -734,13 +744,14 @@ $(document).on('click', '.archive-btn', function() {
             Alpine.data('userManagement', () => ({
                 showAddUserModal: false,
                 showEditUserModal: false,
-                openEditUserModal(id, name, email, role, roleId, hourlyRate, profilePicture) {
+                openEditUserModal(id, name, email, role, roleId, hourlyRate, profilePicture, holidaysAllowed) {
                     this.showEditUserModal = true;
                     document.getElementById('edit-user-id').value = id;
                     document.getElementById('edit-user-name').value = name;
                     document.getElementById('edit-user-email').value = email;
                     document.getElementById('edit-user-role').value = roleId || '';
                     document.getElementById('edit-user-hourly-rate').value = hourlyRate;
+                    document.getElementById('edit-user-holidays-allowed').value = holidaysAllowed || 20;
                     document.getElementById('editUserForm').action = `/users/${id}`;
                     document.getElementById('edit-user-profile-picture-url').value = profilePicture ? profilePicture : '';
                     

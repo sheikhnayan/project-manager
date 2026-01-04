@@ -397,7 +397,7 @@
                 @foreach ($data as $key => $item)
                     <div class="task-item" data-task="task{{ $key + 1 }}" style="margin-bottom: 0px; border-bottom: 1px solid #eee; margin-left: 0px; background: #fff;">
                         {{-- <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="User 1"> --}}
-                        <span style="width: 40%; font-size: 12px; display: inline-flex; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px;"> <img src="{{ asset('dots.svg') }}" style="margin-right: 5px;"> <a href="/projects/{{ $item->id }}">{{ $item->project_number }}_{{ $item->name }}</a>  </span>
+                        <span style="width: 40%; font-size: 12px; display: inline-flex; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; align-items: center;"> <span class="drag-handle" style="display: inline-flex; align-items: center; margin-right: 8px; margin-left: 3px; cursor: move;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width: 14px; height: 14px; flex-shrink: 0; display: block;"><rect width="24" height="2.5" y="5.5" fill="#000"/><rect width="24" height="2.5" y="10.75" fill="#000"/><rect width="24" height="2.5" y="16" fill="#000"/></svg></span> <a href="/projects/{{ $item->id }}">{{ $item->project_number }}_{{ $item->name }}</a>  </span>
                         <span style="width: 15%; font-size: 12px; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; text-align: center;">
                             @php
                             // $time = DB::table('time_entries')->where('project_id',$data->id)->get();

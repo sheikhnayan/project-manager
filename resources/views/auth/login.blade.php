@@ -176,8 +176,8 @@
                     <div class="w-16 h-16 bg-white rounded-lg flex items-center justify-center mb-6">
                         <i data-lucide="layout-dashboard" class="w-10 h-10 text-gray-900"></i>
                     </div>
-                    <h1 class="text-5xl font-bold mb-4">Project Management</h1>
-                    <p class="text-xl text-gray-300">Streamline your workflow and boost productivity</p>
+                    <h1 class="text-5xl font-bold mb-4">Project management, made simple</h1>
+                    <p class="text-xl text-gray-300">Plan, track, and deliver work with clarity.</p>
                 </div>
                 
                 <div class="space-y-4 mt-12">
@@ -185,19 +185,19 @@
                         <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
                             <i data-lucide="check" class="w-5 h-5"></i>
                         </div>
-                        <span class="text-lg">Manage projects efficiently</span>
+                        <span class="text-lg">Projects, tasks, and timelines in one place</span>
                     </div>
                     <div class="flex items-center space-x-3">
                         <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
                             <i data-lucide="check" class="w-5 h-5"></i>
                         </div>
-                        <span class="text-lg">Track time and progress</span>
+                        <span class="text-lg">Clear progress and shared visibility</span>
                     </div>
                     <div class="flex items-center space-x-3">
                         <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
                             <i data-lucide="check" class="w-5 h-5"></i>
                         </div>
-                        <span class="text-lg">Collaborate with your team</span>
+                        <span class="text-lg">Built for focused, collaborative teams</span>
                     </div>
                 </div>
             </div>
@@ -216,7 +216,7 @@
 
                 <div class="mb-8">
                     <h2 class="text-3xl font-bold text-gray-900 mb-2">Welcome back</h2>
-                    <p class="text-gray-600">Sign in to continue to your account</p>
+                    <p class="text-gray-600">Sign in to continue.</p>
                 </div>
 
                 @if(session('error'))
@@ -278,17 +278,15 @@
                         @enderror
                     </div>
 
-                    {{-- <div class="flex items-center justify-between">
+                    <div class="flex items-center justify-between">
                         <label class="flex items-center">
                             <input type="checkbox" name="remember" class="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-900">
                             <span class="ml-2 text-sm text-gray-600">Remember me</span>
                         </label>
-                        @if (Route::has('password.request'))
-                            <a href="{{ route('password.request') }}" class="text-sm font-medium text-gray-900 hover:text-gray-700">
-                                Forgot password?
-                            </a>
-                        @endif
-                    </div> --}}
+                        <a href="{{ route('password.request') }}" class="text-sm font-medium text-gray-900 hover:text-gray-700">
+                            Forgot password?
+                        </a>
+                    </div>
 
                     <button 
                         type="submit" 
@@ -303,7 +301,7 @@
 
                 <div class="mt-8 text-center">
                     <p class="text-sm text-gray-600">
-                        © {{ date('Y') }} Project Management. All rights reserved.
+                        © {{ date('Y') }} Itspeasy. All rights reserved.
                     </p>
                 </div>
             </div>

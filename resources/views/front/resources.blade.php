@@ -618,7 +618,9 @@
                                 <!-- Main Team Member Row -->
                                 <div class="task-item team-member-row data-id-{{ $item->id }}" data-user-id="{{ $item->id }}" style="position: unset">
                                     <span style="width: 40%; font-size: 12px; display: inline-flex; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; align-items: center;">
-                                        <div class="drag-handle" style="padding-left: 3px;"><img src="{{ asset('dots.svg') }}" style="margin-right: 5px;"></div>
+                                        <span class="drag-handle" style="display: inline-flex; align-items: center; margin-right: 10px; margin-left: 3px; cursor: move;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width: 14px; height: 14px; flex-shrink: 0; display: block;"><rect width="24" height="2.5" y="5.5" fill="#000"/><rect width="24" height="2.5" y="10.75" fill="#000"/><rect width="24" height="2.5" y="16" fill="#000"/></svg>
+                                        </span>
                                         <img src="{{ $item->profile_image_url ? asset('storage/'.$item->profile_image_url) : 'https://randomuser.me/api/portraits/men/4.jpg' }}">
                                         @php
                                             $nameParts = explode(' ', $item->name);
@@ -690,8 +692,10 @@
                             @if ($item->is_archived == 1)
                             <div class="task-item team-member-row data-id-{{ $item->id }}" data-user-id="{{ $item->id }}" style="position: unset">
                                 <span style="width: 40%; font-size: 12px; display: inline-flex; border-right: 1px solid #eee; padding-top: 6px; padding-bottom: 6px; align-items: center;">
-                                    <div class="drag-handle">⋮⋮</div>
-                                    <img src="{{ $item->profile_image_url ? asset('storage/'.$item->profile_image_url) : 'https://randomuser.me/api/portraits/men/4.jpg' }}"> 
+                                    <span class="drag-handle" style="display: inline-flex; align-items: center; margin-right: 10px; margin-left: 3px; cursor: move;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width: 14px; height: 14px; flex-shrink: 0; display: block;"><rect width="24" height="2.5" y="5.5" fill="#000"/><rect width="24" height="2.5" y="10.75" fill="#000"/><rect width="24" height="2.5" y="16" fill="#000"/></svg>
+                                    </span>
+                                    <img src="{{ $item->profile_image_url ? asset('storage/'.$item->profile_image_url) : 'https://randomuser.me/api/portraits/men/4.jpg' }}">
                                     @php
                                         $nameParts = explode(' ', $item->name);
                                         $firstName = $nameParts[0] ?? '';
