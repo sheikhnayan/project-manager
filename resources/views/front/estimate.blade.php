@@ -1373,9 +1373,6 @@ $(document).ready(function() {
         
         return data;
     }
-        
-        return data;
-    }
     
     // Initialize with "All Tasks"
     updateNewChart('all');
