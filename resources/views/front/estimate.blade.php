@@ -1799,7 +1799,15 @@ $(document).ready(function() {
         // Update total hours progress bar
         const maxHours = estimatedHours || 1; // Use estimated hours as maximum, prevent division by zero
         const totalPercentage = (currentEmployeeData.totalHours / maxHours) * 100;
-        document.getElementById('employee-all-progress').value = Math.min(totalPercentage, 100);
+        const totalProgressBar = document.getElementById('employee-all-progress');
+        totalProgressBar.value = Math.min(totalPercentage, 100);
+        
+        // Update color based on percentage
+        if (totalPercentage > 100) {
+            totalProgressBar.style.accentColor = 'red';
+        } else {
+            totalProgressBar.style.accentColor = 'rgb(111, 134, 124)';
+        }
         
         // Update each task's hours and progress bar
         document.querySelectorAll('.employee-task-item').forEach(function(taskItem) {
@@ -1817,6 +1825,13 @@ $(document).ready(function() {
                 const maxTaskHours = taskEstimatedHours || 1; // Use estimated hours as maximum, prevent division by zero
                 const taskPercentage = (taskHours / maxTaskHours) * 100;
                 progressBar.value = Math.min(taskPercentage, 100);
+                
+                // Update color based on percentage
+                if (taskPercentage > 100) {
+                    progressBar.style.accentColor = 'red';
+                } else {
+                    progressBar.style.accentColor = 'rgb(111, 134, 124)';
+                }
             }
         });
     }

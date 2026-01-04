@@ -146,42 +146,11 @@
             cursor: grab;
             border-top-right-radius: 4px;
             border-bottom-right-radius: 4px;
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE and Edge */
         }
 
         .scroll-container::-webkit-scrollbar {
-            display: none !important; /* Chrome, Safari, and Opera */
-            width: 0 !important;
-            height: 0 !important;
+            display: none; /* For Chrome, Safari, and Opera */
         }
-        
-        /* Hide ALL scrollbars in gantt chart area - global rule */
-        #gantt_here *::-webkit-scrollbar {
-            display: none !important;
-            width: 0 !important;
-            height: 0 !important;
-        }
-        
-        /* Hide gantt scrollbars */
-        #gantt_here,
-        .gantt_container,
-        .gantt_task,
-        .gantt_task_scroll,
-        .gantt_layout_cell,
-        .gantt_data_area {
-            scrollbar-width: none !important; /* Firefox */
-            -ms-overflow-style: none !important; /* IE and Edge */
-        }
-        
-        #gantt_here::-webkit-scrollbar,
-        .gantt_container::-webkit-scrollbar,
-        .gantt_task::-webkit-scrollbar,
-        .gantt_task_scroll::-webkit-scrollbar,
-        .gantt_layout_cell::-webkit-scrollbar,
-        .gantt_data_area::-webkit-scrollbar {
-            display: none !important;
-            width: 0 !important;
             height: 0 !important;
         }
         .header {
@@ -204,9 +173,10 @@
         .task-list {
             width: 600px;
             background-color: #f7fafc;
-            border-right: 1px solid #ccc;
+            border-right: 1px solid #ccc !important;
             border-radius: 4px;
             border-bottom-left-radius: 0px !important;
+            border-bottom-right-radius: 0px !important;
         }
         .task-header {
             display: flex;
@@ -585,8 +555,18 @@
 .gantt_scale_line:not(:first-child) .gantt-weekday-cell span {
     color: #000 !important;
 }
+
+/* Make vertical scrollbar background transparent */
+.gantt_ver_scroll {
+    background-color: transparent !important;
+}
+
+.gantt_layout_cell.scrollVer_cell {
+    background-color: transparent !important;
+}
+
 .gantt_layout_cell{
-            border-width: 0px !important;
+    border: unset !important;
 }
 
 /* Task bar styling */
@@ -609,6 +589,21 @@
 
 .gantt_task_row {
     border-bottom: 1px solid #ebebeb;
+}
+
+/* Hide all internal gantt scrollbars */
+.gantt_task::-webkit-scrollbar,
+.gantt_data_area::-webkit-scrollbar,
+.gantt_task_bg::-webkit-scrollbar {
+    display: none !important;
+}
+
+.gantt_task,
+.gantt_data_area,
+.gantt_task_bg {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    overflow-x: hidden !important;
 }
     </style>
 
@@ -793,7 +788,7 @@
                             }
 
                         @endphp
-                        <div id="gantt_here" data-check-height="{{ ($data->tasks->count() * 32) + 52 }}" style='width:100% !important; height:{{ ($data->tasks->count() * 32) + 52 }}px;'></div>
+                        <div id="gantt_here" data-check-height="{{ ($data->tasks->count() * 32) + 52 }}" style='width:100% !important; height:{{ ($data->tasks->count() * 32) + 52 +15}}px;'></div>
                     </div>
                 </div>
             </div>
@@ -806,7 +801,7 @@
                         </span>
                         <span style="width: 25%; font-size: 12px; border-right: 1px solid #eee; padding-top: 17px; padding-bottom: 17px; text-align: center;">Cost</span>
                         <span style="width: 15%; font-size: 12px; border-right: 1px solid #eee; padding-top: 17px; padding-bottom: 17px; text-align: center;">Hours</span>
-                        <span style="font-size: 12px; width: 10%; padding-top: 17px; padding-bottom: 17px; text-align: center; border-right: 1px solid #eee;"> <i class="fas fa-eye show-user" data-type="show"></i> </span>
+                        <span style="font-size: 12px; width: 10%; padding-top: 17px; padding-bottom: 17px; text-align: center;"> <i class="fas fa-eye show-user" data-type="show"></i> </span>
                         {{-- <span class="text-center font-size: 12px; add-task" style="width: 10%;" id="addMemberButton"><i class="fas fa-plus"></i></span> --}}
                     </div>
                     <div class="not-archived names" id="team-members-list">
@@ -2477,6 +2472,10 @@ gantt.config.max_column_width = 32;
                 width: width
             };
         };
+        
+        // Disable autosize to prevent internal scrollbars
+        gantt.config.autosize = false;
+        gantt.config.scroll_size = 0;
         
         // Initialize gantt
         gantt.init("gantt_here");

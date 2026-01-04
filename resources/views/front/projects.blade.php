@@ -155,7 +155,7 @@
         .task-list {
             width: 600px;
             background-color: #f7fafc;
-            border-right: 1px solid #ccc;
+            border-right: 1px solid #ccc !important;
             border-radius: 4px;
             border-bottom-left-radius: 0px !important;
         }
@@ -785,7 +785,7 @@
                         </span>
                         <span style="width: 25%; font-size: 12px; border-right: 1px solid #eee; padding-top: 17px; padding-bottom: 17px; text-align: center;">Cost</span>
                         <span style="width: 15%; font-size: 12px; border-right: 1px solid #eee; padding-top: 17px; padding-bottom: 17px; text-align: center;">Hours</span>
-                        <span style="font-size: 12px; width: 10%; padding-top: 17px; padding-bottom: 17px; text-align: center; border-right: 1px solid #eee;"> <i class="fas fa-eye show-user" data-type="show"></i> </span>
+                        <span style="font-size: 12px; width: 10%; padding-top: 17px; padding-bottom: 17px; text-align: center;"> <i class="fas fa-eye show-user" data-type="show"></i> </span>
                         {{-- <span class="text-center font-size: 12px; add-task" style="width: 10%;" id="addMemberButton"><i class="fas fa-plus"></i></span> --}}
                     </div>
                     <div class="not-archived names" id="team-members-list">
