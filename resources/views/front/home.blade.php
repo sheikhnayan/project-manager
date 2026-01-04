@@ -12,7 +12,7 @@
     <title>Itspeasy</title>
     <meta content="width=device-width, initial-scale=1" name="viewport" />
     <meta content="Webflow" name="generator" />
-    <link href="style.css" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('home/style.css') }}" rel="stylesheet" type="text/css" />
     <style>
       @media (max-width: 767px) and (min-width: 480px) {
         html.w-mod-js:not(.w-mod-ix)
@@ -126,7 +126,7 @@
           <div class="w-layout-vflex background-hero-wrap">
             <div class="hero-blur"></div>
             <img
-              src="assets/6921916b802d4b70859be184_0f433d45117668fb9162af8aebf26a07_pattern-hero-homepage.webp"
+              src="{{ asset('home/assets/6921916b802d4b70859be184_0f433d45117668fb9162af8aebf26a07_pattern-hero-homepage.webp') }}"
               loading="lazy"
               sizes="(max-width: 1600px) 100vw, 1600px"
               srcset="
@@ -215,7 +215,7 @@
             <div class="section-head is-home-hero hero-img-sec">
               <div class="heros-sec-img-d">
                 <img
-                  src="assets/692d64fc946053b3c2c2ea2c_605bea831770d0646278c7d0e014d49f_herodashboardimage.webp"
+                  src="{{ asset('home/assets/692d64fc946053b3c2c2ea2c_605bea831770d0646278c7d0e014d49f_herodashboardimage.webp') }}"
                   loading="lazy"
                   data-w-id="ffe054e2-c851-f64c-b17e-b82f64cced6e"
                   sizes="(max-width: 767px) 100vw, (max-width: 991px) 95vw, 939.9722290039062px"
@@ -237,7 +237,7 @@
               >
                 <img
                   class="hero-image"
-                  src="assets/692d9635569dff261318dc74_fcd1043310e28e9d4dd5fe73c51f73ac_Screeen%202.1.png"
+                  src="{{ asset('home/assets/692d9635569dff261318dc74_fcd1043310e28e9d4dd5fe73c51f73ac_Screeen%202.1.png') }}"
                   alt="hero dashboard image"
                   style="
                     opacity: 0;
@@ -265,7 +265,7 @@
                   "
                 /><img
                   class="hero-image mob"
-                  src="assets/692d9635569dff261318dc74_fcd1043310e28e9d4dd5fe73c51f73ac_Screeen%202.1.png"
+                  src="{{ asset('home/assets/692d9635569dff261318dc74_fcd1043310e28e9d4dd5fe73c51f73ac_Screeen%202.1.png') }}"
                   alt="hero dashboard image"
                   style="opacity: 0"
                   sizes="(max-width: 767px) 100vw, (max-width: 991px) 95vw, 939.9722290039062px"
@@ -274,7 +274,7 @@
                 />
                 <div class="div-block-24 herosect-p-b">
                   <img
-                    src="assets/692dac6e7baa8c623fc90843_5d84b02798fb0bd06c53b3a094cff2f5_play-button-icon-png-15.png"
+                    src="{{ asset('home/assets/692dac6e7baa8c623fc90843_5d84b02798fb0bd06c53b3a094cff2f5_play-button-icon-png-15.png') }}"
                     loading="lazy"
                     sizes="(max-width: 767px) 100vw, (max-width: 991px) 95vw, 940px"
                     srcset="
@@ -290,7 +290,7 @@
             </div>
             <img
               class="hero-image sec-2 jjj"
-              src="assets/692d64fc946053b3c2c2ea2c_605bea831770d0646278c7d0e014d49f_herodashboardimage.webp"
+              src="{{ asset('home/assets/692d64fc946053b3c2c2ea2c_605bea831770d0646278c7d0e014d49f_herodashboardimage.webp') }}"
               alt="hero dashboard image"
               style="opacity: 0"
               sizes="(max-width: 767px) 100vw, (max-width: 991px) 95vw, 939.9722290039062px"
@@ -329,7 +329,7 @@
                   class="div-block-3 card-d"
                 >
                   <img
-                    src="assets/6921a6137914156fb649e013_173d17a191a588bc8289cf4367199fe7_Vector.png"
+                    src="{{ asset('home/assets/6921a6137914156fb649e013_173d17a191a588bc8289cf4367199fe7_Vector.png') }}"
                     loading="lazy"
                     alt=""
                     class="image-2 card-img"
@@ -349,7 +349,7 @@
                   class="div-block-3 card-d c"
                 >
                   <img
-                    src="assets/6921a863cf27a5145e4afa09_3fc04ffe205c217d5ef611a22c1bb4b4_Vector%20%281%29.png"
+                    src="{{ asset('home/assets/6921a863cf27a5145e4afa09_3fc04ffe205c217d5ef611a22c1bb4b4_Vector%20%281%29.png') }}"
                     loading="lazy"
                     alt=""
                     class="image-2 card-img _22"
@@ -369,7 +369,7 @@
                   class="div-block-3 card-d r"
                 >
                   <img
-                    src="assets/6921a8649d4783fde776006c_7de0f8de66526baa2f6ef254264bb494_Vector%20%282%29.png"
+                    src="{{ asset('home/assets/6921a8649d4783fde776006c_7de0f8de66526baa2f6ef254264bb494_Vector%20%282%29.png') }}"
                     loading="lazy"
                     alt=""
                     class="image-2 card-img _33"
@@ -409,7 +409,7 @@
                       </div>
                     </div>
                     <img
-                      src="assets/6921b11202cc5faa1ae9028a_d6a2873181afa5814436c0b4ce545244_Vector%20%283%29.png"
+                      src="{{ asset('home/assets/6921b11202cc5faa1ae9028a_d6a2873181afa5814436c0b4ce545244_Vector%20%283%29.png') }}"
                       loading="lazy"
                       alt=""
                       class="image-3 s-card-img-icon _11"
@@ -436,7 +436,7 @@
                       </div>
                     </div>
                     <img
-                      src="assets/6921b101de14cc257078b54d_6f7f5bb01a2ffdb9d32c8ab09670a551_Vector%20%284%29.png"
+                      src="{{ asset('home/assets/6921b101de14cc257078b54d_6f7f5bb01a2ffdb9d32c8ab09670a551_Vector%20%284%29.png') }}"
                       loading="lazy"
                       alt=""
                       class="image-3 s-card-img-icon _22"
@@ -461,7 +461,7 @@
                       </div>
                     </div>
                     <img
-                      src="assets/6921b79f9dc4404a7bc7ae5a_f51a83daabcd087659073167d103514c_Binoculars.png"
+                      src="{{ asset('home/assets/6921b79f9dc4404a7bc7ae5a_f51a83daabcd087659073167d103514c_Binoculars.png') }}"
                       loading="lazy"
                       alt=""
                       class="image-3 s-card-img-icon _33"
@@ -500,7 +500,7 @@
                       </div>
                     </div>
                     <img
-                      src="assets/6921b7ddd6cdfe672bba6397_550b4d3e95c92252bfb311f3fb44f663_SquaresFour.png"
+                      src="{{ asset('home/assets/6921b7ddd6cdfe672bba6397_550b4d3e95c92252bfb311f3fb44f663_SquaresFour.png') }}"
                       loading="lazy"
                       alt=""
                       class="image-3 s-card-img-icon _11"
@@ -525,7 +525,7 @@
                       </div>
                     </div>
                     <img
-                      src="assets/6921b7a279ff39feebf09e5c_11cdd74925ba48ececb90f919edf59d1_Shapes.png"
+                      src="{{ asset('home/assets/6921b7a279ff39feebf09e5c_11cdd74925ba48ececb90f919edf59d1_Shapes.png') }}"
                       loading="lazy"
                       alt=""
                       class="image-3 s-card-img-icon _22 ee"
@@ -550,7 +550,7 @@
                       </div>
                     </div>
                     <img
-                      src="assets/6921b79ffbc837d0f21c2413_6c8fa113282dbbdbf16d1a811b641617_Polygon.png"
+                      src="{{ asset('home/assets/6921b79ffbc837d0f21c2413_6c8fa113282dbbdbf16d1a811b641617_Polygon.png') }}"
                       loading="lazy"
                       alt=""
                       class="image-3 s-card-img-icon _33"
@@ -586,7 +586,7 @@
               class="div-block-25"
             >
               <img
-                src="assets/692412410c9afd0773690ef7_Group24.webp"
+                src="{{ asset('home/assets/692412410c9afd0773690ef7_Group24.webp') }}"
                 loading="lazy"
                 sizes="(max-width: 767px) 100vw, (max-width: 991px) 95vw, 939.9861450195312px"
                 srcset="
@@ -601,7 +601,7 @@
               <div class="div-block-27"></div>
               <div class="div-block-24">
                 <img
-                  src="assets/692dac6e7baa8c623fc90843_5d84b02798fb0bd06c53b3a094cff2f5_play-button-icon-png-15.png"
+                  src="{{ asset('home/assets/692dac6e7baa8c623fc90843_5d84b02798fb0bd06c53b3a094cff2f5_play-button-icon-png-15.png') }}"
                   loading="lazy"
                   sizes="(max-width: 767px) 100vw, (max-width: 991px) 95vw, 940px"
                   srcset="
@@ -791,7 +791,7 @@
                     <div class="it-heading-card _w-f">Settings</div>
                   </div>
                   <img
-                    src="assets/6924362041bc59419725d9fb_5e943589045ec78332d79f47f339294c_Vector%20%286%29.png"
+                    src="{{ asset('home/assets/6924362041bc59419725d9fb_5e943589045ec78332d79f47f339294c_Vector%20%286%29.png') }}"
                     loading="lazy"
                     alt=""
                     class="image-3 s-card-img-icon _w-f _22"
@@ -815,7 +815,7 @@
                     <div class="it-heading-card _w-f">Project Settings</div>
                   </div>
                   <img
-                    src="assets/6924362041bc59419725d9fb_5e943589045ec78332d79f47f339294c_Vector%20%286%29.png"
+                    src="{{ asset('home/assets/6924362041bc59419725d9fb_5e943589045ec78332d79f47f339294c_Vector%20%286%29.png') }}"
                     loading="lazy"
                     alt=""
                     class="image-3 s-card-img-icon _w-f _22"
@@ -839,7 +839,7 @@
                     <div class="it-heading-card _w-f">Project Planning</div>
                   </div>
                   <img
-                    src="assets/692436152b9013390bcfacc2_b12363dd30afa0849ed59923ba94397a_Vector%20%287%29.png"
+                    src="{{ asset('home/assets/692436152b9013390bcfacc2_b12363dd30afa0849ed59923ba94397a_Vector%20%287%29.png') }}"
                     loading="lazy"
                     alt=""
                     class="image-3 s-card-img-icon _w-f _33"
@@ -863,7 +863,7 @@
                     <div class="it-heading-card _w-f">Timesheets</div>
                   </div>
                   <img
-                    src="assets/692435fa2632ef318246ceca_3243907b9664980442d7b6f4c6ee2c49_Vector%20%2810%29.png"
+                    src="{{ asset('home/assets/692435fa2632ef318246ceca_3243907b9664980442d7b6f4c6ee2c49_Vector%20%2810%29.png') }}"
                     loading="lazy"
                     alt=""
                     class="image-3 s-card-img-icon _w-f _44"
@@ -886,7 +886,7 @@
                     <div class="it-heading-card _w-f">Project Control</div>
                   </div>
                   <img
-                    src="assets/6924369fff99e55ba52f4f0a_ff60d10485bb20807fe6567e7ee178e0_Vector%20%289%29.png"
+                    src="{{ asset('home/assets/6924369fff99e55ba52f4f0a_ff60d10485bb20807fe6567e7ee178e0_Vector%20%289%29.png') }}"
                     loading="lazy"
                     alt=""
                     class="image-3 s-card-img-icon _w-f _55"
@@ -912,7 +912,7 @@
                     <div class="it-heading-card _w-f">Resourcing</div>
                   </div>
                   <img
-                    src="assets/69243604cf2b2518ecf94ca3_1e6c79db04b736d6214b564b48aa489b_Vector%20%288%29.png"
+                    src="{{ asset('home/assets/69243604cf2b2518ecf94ca3_1e6c79db04b736d6214b564b48aa489b_Vector%20%288%29.png') }}"
                     loading="lazy"
                     alt=""
                     class="image-3 s-card-img-icon _w-f _66 dd"
@@ -2206,7 +2206,7 @@
                   </div>
                   <div class="div-block-16">
                     <img
-                      src="assets/692427ad791ec17e30a4b174_chat-icon.webp"
+                      src="{{ asset('home/assets/692427ad791ec17e30a4b174_chat-icon.webp') }}"
                       loading="lazy"
                       alt=""
                       class="image-4 div-block-16"
