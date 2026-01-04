@@ -1359,16 +1359,12 @@ $(document).ready(function() {
         // Calculate velocity (% complete per % time elapsed)
         const velocity = currentProgress / (currentIndex * 10);
         
-        // Project trend forward
+        // Project trend from 0% to end - always start from 0%
         for (let i = 0; i < 11; i++) {
             const timePercent = i * 10;
-            if (i <= currentIndex) {
-                data.push(null); // Don't show trend for past
-            } else {
-                // Extrapolate based on current velocity
-                const projectedProgress = velocity * timePercent;
-                data.push(projectedProgress);
-            }
+            // Extrapolate based on current velocity
+            const projectedProgress = velocity * timePercent;
+            data.push(projectedProgress);
         }
         
         return data;
