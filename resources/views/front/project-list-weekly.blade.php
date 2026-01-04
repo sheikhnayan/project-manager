@@ -255,6 +255,11 @@
             background: #fff;
             height: 30px;
         }
+
+        .task-item:last-child {
+            border-bottom: 0px !important;
+        }
+
         .task-item img {
             width: 20px;
             height: 20px;

@@ -1101,9 +1101,9 @@ $(document).ready(function() {
         // Generate time-based data points
         const timeLabels = generateNewTimeLabels(taskStart, taskEnd);
         const idealData = generateIdealProgress(taskStart, taskEnd, currentData.estimatedHours);
-        const plannedData = generatePlannedProgress(taskStart, taskEnd, currentData.estimatedHours);
-        const actualData = generateActualProgress(taskStart, taskEnd, currentData.timeEntries, currentData.actualHours);
-        const trendData = generateTrendLine(actualData, idealData.length);
+        const plannedData = generatePlannedProgress(taskStart, taskEnd, currentData.estimatedHours, selectedTaskId);
+        const actualData = generateActualProgress(taskStart, taskEnd, currentData.timeEntries, currentData.actualHours, currentData.estimatedHours);
+        const trendData = generateTrendLine(actualData, taskStart, taskEnd, currentData.actualHours, currentData.estimatedHours);
         
         // Destroy existing chart
         if (newBurnChart) {
@@ -1247,24 +1247,61 @@ $(document).ready(function() {
         return data;
     }
     
-    // Generate planned progress (S-curve)
-    function generatePlannedProgress(startDate, endDate, estimatedHours) {
+    // Generate planned progress based on estimated time entries
+    function generatePlannedProgress(startDate, endDate, estimatedHours, taskId) {
         const data = [];
-        for (let i = 0; i <= 100; i += 10) {
-            // S-curve formula: slow start, fast middle, slow end
-            const t = i / 100;
-            const progress = 100 * (1 / (1 + Math.exp(-8 * (t - 0.5))));
-            data.push(progress);
+        const totalDuration = endDate - startDate;
+        
+        // Get estimated entries for this task
+        const estimatedEntries = @json($data->estimatedtimeEntries);
+        let taskEstimatedEntries = [];
+        
+        if (taskId === 'all') {
+            taskEstimatedEntries = estimatedEntries;
+        } else {
+            taskEstimatedEntries = estimatedEntries.filter(e => e.task_id == taskId);
         }
+        
+        // If no estimated entries, use linear progress
+        if (taskEstimatedEntries.length === 0 || estimatedHours === 0) {
+            for (let i = 0; i <= 100; i += 10) {
+                data.push(i);
+            }
+            return data;
+        }
+        
+        // Sort estimated entries by date
+        const sortedEstimated = taskEstimatedEntries.slice().sort((a, b) => {
+            return new Date(a.date) - new Date(b.date);
+        });
+        
+        // Calculate cumulative planned hours at each 10% time interval
+        for (let i = 0; i <= 100; i += 10) {
+            const progressPoint = i / 100;
+            const checkDate = new Date(startDate.getTime() + totalDuration * progressPoint);
+            
+            let cumulativeEstimated = 0;
+            for (const entry of sortedEstimated) {
+                const entryDate = new Date(entry.date);
+                if (entryDate <= checkDate) {
+                    cumulativeEstimated += parseFloat(entry.hours);
+                }
+            }
+            
+            // Convert to percentage of total estimated hours
+            const percentage = (cumulativeEstimated / estimatedHours) * 100;
+            data.push(Math.min(percentage, 100));
+        }
+        
         return data;
     }
     
     // Generate actual progress based on real time entries
-    function generateActualProgress(startDate, endDate, timeEntries, totalActualHours) {
+    function generateActualProgress(startDate, endDate, timeEntries, totalActualHours, estimatedHours) {
         const data = [];
         const totalDuration = endDate - startDate;
         
-        if (timeEntries.length === 0 || totalActualHours === 0) {
+        if (timeEntries.length === 0 || estimatedHours === 0) {
             // No data, return zeros
             for (let i = 0; i <= 100; i += 10) {
                 data.push(0);
@@ -1275,7 +1312,7 @@ $(document).ready(function() {
         // Sort time entries by date
         const sortedEntries = timeEntries.slice().sort((a, b) => a.date - b.date);
         
-        // Calculate cumulative hours at each 10% interval
+        // Calculate cumulative hours at each 10% time interval
         for (let i = 0; i <= 100; i += 10) {
             const progressPoint = i / 100;
             const checkDate = new Date(startDate.getTime() + totalDuration * progressPoint);
@@ -1289,54 +1326,53 @@ $(document).ready(function() {
                 }
             }
             
-            // Convert to percentage
-            const percentage = (cumulativeHours / totalActualHours) * 100;
-            data.push(Math.min(percentage, 100));
+            // Convert to percentage based on estimated hours (not actual)
+            const percentage = (cumulativeHours / estimatedHours) * 100;
+            data.push(percentage); // Allow over 100% if over budget
         }
         
         return data;
     }
     
-    // Generate trend line (linear extrapolation from actual progress)
-    function generateTrendLine(actualData, length) {
+    // Generate trend line (predict completion based on current velocity)
+    function generateTrendLine(actualData, startDate, endDate, actualHours, estimatedHours) {
         const data = [];
+        const now = new Date();
+        const totalDuration = endDate - startDate;
+        const timePassed = Math.min(now - startDate, totalDuration);
+        const timePassedPercent = (timePassed / totalDuration) * 100;
         
-        // Find the last non-zero actual data point
-        let lastNonZeroIndex = -1;
-        let lastNonZeroValue = 0;
-        for (let i = actualData.length - 1; i >= 0; i--) {
-            if (actualData[i] > 0) {
-                lastNonZeroIndex = i;
-                lastNonZeroValue = actualData[i];
-                break;
-            }
-        }
+        // Find current progress point
+        let currentIndex = Math.round(timePassedPercent / 10);
+        currentIndex = Math.max(0, Math.min(currentIndex, 10));
         
-        if (lastNonZeroIndex < 0) {
-            // No actual data yet
-            for (let i = 0; i < length; i++) {
+        const currentProgress = actualData[currentIndex] || 0;
+        
+        if (currentProgress === 0 || currentIndex === 0) {
+            // No progress yet, no trend to show
+            for (let i = 0; i < 11; i++) {
                 data.push(null);
             }
             return data;
         }
         
-        // Calculate trend slope from start to current point
-        const slope = lastNonZeroValue / (lastNonZeroIndex + 1);
+        // Calculate velocity (% complete per % time elapsed)
+        const velocity = currentProgress / (currentIndex * 10);
         
-        // Generate trend line from start to end
-        for (let i = 0; i < length; i++) {
-            if (i <= lastNonZeroIndex) {
-                data.push(null); // Don't show trend before current point
+        // Project trend forward
+        for (let i = 0; i < 11; i++) {
+            const timePercent = i * 10;
+            if (i <= currentIndex) {
+                data.push(null); // Don't show trend for past
             } else {
-                const trendValue = slope * (i + 1);
-                data.push(Math.min(trendValue, 100));
+                // Extrapolate based on current velocity
+                const projectedProgress = velocity * timePercent;
+                data.push(projectedProgress);
             }
         }
         
-        // Fill from current point to end with trend
-        for (let i = 0; i <= lastNonZeroIndex; i++) {
-            data[i] = slope * (i + 1);
-        }
+        return data;
+    }
         
         return data;
     }
@@ -1347,6 +1383,44 @@ $(document).ready(function() {
     // Handle dropdown change
     document.getElementById('newTaskSelector').addEventListener('change', function() {
         updateNewChart(this.value);
+    });
+    
+    // Function to recalculate task data from the table
+    function recalculateTaskData() {
+        // Update estimated hours from the table
+        $('table tbody tr').each(function() {
+            const taskId = $(this).find('input[name="task_ids[]"]').val();
+            if (taskId && newTaskData[taskId]) {
+                let totalEstimated = 0;
+                
+                // Sum up all estimated hours inputs for this task row
+                $(this).find('input[name^="estimated_hours"]').each(function() {
+                    const value = parseFloat($(this).val()) || 0;
+                    totalEstimated += value;
+                });
+                
+                // Update the task data
+                newTaskData[taskId].estimatedHours = totalEstimated;
+            }
+        });
+        
+        // Recalculate total for "All Tasks"
+        let totalEstimated = 0;
+        Object.values(newTaskData).forEach(task => {
+            totalEstimated += task.estimatedHours;
+        });
+        allTasksNewData.estimatedHours = totalEstimated;
+        
+        // Refresh the current chart
+        const currentTaskId = document.getElementById('newTaskSelector').value;
+        updateNewChart(currentTaskId);
+    }
+    
+    // Listen for changes on estimated hours inputs
+    $(document).on('input change blur', 'input[name^="estimated_hours"]', function() {
+        // Debounce to avoid too many updates
+        clearTimeout(window.chartUpdateTimeout);
+        window.chartUpdateTimeout = setTimeout(recalculateTaskData, 500);
     });
     
     // ============================================

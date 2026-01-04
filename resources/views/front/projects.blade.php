@@ -225,6 +225,15 @@
             cursor: move;
         }
 
+        .team-member-row:last-child {
+            border-bottom: 0px !important;
+        }
+
+        .not-archived .team-member-row:last-child,
+        .archied .team-member-row:last-child {
+            border-bottom: 0px !important;
+        }
+
         .team-member-row.ui-sortable-helper {
             background-color: #f3f4f6;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);

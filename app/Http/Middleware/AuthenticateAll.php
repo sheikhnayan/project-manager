@@ -20,6 +20,7 @@ class AuthenticateAll
         $allowedRoutes = [
             'login',
             'register',
+            'homepage',
             'password.request',
             'password.email',
             'password.reset',
