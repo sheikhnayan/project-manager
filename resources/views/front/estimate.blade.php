@@ -489,6 +489,8 @@
         </div>
     </div>
     <div class="col-span-2" style="height: 100%; display: flex; flex-direction: column;">
+        <!-- OLD CHART (COMMENTED OUT) -->
+        <!--
         <div style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15); padding-top: 0px; border-radius: 8px; margin-right: 16px; padding: 12px; padding-bottom: 20px; flex: 1;">
             <div class="p-4" style="padding-top: 12px; padding-bottom: 0px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
@@ -501,12 +503,10 @@
                     </select>
                 </div>
                 
-                <!-- Chart Container -->
                 <div style="height: 400px; position: relative; margin-top: 2rem;">
                     <canvas id="burnChart" width="100%" height="400"></canvas>
                 </div>
                 
-                <!-- Legend and Summary -->
                 <div style="margin-top: 1.5rem; display: flex; justify-content: space-between;">
                     <div style="display: flex; gap: 2rem;">
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -518,8 +518,52 @@
                             <span style="font-size: 12px; color: #6b7280;">Work Completed (Actual)</span>
                         </div>
                     </div>
-                    <div id="chartSummary" style="font-size: 12px; color: #6b7280;">
-                        <!-- Summary will be populated by JavaScript -->
+                    <div id="chartSummary" style="font-size: 12px; color: #6b7280;"></div>
+                </div>
+            </div>
+        </div>
+        -->
+        
+        <!-- NEW BURN CHART -->
+        <div style="border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15); padding-top: 0px; border-radius: 8px; margin-right: 16px; padding: 12px; padding-bottom: 20px; flex: 1; background: #f9fafb;">
+            <div class="p-4" style="padding-top: 12px; padding-bottom: 0px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0rem;">
+                    <h6 style="font-size: 24px; font-weight: bold; color: #1f2937;">Project Burn Chart</h6>
+                    <select id="newTaskSelector" style="padding: 8px 16px; border: 1px solid #D1D5DB; border-radius: 6px; background: white; font-size: 14px; cursor: pointer;">
+                        <option value="all">All Tasks</option>
+                        @foreach ($data->tasks as $task)
+                            <option value="{{ $task->id }}">{{ $task->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                
+                <!-- Chart Container -->
+                <div style="height: 450px; position: relative; margin-top: 1rem; background: white; padding: 20px; border-radius: 8px;">
+                    <canvas id="newBurnChart" width="100%" height="450"></canvas>
+                </div>
+                
+                <!-- Legend -->
+                <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center; padding: 0 20px;">
+                    <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div style="width: 30px; height: 3px; background: black; border-style: dotted; border-width: 0 0 3px 0;"></div>
+                            <span style="font-size: 13px; color: #4b5563;">Ideal progress</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div style="width: 30px; height: 3px; background: #10b981;"></div>
+                            <span style="font-size: 13px; color: #4b5563;">Planned progress</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div style="width: 30px; height: 3px; background: #000;"></div>
+                            <span style="font-size: 13px; color: #4b5563;">Actual progress</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div style="width: 30px; height: 3px; background: #ef4444; border-style: dotted; border-width: 0 0 3px 0;"></div>
+                            <span style="font-size: 13px; color: #4b5563;">Trend</span>
+                        </div>
+                    </div>
+                    <div id="newChartStatus" style="font-size: 16px; font-weight: bold; color: #ef4444;">
+                        Status: <span id="statusValue">+0 h</span>
                     </div>
                 </div>
             </div>
@@ -909,6 +953,8 @@ $(document).ready(function() {
 
 <script>
 $(document).ready(function() {
+    // OLD CHART CODE (COMMENTED OUT)
+    /*
     // Prepare task data for charts
     const taskData = {
         @foreach ($data->tasks as $task)
@@ -938,7 +984,376 @@ $(document).ready(function() {
         },
         @endforeach
     };
+    ... rest of old chart code ...
+    */
+    
+    // ============================================
+    // NEW BURN CHART CODE
+    // ============================================
+    
+    // Prepare task data with hours instead of cost
+    const newTaskData = {
+        @foreach ($data->tasks as $task)
+        {{ $task->id }}: {
+            id: {{ $task->id }},
+            name: "{{ $task->name }}",
+            start: new Date('{{ $task->start_date }}'),
+            end: new Date('{{ $task->end_date }}'),
+            estimatedHours: @php
+                $estimatedHours = 0;
+                foreach ($data->estimatedtimeEntries as $entry) {
+                    if ($entry->task_id == $task->id) {
+                        $estimatedHours += $entry->hours;
+                    }
+                }
+                echo $estimatedHours;
+            @endphp,
+            actualHours: @php
+                $actualHours = 0;
+                foreach ($data->timeEntries as $entry) {
+                    if ($entry->task_id == $task->id) {
+                        $actualHours += $entry->hours;
+                    }
+                }
+                echo $actualHours;
+            @endphp,
+            timeEntries: [
+                @php
+                    $taskTimeEntries = [];
+                    foreach ($data->timeEntries as $entry) {
+                        if ($entry->task_id == $task->id) {
+                            $taskTimeEntries[] = [
+                                'date' => $entry->entry_date,
+                                'hours' => $entry->hours
+                            ];
+                        }
+                    }
+                @endphp
+                @foreach ($taskTimeEntries as $te)
+                {
+                    date: new Date('{{ $te['date'] }}'),
+                    hours: {{ $te['hours'] }}
+                },
+                @endforeach
+            ]
+        },
+        @endforeach
+    };
+    
+    // All tasks time entries
+    const allTimeEntries = [
+        @foreach ($data->timeEntries as $entry)
+        {
+            date: new Date('{{ $entry->entry_date }}'),
+            hours: {{ $entry->hours }},
+            taskId: {{ $entry->task_id }}
+        },
+        @endforeach
+    ];
+    
+    // All tasks summary
+    const allTasksNewData = {
+        name: "All Tasks",
+        estimatedHours: @php
+            $totalEstimatedHours = 0;
+            foreach ($data->estimatedtimeEntries as $entry) {
+                $totalEstimatedHours += $entry->hours;
+            }
+            echo $totalEstimatedHours;
+        @endphp,
+        actualHours: @php
+            $totalActualHours = 0;
+            foreach ($data->timeEntries as $entry) {
+                $totalActualHours += $entry->hours;
+            }
+            echo $totalActualHours;
+        @endphp,
+        start: new Date('{{ $data->start_date }}'),
+        end: new Date('{{ $data->end_date }}'),
+        timeEntries: allTimeEntries
+    };
+    
+    let newBurnChart;
+    const newCtx = document.getElementById('newBurnChart').getContext('2d');
+    
+    function updateNewChart(selectedTaskId) {
+        let currentData;
+        let taskStart, taskEnd;
+        
+        if (selectedTaskId === 'all') {
+            currentData = allTasksNewData;
+            taskStart = currentData.start;
+            taskEnd = currentData.end;
+        } else {
+            currentData = newTaskData[selectedTaskId];
+            taskStart = currentData.start;
+            taskEnd = currentData.end;
+        }
+        
+        // Calculate status
+        const variance = currentData.actualHours - currentData.estimatedHours;
+        const statusText = variance > 0 ? `+${Math.round(variance)} h` : variance < 0 ? `${Math.round(variance)} h` : '0 h';
+        const statusColor = variance > 0 ? '#ef4444' : variance < 0 ? '#10b981' : '#6b7280';
+        
+        document.getElementById('statusValue').textContent = statusText;
+        document.getElementById('statusValue').style.color = statusColor;
+        
+        // Generate time-based data points
+        const timeLabels = generateNewTimeLabels(taskStart, taskEnd);
+        const idealData = generateIdealProgress(taskStart, taskEnd, currentData.estimatedHours);
+        const plannedData = generatePlannedProgress(taskStart, taskEnd, currentData.estimatedHours);
+        const actualData = generateActualProgress(taskStart, taskEnd, currentData.timeEntries, currentData.actualHours);
+        const trendData = generateTrendLine(actualData, idealData.length);
+        
+        // Destroy existing chart
+        if (newBurnChart) {
+            newBurnChart.destroy();
+        }
+        
+        // Create new chart
+        newBurnChart = new Chart(newCtx, {
+            type: 'line',
+            data: {
+                labels: timeLabels,
+                datasets: [
+                    {
+                        label: 'Ideal progress',
+                        data: idealData,
+                        borderColor: '#000',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        borderDash: [8, 4],
+                        fill: false,
+                        tension: 0,
+                        pointRadius: 0
+                    },
+                    {
+                        label: 'Planned progress',
+                        data: plannedData,
+                        borderColor: '#10b981',
+                        backgroundColor: 'transparent',
+                        borderWidth: 3,
+                        fill: false,
+                        tension: 0.3,
+                        pointRadius: 0
+                    },
+                    {
+                        label: 'Actual progress',
+                        data: actualData,
+                        borderColor: '#000',
+                        backgroundColor: 'transparent',
+                        borderWidth: 3,
+                        fill: false,
+                        tension: 0.1,
+                        pointRadius: 0
+                    },
+                    {
+                        label: 'Trend',
+                        data: trendData,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        borderDash: [6, 3],
+                        fill: false,
+                        tension: 0,
+                        pointRadius: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + Math.round(context.parsed.y) + '%';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            align: 'end'
+                        },
+                        grid: {
+                            display: true,
+                            color: '#e5e7eb'
+                        },
+                        ticks: {
+                            maxRotation: 0,
+                            autoSkip: true,
+                            maxTicksLimit: 10
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Hours',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            align: 'end'
+                        },
+                        grid: {
+                            display: true,
+                            color: '#e5e7eb'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value + ' %';
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                }
+            }
+        });
+    }
+    
+    // Generate time labels (percentage-based)
+    function generateNewTimeLabels(startDate, endDate) {
+        const labels = [];
+        for (let i = 0; i <= 100; i += 10) {
+            labels.push(i + ' %');
+        }
+        return labels;
+    }
+    
+    // Generate ideal progress (linear from 0 to 100)
+    function generateIdealProgress(startDate, endDate, estimatedHours) {
+        const data = [];
+        for (let i = 0; i <= 100; i += 10) {
+            data.push(i);
+        }
+        return data;
+    }
+    
+    // Generate planned progress (S-curve)
+    function generatePlannedProgress(startDate, endDate, estimatedHours) {
+        const data = [];
+        for (let i = 0; i <= 100; i += 10) {
+            // S-curve formula: slow start, fast middle, slow end
+            const t = i / 100;
+            const progress = 100 * (1 / (1 + Math.exp(-8 * (t - 0.5))));
+            data.push(progress);
+        }
+        return data;
+    }
+    
+    // Generate actual progress based on real time entries
+    function generateActualProgress(startDate, endDate, timeEntries, totalActualHours) {
+        const data = [];
+        const totalDuration = endDate - startDate;
+        
+        if (timeEntries.length === 0 || totalActualHours === 0) {
+            // No data, return zeros
+            for (let i = 0; i <= 100; i += 10) {
+                data.push(0);
+            }
+            return data;
+        }
+        
+        // Sort time entries by date
+        const sortedEntries = timeEntries.slice().sort((a, b) => a.date - b.date);
+        
+        // Calculate cumulative hours at each 10% interval
+        for (let i = 0; i <= 100; i += 10) {
+            const progressPoint = i / 100;
+            const checkDate = new Date(startDate.getTime() + totalDuration * progressPoint);
+            
+            let cumulativeHours = 0;
+            for (const entry of sortedEntries) {
+                if (entry.date <= checkDate) {
+                    cumulativeHours += entry.hours;
+                } else {
+                    break;
+                }
+            }
+            
+            // Convert to percentage
+            const percentage = (cumulativeHours / totalActualHours) * 100;
+            data.push(Math.min(percentage, 100));
+        }
+        
+        return data;
+    }
+    
+    // Generate trend line (linear extrapolation from actual progress)
+    function generateTrendLine(actualData, length) {
+        const data = [];
+        
+        // Find the last non-zero actual data point
+        let lastNonZeroIndex = -1;
+        let lastNonZeroValue = 0;
+        for (let i = actualData.length - 1; i >= 0; i--) {
+            if (actualData[i] > 0) {
+                lastNonZeroIndex = i;
+                lastNonZeroValue = actualData[i];
+                break;
+            }
+        }
+        
+        if (lastNonZeroIndex < 0) {
+            // No actual data yet
+            for (let i = 0; i < length; i++) {
+                data.push(null);
+            }
+            return data;
+        }
+        
+        // Calculate trend slope from start to current point
+        const slope = lastNonZeroValue / (lastNonZeroIndex + 1);
+        
+        // Generate trend line from start to end
+        for (let i = 0; i < length; i++) {
+            if (i <= lastNonZeroIndex) {
+                data.push(null); // Don't show trend before current point
+            } else {
+                const trendValue = slope * (i + 1);
+                data.push(Math.min(trendValue, 100));
+            }
+        }
+        
+        // Fill from current point to end with trend
+        for (let i = 0; i <= lastNonZeroIndex; i++) {
+            data[i] = slope * (i + 1);
+        }
+        
+        return data;
+    }
+    
+    // Initialize with "All Tasks"
+    updateNewChart('all');
+    
+    // Handle dropdown change
+    document.getElementById('newTaskSelector').addEventListener('change', function() {
+        updateNewChart(this.value);
+    });
+    
+    // ============================================
+    // END NEW BURN CHART CODE
+    // ============================================
 
+    /* OLD CHART CODE CONTINUED (COMMENTED OUT)
     // Array of all task dates for easier reference
     const taskDates = [
         @foreach ($data->tasks as $task)
@@ -1268,6 +1683,7 @@ $(document).ready(function() {
     document.getElementById('taskSelector').addEventListener('change', function() {
         updateChart(this.value);
     });
+    */ // END OLD CHART CODE COMMENT
 
     // Employee Hours Tracking functionality
     const employeeTimeData = {

@@ -2020,6 +2020,41 @@ $(document).ready(function() {
             $('.mains .task-list').append(item);
         });
         
+        // Get sorted task IDs to reorder gantt - extract from the edit button's data-task-id
+        let sortedTaskIds = items.map(function(item) {
+            // Get the actual database ID from the edit button
+            return parseInt($(item).find('.open-edit-task-modal').data('task-id'));
+        });
+        
+        console.log('Sorted task IDs:', sortedTaskIds);
+        
+        // Reorder gantt tasks
+        if (typeof gantt !== 'undefined' && ganttTasks && ganttTasks.data) {
+            console.log('Current gantt tasks:', ganttTasks.data);
+            
+            // Create a new ordered array based on sorted task IDs
+            let orderedGanttData = [];
+            sortedTaskIds.forEach(function(taskId) {
+                let task = ganttTasks.data.find(function(t) {
+                    return t.id === taskId;
+                });
+                if (task) {
+                    orderedGanttData.push(task);
+                }
+            });
+            
+            console.log('Reordered gantt data:', orderedGanttData);
+            
+            // Update ganttTasks data with new order
+            ganttTasks.data = orderedGanttData;
+            
+            // Clear and reload gantt
+            gantt.clearAll();
+            gantt.parse(ganttTasks);
+            
+            console.log('Gantt chart re-rendered with new order');
+        }
+        
         asc = !asc;
         $('#sortProjectIcon').toggleClass('fa-sort-alpha-down fa-sort-alpha-up');
     });
@@ -2030,7 +2065,7 @@ $(document).ready(function() {
 $(document).ready(function() {
     let asc = true;
     $('#sortProjectuser').on('click', function() {
-        let items = $('.us .names .task-item').get();
+        let items = $('.us .names .task-item:not(.time-entry-row)').get();
         items.sort(function(a, b) {
             let keyA = $(a).find('span').first().text().trim().toLowerCase();
             let keyB = $(b).find('span').first().text().trim().toLowerCase();
@@ -2042,7 +2077,7 @@ $(document).ready(function() {
         });
         
         // Sort calendar inputs to match task order
-        let calendarInputs = $('.not-archived .second-input').get();
+        let calendarInputs = $('.not-archived .second-input:not(.member-time-calendar-row)').get();
         let memberIdOrder = items.map(function(item) {
             return $(item).data('member-id');
         });
@@ -2061,11 +2096,47 @@ $(document).ready(function() {
         
         // Reorder both task items and calendar inputs
         $.each(items, function(i, item) {
+            const userId = $(item).data('user-id');
+            const memberTimeEntries = $(`.member-time-entries[data-user-id="${userId}"]`);
+            const memberTimeCalendar = $(`.member-time-calendar-row.member-time-${userId}`);
+            
+            // Store display state before moving
+            const timeEntriesDisplayed = memberTimeEntries.is(':visible');
+            const timeCalendarDisplayed = memberTimeCalendar.is(':visible');
+            
+            // Append member row and its associated time entries
             $('.us .names').append(item);
+            if (memberTimeEntries.length > 0) {
+                $('.us .names').append(memberTimeEntries);
+            }
+            
+            // Restore display state
+            if (!timeEntriesDisplayed) {
+                memberTimeEntries.hide();
+            }
+            if (!timeCalendarDisplayed) {
+                memberTimeCalendar.hide();
+            }
         });
         
         $.each(calendarInputs, function(i, input) {
+            const memberId = $(input).data('member-id');
+            const userId = $(input).data('user-id');
+            const memberTimeCalendar = $(`.member-time-calendar-row.member-time-${userId}`);
+            
+            // Store display state
+            const timeCalendarDisplayed = memberTimeCalendar.is(':visible');
+            
+            // Append input row and its time calendar
             $('#team-time-inputs').append(input);
+            if (memberTimeCalendar.length > 0) {
+                $('#team-time-inputs').append(memberTimeCalendar);
+            }
+            
+            // Restore display state
+            if (!timeCalendarDisplayed) {
+                memberTimeCalendar.hide();
+            }
         });
         
         asc = !asc;

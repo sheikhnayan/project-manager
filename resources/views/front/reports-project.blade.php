@@ -105,7 +105,7 @@ table tr:last-child td:last-child {
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
-<body class="bg-white">
+<body class="bg-gray-50">
     @include('front.nav')
 
     <main class="py-6">

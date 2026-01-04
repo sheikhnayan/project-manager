@@ -320,7 +320,7 @@
     <!-- Custom CSS -->
     <link rel='stylesheet' href='{{asset('css/styles.css')}}'>
 </head>
-<body class="">
+<body class="bg-gray-50">
     @include('front.nav')
 
     <div class="mx-auto p-4 overflow-hidden rounded-lg shadow border" style="background: #fff !important; border: 1px solid #D1D5DB; margin: 16px; box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.15);">
