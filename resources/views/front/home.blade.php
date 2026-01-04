@@ -130,10 +130,10 @@
               loading="lazy"
               sizes="(max-width: 1600px) 100vw, 1600px"
               srcset="
-                assets/6921916b802d4b70859be184_0f433d45117668fb9162af8aebf26a07_pattern-hero-homepage-p-500.webp  500w,
-                assets/6921916b802d4b70859be184_0f433d45117668fb9162af8aebf26a07_pattern-hero-homepage-p-800.png   800w,
-                assets/6921916b802d4b70859be184_0f433d45117668fb9162af8aebf26a07_pattern-hero-homepage-p-1080.png 1080w,
-                assets/6921916b802d4b70859be184_0f433d45117668fb9162af8aebf26a07_pattern-hero-homepage.webp       1600w
+                {{ asset('home/assets/6921916b802d4b70859be184_0f433d45117668fb9162af8aebf26a07_pattern-hero-homepage-p-500.webp') }}  500w,
+                {{ asset('home/assets/6921916b802d4b70859be184_0f433d45117668fb9162af8aebf26a07_pattern-hero-homepage-p-800.png') }}   800w,
+                {{ asset('home/assets/6921916b802d4b70859be184_0f433d45117668fb9162af8aebf26a07_pattern-hero-homepage-p-1080.png') }} 1080w,
+                {{ asset('home/assets/6921916b802d4b70859be184_0f433d45117668fb9162af8aebf26a07_pattern-hero-homepage.webp') }}       1600w
               "
               alt="pattern-hero-homepage"
               class="bakground-pattern-hero is-home"
@@ -221,10 +221,10 @@
                   sizes="(max-width: 767px) 100vw, (max-width: 991px) 95vw, 939.9722290039062px"
                   alt="hero dashboard image"
                   srcset="
-                    assets/692d64fc946053b3c2c2ea2c_605bea831770d0646278c7d0e014d49f_herodashboardimage.webp  500w,
-                    assets/692d64fc946053b3c2c2ea2c_605bea831770d0646278c7d0e014d49f_herodashboardimage.webp  800w,
-                    assets/692d64fc946053b3c2c2ea2c_605bea831770d0646278c7d0e014d49f_herodashboardimage.webp 1080w,
-                    assets/692d64fc946053b3c2c2ea2c_605bea831770d0646278c7d0e014d49f_herodashboardimage.webp 1223w
+                    {{ asset('home/assets/692d64fc946053b3c2c2ea2c_605bea831770d0646278c7d0e014d49f_herodashboardimage.webp') }}  500w,
+                    {{ asset('home/assets/692d64fc946053b3c2c2ea2c_605bea831770d0646278c7d0e014d49f_herodashboardimage.webp') }}  800w,
+                    {{ asset('home/assets/692d64fc946053b3c2c2ea2c_605bea831770d0646278c7d0e014d49f_herodashboardimage.webp') }} 1080w,
+                    {{ asset('home/assets/692d64fc946053b3c2c2ea2c_605bea831770d0646278c7d0e014d49f_herodashboardimage.webp') }} 1223w
                   "
                   class="hero-image"
                 />
@@ -254,14 +254,14 @@
                   data-w-id="7b520eb0-2346-ba7b-8bf8-8b2ca22d8bb9"
                   loading="lazy"
                   srcset="
-                    assets/692d9635569dff261318dc74_fcd1043310e28e9d4dd5fe73c51f73ac_Screeen%202.1.png  500w,
-                    assets/692d9635569dff261318dc74_fcd1043310e28e9d4dd5fe73c51f73ac_Screeen%202.1.png  800w,
-                    assets/692d9635569dff261318dc74_fcd1043310e28e9d4dd5fe73c51f73ac_Screeen%202.1.png 1080w,
-                    assets/692d9635569dff261318dc74_fcd1043310e28e9d4dd5fe73c51f73ac_Screeen%202.1.png 1600w,
-                    assets/692d9635569dff261318dc74_fcd1043310e28e9d4dd5fe73c51f73ac_Screeen%202.1.png 2000w,
-                    assets/692d9635569dff261318dc74_fcd1043310e28e9d4dd5fe73c51f73ac_Screeen%202.1.png 2600w,
-                    assets/692d9635569dff261318dc74_fcd1043310e28e9d4dd5fe73c51f73ac_Screeen%202.1.png 3200w,
-                    assets/692d9635569dff261318dc74_fcd1043310e28e9d4dd5fe73c51f73ac_Screeen%202.1.png 3669w
+                    {{ asset('home/assets/692d9635569dff261318dc74_fcd1043310e28e9d4dd5fe73c51f73ac_Screeen%202.1.png') }}  500w,
+                    {{ asset('home/assets/692d9635569dff261318dc74_fcd1043310e28e9d4dd5fe73c51f73ac_Screeen%202.1.png') }}  800w,
+                    {{ asset('home/assets/692d9635569dff261318dc74_fcd1043310e28e9d4dd5fe73c51f73ac_Screeen%202.1.png') }} 1080w,
+                    {{ asset('home/assets/692d9635569dff261318dc74_fcd1043310e28e9d4dd5fe73c51f73ac_Screeen%202.1.png') }} 1600w,
+                    {{ asset('home/assets/692d9635569dff261318dc74_fcd1043310e28e9d4dd5fe73c51f73ac_Screeen%202.1.png') }} 2000w,
+                    {{ asset('home/assets/692d9635569dff261318dc74_fcd1043310e28e9d4dd5fe73c51f73ac_Screeen%202.1.png') }} 2600w,
+                    {{ asset('home/assets/692d9635569dff261318dc74_fcd1043310e28e9d4dd5fe73c51f73ac_Screeen%202.1.png') }} 3200w,
+                    {{ asset('home/assets/692d9635569dff261318dc74_fcd1043310e28e9d4dd5fe73c51f73ac_Screeen%202.1.png') }} 3669w
                   "
                 /><img
                   class="hero-image mob"
@@ -278,10 +278,10 @@
                     loading="lazy"
                     sizes="(max-width: 767px) 100vw, (max-width: 991px) 95vw, 940px"
                     srcset="
-                      assets/692dac6e7baa8c623fc90843_5d84b02798fb0bd06c53b3a094cff2f5_play-button-icon-png-15-p-500.png   500w,
-                      assets/692dac6e7baa8c623fc90843_5d84b02798fb0bd06c53b3a094cff2f5_play-button-icon-png-15-p-800.png   800w,
-                      assets/692dac6e7baa8c623fc90843_5d84b02798fb0bd06c53b3a094cff2f5_play-button-icon-png-15-p-1080.png 1080w,
-                      assets/692dac6e7baa8c623fc90843_5d84b02798fb0bd06c53b3a094cff2f5_play-button-icon-png-15.png        1600w
+                      {{ asset('home/assets/692dac6e7baa8c623fc90843_5d84b02798fb0bd06c53b3a094cff2f5_play-button-icon-png-15-p-500.png') }}   500w,
+                      {{ asset('home/assets/692dac6e7baa8c623fc90843_5d84b02798fb0bd06c53b3a094cff2f5_play-button-icon-png-15-p-800.png') }}   800w,
+                      {{ asset('home/assets/692dac6e7baa8c623fc90843_5d84b02798fb0bd06c53b3a094cff2f5_play-button-icon-png-15-p-1080.png') }} 1080w,
+                      {{ asset('home/assets/692dac6e7baa8c623fc90843_5d84b02798fb0bd06c53b3a094cff2f5_play-button-icon-png-15.png') }}        1600w
                     "
                     alt=""
                   />
@@ -297,10 +297,10 @@
               data-w-id="2ad27ce0-fa39-ede2-70bf-e9f26eed644f"
               loading="lazy"
               srcset="
-                assets/692d64fc946053b3c2c2ea2c_605bea831770d0646278c7d0e014d49f_herodashboardimage-p-500.webp   500w,
-                assets/692d64fc946053b3c2c2ea2c_605bea831770d0646278c7d0e014d49f_herodashboardimage-p-800.webp   800w,
-                assets/692d64fc946053b3c2c2ea2c_605bea831770d0646278c7d0e014d49f_herodashboardimage-p-1080.webp 1080w,
-                assets/692d64fc946053b3c2c2ea2c_605bea831770d0646278c7d0e014d49f_herodashboardimage.webp        1223w
+                {{ asset('home/assets/692d64fc946053b3c2c2ea2c_605bea831770d0646278c7d0e014d49f_herodashboardimage-p-500.webp') }}   500w,
+                {{ asset('home/assets/692d64fc946053b3c2c2ea2c_605bea831770d0646278c7d0e014d49f_herodashboardimage-p-800.webp') }}   800w,
+                {{ asset('home/assets/692d64fc946053b3c2c2ea2c_605bea831770d0646278c7d0e014d49f_herodashboardimage-p-1080.webp') }} 1080w,
+                {{ asset('home/assets/692d64fc946053b3c2c2ea2c_605bea831770d0646278c7d0e014d49f_herodashboardimage.webp') }}        1223w
               "
             /><a
               data-w-id="1c66e899-5b5f-f2fc-df14-2e3f0e1d52cc"
@@ -590,10 +590,10 @@
                 loading="lazy"
                 sizes="(max-width: 767px) 100vw, (max-width: 991px) 95vw, 939.9861450195312px"
                 srcset="
-                  assets/692412410c9afd0773690ef7_Group24-p-500.webp   500w,
-                  assets/692412410c9afd0773690ef7_Group24-p-800.webp   800w,
-                  assets/692412410c9afd0773690ef7_Group24-p-1080.webp 1080w,
-                  assets/692412410c9afd0773690ef7_Group24.webp        1249w
+                  {{ asset('home/assets/692412410c9afd0773690ef7_Group24-p-500.webp') }}   500w,
+                  {{ asset('home/assets/692412410c9afd0773690ef7_Group24-p-800.webp') }}   800w,
+                  {{ asset('home/assets/692412410c9afd0773690ef7_Group24-p-1080.webp') }} 1080w,
+                  {{ asset('home/assets/692412410c9afd0773690ef7_Group24.webp') }}        1249w
                 "
                 alt=""
                 class="ipad-img"
@@ -605,10 +605,10 @@
                   loading="lazy"
                   sizes="(max-width: 767px) 100vw, (max-width: 991px) 95vw, 940px"
                   srcset="
-                    assets/692dac6e7baa8c623fc90843_5d84b02798fb0bd06c53b3a094cff2f5_play-button-icon-png-15-p-500.png   500w,
-                    assets/692dac6e7baa8c623fc90843_5d84b02798fb0bd06c53b3a094cff2f5_play-button-icon-png-15-p-800.png   800w,
-                    assets/692dac6e7baa8c623fc90843_5d84b02798fb0bd06c53b3a094cff2f5_play-button-icon-png-15-p-1080.png 1080w,
-                    assets/692dac6e7baa8c623fc90843_5d84b02798fb0bd06c53b3a094cff2f5_play-button-icon-png-15.png        1600w
+                    {{ asset('home/assets/692dac6e7baa8c623fc90843_5d84b02798fb0bd06c53b3a094cff2f5_play-button-icon-png-15-p-500.png') }}   500w,
+                    {{ asset('home/assets/692dac6e7baa8c623fc90843_5d84b02798fb0bd06c53b3a094cff2f5_play-button-icon-png-15-p-800.png') }}   800w,
+                    {{ asset('home/assets/692dac6e7baa8c623fc90843_5d84b02798fb0bd06c53b3a094cff2f5_play-button-icon-png-15-p-1080.png') }} 1080w,
+                    {{ asset('home/assets/692dac6e7baa8c623fc90843_5d84b02798fb0bd06c53b3a094cff2f5_play-button-icon-png-15.png') }}        1600w
                   "
                   alt=""
                 />
